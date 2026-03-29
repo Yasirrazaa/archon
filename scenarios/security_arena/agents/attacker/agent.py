@@ -21,6 +21,12 @@ load_dotenv()
 
 from openai import AsyncOpenAI
 
+# Load custom attacker modules
+import sys
+sys.path.append(str(Path(__file__).parent))
+import pyrit_converters
+import goat_loop
+
 # Load templates
 _template_dir = Path(__file__).parent / "templates"
 _env = Environment(loader=FileSystemLoader(_template_dir), trim_blocks=True, lstrip_blocks=True)
@@ -84,9 +90,7 @@ class Attacker(AgentExecutor):
         )
         self.model = model
 
-        # Example: Store custom data across rounds. Participants can extend this
-        # to track strategy, patterns, or any data useful for future attacks.
-        # Keyed by round number (0-indexed). Agent restarts with each battle.
+        # State management for the 7 rounds
         self.round_data: dict[int, dict] = {}
 
     def _render(self, template, ctx: ScenarioContext, **extra) -> str:
@@ -97,7 +101,8 @@ class Attacker(AgentExecutor):
         """Generate a response from the LLM."""
         response = await self.client.chat.completions.create(
             model=self.model,
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}]
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            temperature=0.8 # Slightly higher temp for creative attacks
         )
         content = response.choices[0].message.content
         return content if content is not None else ""
@@ -112,32 +117,56 @@ class Attacker(AgentExecutor):
         updater = TaskUpdater(event_queue, task.id, task.context_id)
 
         try:
-            # Parse JSON context from orchestrator into dataclass
+            # Parse JSON context
             message_text = context.get_user_input()
             ctx = ScenarioContext.from_dict(json.loads(message_text))
+            
+            # Reset state if it's round 0 (new battle)
+            if ctx.current_round == 0:
+                self.round_data = {}
+                doc_type = goat_loop.guess_document_type(ctx.defender_role, ctx.defender_task)
+                fragments = goat_loop.build_reconstruction_fragments(ctx.attack_goal)
+                self.round_data[0] = {
+                    "doc_type": doc_type,
+                    "target_fragments": fragments,
+                    "response_tone": "unknown",
+                    "best_technique_for_next_turn": "T7" if ctx.attack_type == "DIRECT" else "T9"
+                }
+
             logger.info("Round %d: Type=%s, History=%d",
                         ctx.current_round + 1, ctx.attack_type, len(ctx.battle_history))
 
-            # Example: Retrieve previously stored data for this battle.
-            # This is separate from battle_history - use it to store custom data
-            # like strategy notes, patterns observed, or any analysis results.
-            # Keyed by round number. Agent restarts with each battle, so no need for context_id.
-            stored_rounds = dict(self.round_data)  # Copy for template
+            # Retrieve state
+            stored_rounds = dict(self.round_data)
 
-            # Render Jinja2 templates with context and stored data, then generate attack
-            output = await self._generate(
+            # Generate attack via LLM
+            raw_output = await self._generate(
                 self._render(_system_template, ctx),
                 self._render(_user_template, ctx, stored_rounds=stored_rounds)
             )
 
-            # Example: Store data for future rounds. Here we just store word_count,
-            # but participants can extend this to store anything useful.
+            # Parse the inline <score> block
+            parsed_result = goat_loop.parse_inline_score(raw_output)
+            cleaned_message = parsed_result["cleaned_text"]
+            
+            # Save state for the *next* round to use
             self.round_data[ctx.current_round] = {
-                "word_count": len(output.split())
+                "score": parsed_result["score"],
+                "partial_leak": parsed_result["partial_leak"],
+                "response_tone": parsed_result["response_tone"],
+                "best_technique_for_next_turn": parsed_result["best_technique_for_next_turn"]
             }
+            
+            # Apply PyRIT converters if it's an INJECTION scenario and we're struggling
+            if ctx.attack_type == "INJECTION" and ctx.current_round > 2 and parsed_result.get("score", 0) < 2:
+                # If we're failing injection, start applying heavy obfuscation to evade filters
+                cleaned_message = pyrit_converters.apply_converter(cleaned_message, ctx.current_round)
 
-            logger.info("Generated attack (%d chars)", len(output))
-            await updater.update_status(TaskState.completed, new_agent_text_message(output))
+            logger.info("Generated attack (Raw: %d chars, Cleaned: %d chars)", len(raw_output), len(cleaned_message))
+            logger.info("Parsed score: %s, Next Tech: %s", parsed_result['score'], parsed_result['best_technique_for_next_turn'])
+            
+            await updater.update_status(TaskState.completed, new_agent_text_message(cleaned_message))
+            
         except Exception as e:
             logger.error("Attacker error: %s", e, exc_info=True)
             await updater.update_status(TaskState.failed, new_agent_text_message(f"Error: {e}"))
