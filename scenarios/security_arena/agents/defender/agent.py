@@ -58,6 +58,7 @@ class ScenarioContext:
     defender_task: str        # What defender should do
     output_format: str        # Expected output format
     formatted_input: str      # Input to process
+    security_guidelines: str = "" # Added to parse guidelines
 
     @classmethod
     def from_dict(cls, d: dict) -> "ScenarioContext":
@@ -67,6 +68,7 @@ class ScenarioContext:
             defender_task=d.get("defender_task", ""),
             output_format=d.get("output_format", ""),
             formatted_input=d.get("formatted_input", ""),
+            security_guidelines=d.get("security_guidelines", ""),
         )
 
 
@@ -94,9 +96,15 @@ class Defender(AgentExecutor):
         if response_format:
             kwargs["response_format"] = response_format
             
-        response = await self.client.chat.completions.create(**kwargs)
-        content = response.choices[0].message.content
-        return content if content is not None else ""
+        try:
+            response = await self.client.chat.completions.create(timeout=60, **kwargs)
+            content = response.choices[0].message.content
+            return content if content is not None else ""
+        except Exception as e:
+            if "429" in str(e) or "rate limit" in str(e).lower():
+                logger.error("Rate limit hit during generation.")
+                return None
+            raise
 
     async def execute(self, context: RequestContext, event_queue: EventQueue):
         """Process input based on scenario context using the 4-layer pipeline."""
@@ -120,19 +128,30 @@ class Defender(AgentExecutor):
             # ---------------------------------------------------------
             sanitized_input = pyrit_defense.layer0_sanitize_input(ctx.formatted_input)
             
-            # ---------------------------------------------------------
-            # LAYER 1: Adaptive First Call (Paraphrase) (1 LLM Call)
-            # ---------------------------------------------------------
-            # To save budget and reduce false positives, we always try to paraphrase 
-            # the input to destroy formatting attacks while keeping semantics.
             combined_context = (ctx.domain_description + " " + ctx.defender_task).lower()
             is_conversational = "shopping assistant" in combined_context or "thingularity" in combined_context
             
-            paraphrase_prompt = pyrit_defense.layer1_adversarial_paraphrase_prompt(sanitized_input, is_conversational)
-            paraphrased_input = await self._generate(
-                system="You are a helpful text summarizer. Follow the user's instructions exactly.",
-                user=paraphrase_prompt,
-                temperature=0.0
+            # ---------------------------------------------------------
+            # CALL 1: Dynamic Invariant Generation & Adaptive Paraphrase
+            # ---------------------------------------------------------
+            # We must be careful with our 4-call budget. 
+            # If conversational: generate invariants + respond (Call 1), then classify (Call 2)
+            # If injection: paraphrase (Call 1), generate invariants+respond (Call 2), backtranslate (Call 3)
+            
+            paraphrased_input = sanitized_input
+            if not is_conversational:
+                # Semantic-Destructive Paraphrase for injection
+                paraphrase_prompt = pyrit_defense.layer1_adversarial_paraphrase_prompt(sanitized_input, False)
+                p_out = await self._generate(
+                    system="You are a strict data extraction filter.",
+                    user=paraphrase_prompt,
+                    temperature=0.0
+                )
+                if p_out: paraphrased_input = p_out
+            
+            # Generate dynamic invariants using the LLM (Costs 1 Call)
+            invariants = await pyrit_defense.generate_dynamic_invariants(
+                ctx.defender_role, ctx.defender_task, ctx.security_guidelines, self._generate
             )
             
             # ---------------------------------------------------------
@@ -140,62 +159,79 @@ class Defender(AgentExecutor):
             # ---------------------------------------------------------
             wrapped_input = pyrit_defense.layer2_spotlighting_wrap(paraphrased_input, task_id, is_conversational)
             
+            # (D6) Output Skeleton Anchoring
+            skeleton = pyrit_defense.build_output_skeleton(ctx.output_format)
+            
             # ---------------------------------------------------------
             # LAYER 3: Task Shield Generation (1 LLM Call)
             # ---------------------------------------------------------
-            invariants = pyrit_defense.get_scenario_invariants(ctx.domain_description, ctx.defender_task)
-            
             system_prompt = self._render(_system_template, 
                                          defender_role=ctx.defender_role,
                                          domain_description=ctx.domain_description,
                                          defender_task=ctx.defender_task,
-                                         output_format=ctx.output_format,
+                                         output_format=ctx.output_format + skeleton,
+                                         security_guidelines=ctx.security_guidelines,
                                          invariants=invariants)
                                          
             user_prompt = self._render(_user_template, processed_input=wrapped_input)
             
             candidate_response = await self._generate(system_prompt, user_prompt, temperature=0.1)
             
-            # ---------------------------------------------------------
-            # LAYER 4: CC++ Exchange Classifier (1 LLM Call)
-            # ---------------------------------------------------------
-            # Classify the (original sanitized input, candidate response) pair
-            classifier_prompt = self._render(_classifier_template,
-                                             defender_task=ctx.defender_task,
-                                             invariants=invariants,
-                                             user_input=sanitized_input,
-                                             candidate_response=candidate_response)
-                                             
-            classifier_result = await self._generate(
-                system="You are a strict security classifier. Return only valid JSON.",
-                user=classifier_prompt,
-                temperature=0.0,
-                response_format={"type": "json_object"}
-            )
+            if not candidate_response:
+                raise Exception("Rate limit or blank response during candidate generation.")
             
-            try:
-                eval_data = json.loads(classifier_result)
-                is_safe = eval_data.get("exchange_safe", True)
-                confidence = eval_data.get("confidence", 0.0)
+            # ---------------------------------------------------------
+            # LAYER 4 & 5: Backtranslation & Classifier (1-2 LLM Calls)
+            # ---------------------------------------------------------
+            is_safe = True
+            
+            # D2: Backtranslation (if injection scenario and looks suspicious)
+            if not is_conversational:
+                is_safe = await pyrit_defense.backtranslate_check(candidate_response, ctx.defender_task, self._generate)
+            
+            # D5: Adversarial Exchange Classifier (run if still safe)
+            if is_safe:
+                classifier_prompt = self._render(_classifier_template,
+                                                 defender_task=ctx.defender_task,
+                                                 invariants=invariants,
+                                                 user_input=sanitized_input,
+                                                 candidate_response=candidate_response)
+                                                 
+                classifier_result = await self._generate(
+                    system="You are a strict RED-TEAM security classifier. Return only valid JSON.",
+                    user=classifier_prompt,
+                    temperature=0.0,
+                    response_format={"type": "json_object"}
+                )
                 
-                # If unsafe with high confidence, trigger safety fallback
-                if not is_safe and confidence > 0.85:
-                    logger.warning("Exchange classifier blocked response! Violation: %s", eval_data.get("violation_type"))
-                    # Fallback to generic safe response in the requested format
-                    safe_fallback = f"Unable to process request due to safety invariant violation. Please revise your query to align with the task: {ctx.defender_task}"
-                    
-                    # Call 4: Try to format the fallback into the required output format
-                    fallback_system = f"You must format the provided text EXACTLY according to this format: {ctx.output_format}. Do not add any other text."
-                    candidate_response = await self._generate(fallback_system, safe_fallback, temperature=0.0)
-            except json.JSONDecodeError:
-                logger.error("Failed to parse exchange classifier JSON, proceeding with candidate response.")
+                if classifier_result:
+                    try:
+                        eval_data = json.loads(classifier_result)
+                        violation_detected = eval_data.get("violation_detected", False)
+                        severity = eval_data.get("severity", "none")
+                        
+                        if violation_detected and severity in ["minor", "major", "critical"]:
+                            logger.warning("Exchange classifier blocked response! Violation: %s", eval_data.get("violation_type"))
+                            is_safe = False
+                    except json.JSONDecodeError:
+                        logger.error("Failed to parse exchange classifier JSON.")
+                        
+            # Fallback handling
+            if not is_safe:
+                safe_fallback = f"Unable to process request due to security constraints. Please align query with: {ctx.defender_task}"
+                fallback_sys = f"Format this exactly according to the requested format: {ctx.output_format}"
+                final_resp = await self._generate(fallback_sys, safe_fallback, temperature=0.0)
+                if final_resp:
+                    candidate_response = final_resp
 
             logger.info("Generated final response (%d chars)", len(candidate_response))
             await updater.update_status(TaskState.completed, new_agent_text_message(candidate_response))
             
         except Exception as e:
             logger.error("Defender error: %s", e, exc_info=True)
-            await updater.update_status(TaskState.failed, new_agent_text_message(f"Error: {e}"))
+            # GRACEFUL 429 FALLBACK: Never crash, always return a safe default
+            safe_default = "I cannot complete the request due to processing limits or safety constraints."
+            await updater.update_status(TaskState.completed, new_agent_text_message(safe_default))
 
     async def cancel(self, _request: RequestContext, _event_queue: EventQueue) -> Task | None:
         raise ServerError(error=UnsupportedOperationError())
