@@ -13,17 +13,17 @@ cmd = "python scenarios/security_arena/orchestrator.py --host 127.0.0.1 --port 9
 [[participants]]
 role = "attacker"
 endpoint = "http://127.0.0.1:9021"
-cmd = "python -m scenarios.security_arena.agents.attacker.agent --host 127.0.0.1 --port 9021 --model llama-3.3-70b-versatile"
+cmd = "python -m scenarios.security_arena.agents.attacker.agent --host 127.0.0.1 --port 9021 --model openai/gpt-oss-20b"
 
 [[participants]]
 role = "defender"
 endpoint = "http://127.0.0.1:9020"
-cmd = "python -m scenarios.security_arena.agents.defender.agent --host 127.0.0.1 --port 9020 --model llama-3.3-70b-versatile"
+cmd = "python -m scenarios.security_arena.agents.defender.agent --host 127.0.0.1 --port 9020 --model openai/gpt-oss-20b"
 
 [[participants]]
 role = "normal_user"
 endpoint = "http://127.0.0.1:9022"
-cmd = "python -m scenarios.security_arena.agents.normal_user.agent --host 127.0.0.1 --port 9022 --model llama-3.3-70b-versatile"
+cmd = "python -m scenarios.security_arena.agents.normal_user.agent --host 127.0.0.1 --port 9022 --model openai/gpt-oss-20b"
 
 [config]
 # Scenario selection
