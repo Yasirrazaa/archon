@@ -1,7 +1,3 @@
-I've deeply analyzed all four files. Let me now build the comprehensive plan.Now I have everything I need. Let me build the comprehensive plan as a well-structured interactive reference.Here's the complete, deep-analysis-backed plan. I've read every file carefully — the architecture, phase2 rules, all the prior research — and this synthesizes everything into what you actually need to build.
-
----
-
 ## What the files tell us that changes everything
 
 From `architecture.md`: the defender **never sees the attack goal, never sees history**. It only gets `domain_description`, `defender_role`, `defender_task`, `output_format`, and `formatted_input`. This means every defense must be baked into the system prompt and pre-LLM code — there's zero runtime context. The attacker, by contrast, gets the full JSON including `input_format_template` with `PLACE_ATTACK_HERE` — meaning for injection scenarios, the attacker literally controls what gets embedded.
