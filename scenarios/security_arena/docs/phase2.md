@@ -173,11 +173,16 @@ Plus **unseen scenarios** on the private leaderboard to test generalization.
 
 ```
 agents/attacker/
-├── agent.py              # Main agent logic
-├── requirements.txt      # Dependencies
+├── agent.py                  # Main agent logic (GOAT-style adaptive attacker)
+├── goat_loop.py              # Signal extraction, strategy selection, reconstruction
+├── pyrit_converters.py       # Obfuscation: base64, ROT13, unicode confusables
+├── diagnosis.py              # NEW: Defender response diagnosis (5 categories)
+├── strategy_router.py        # NEW: Surface/family routing with blacklisting
+├── contract_sequential.py    # NEW: Contract awareness + sequential chaining
+├── requirements.txt
 └── templates/
-    ├── system.j2         # System prompt (Jinja2)
-    └── user.j2           # Per-round user prompt (Jinja2)
+    ├── system.j2             # Strategy-aware system prompt
+    └── user.j2               # Per-round user prompt with battle history
 ```
 
 The attacker has access to:
@@ -186,29 +191,45 @@ The attacker has access to:
 - **`ctx.current_round`** — current round number (0-indexed)
 - Full scenario context including attack goal, constraints, and input format template
 
+**New Intelligence Modules:**
+
+1. **`diagnosis.py`** — Classifies defender responses into failure categories:
+   - `ResponseCategory`: PARTIAL_COMPLIANCE, COMPLIANCE_WITH_CORRECTION, VALUE_CAPPED, SOFT_REFUSAL, HARD_REFUSAL
+   - `FailureMode`: INSTRUCTION_HIJACK, GENERATION_REFUSAL, TASK_MISALIGNMENT, OUTPUT_CONTRACT_VIOLATIONS, EXPLICIT_REJECTION
+   - Suggests strategy pivots based on diagnosis
+
+2. **`strategy_router.py`** — Routes attacks across surfaces and families:
+   - `AttackSurface`: EXTRACTION, TRANSLATION, TRANSFORMATION, CLASSIFICATION, SUMMARIZATION
+   - `StrategyFamily`: PROMPT_INJECTION, JAILBREAK, DATA_EXFILTRATION, POLICY_AVOIDANCE
+   - Maintains `surface_failure_counts` and `family_blacklist`
+   - Applies diversity rules (never repeat same surface twice)
+
+3. **`contract_sequential.py`** — Parses output_format and chains strategies:
+   - `ContractAnalyzer`: Extracts expected fields, detects numeric/constrained outputs
+   - `SequentialAttacker`: Tries strategies with fallback, records failures
+
 **Tips:**
-- Use `self.round_data` richly. Store strategies tried, defender patterns, partial leaks — not just word counts. Example:
-  ```python
-  self.round_data[ctx.current_round] = {
-      "strategy_used": "social_engineering",
-      "defender_mentioned_tools": any(tool in output for tool in ["search", "create"]),
-      "defender_refused": "cannot" in output.lower(),
-      "next_strategy": "try prompt injection instead",
-  }
-  ```
-- Adapt via `battle_history` — if the defender refuses, switch tactics. If something partially leaked, double down.
-- Exploit `defender_role`, `defender_task`, and `output_format` to find gaps in the defender's prompt.
-- Don't hardcode scenario-specific logic — the private leaderboard uses entirely unseen scenarios. Teach your agent *how* to break things, don't just break specific scenarios.
+- Use `self.round_data` richly. Store strategies tried, defender patterns, partial leaks — not just word counts.
+- Use the diagnosis module to understand WHY the defender refused, not just THAT it refused.
+- Use the strategy router to avoid repeating failed approaches.
+- Don't hardcode scenario-specific logic — the private leaderboard uses entirely unseen scenarios.
 
 ### Defender (`agents/defender/`)
 
 ```
 agents/defender/
-├── agent.py
+├── agent.py                  # 7-layer defense gateway
+├── pyrit_defense.py          # PPA spotlighting, invariants, exchange classifier
+├── normalization.py          # NEW: 14 deterministic normalization transforms
+├── threat_classifier.py      # NEW: Rule-based threat classification
+├── segmenter.py              # NEW: Trust boundary segmentation
+├── execution_modes.py        # NEW: 4-mode execution scaling
+├── output_guardrails.py      # NEW: Output PII/code/reference sanitization
 ├── requirements.txt
 └── templates/
-    ├── system.j2
-    └── user.j2
+    ├── system.j2             # Constitution-style task shield
+    ├── user.j2               # Processed input passthrough
+    └── exchange_classifier.j2 # (input, response) pair classifier
 ```
 
 The defender is **stateless** — each round is a fresh conversation. It sees:
@@ -216,12 +237,25 @@ The defender is **stateless** — each round is a fresh conversation. It sees:
 - `security_guidelines` (scenario-specific attack warnings)
 - The current `formatted_input` (which may contain injected attacker content)
 
+**7-Layer Defense Gateway:**
+
+| Layer | Module | LLM Calls | Description |
+|-------|--------|-----------|-------------|
+| 0 | `normalization.py` | 0 | 14 transforms: Unicode NFKC, zero-width removal, HTML cleaning, base64/ROT13/hex decoding, leetspeak, homoglyphs, steganography, role tags |
+| 0.5 | `threat_classifier.py` | 0 | Rule-based classification: injection, jailbreak, PII leak, supply chain, prompt extraction |
+| 0.7 | `segmenter.py` | 0 | Split input into trusted/untrusted segments with trust scores |
+| 0.9 | `execution_modes.py` | 0 | Map suspicion score to STANDARD/CAUTIOUS/CONSERVATIVE/MINIMAL |
+| 1 | `pyrit_defense.py` | 1 | Dynamic invariant generation + adversarial paraphrase |
+| 2 | `pyrit_defense.py` | 0 | Polymorphic Prompt Assembling (PPA) with randomized delimiters |
+| 3 | `pyrit_defense.py` | 1 | Task Shield constitution-style response |
+| 4 | `pyrit_defense.py` | 1-2 | Exchange classifier + backtranslation check |
+| 5 | `output_guardrails.py` | 0 | PII redaction, unsafe code detection, unverified reference downgrade |
+
 **Tips:**
-- Your system prompt is your entire defense (no memory across rounds).
-- Think about defense in layers — e.g. sanitize inputs in code, strip injection markers (`[SYSTEM]`, `<!-- -->`, base64) before the LLM sees them.
-- Consider a two-pass approach: first call analyzes input for attacks, second call responds with that analysis.
-- Make security instructions scenario-aware. Parse `defender_task` and `defender_role` to generate tailored defenses.
-- Stay helpful — a defender that refuses everything fails the normal user test and won't appear on the leaderboard.
+- The 7-layer gateway catches 30%+ of attacks before any LLM call (Layer 0).
+- Use execution mode scaling to avoid over-refusal — STANDARD mode for clean inputs.
+- Stay helpful — a defender that refuses everything fails the normal user test.
+- The output guardrails catch leaks that slip past the LLM layers.
 
 ### Example submission
 

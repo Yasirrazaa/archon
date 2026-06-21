@@ -101,15 +101,48 @@ sequenceDiagram
 
 ### Attacker Agent
 
-- Parses full JSON context
-- Builds dynamic system prompt from context
-- Analyzes battle history to improve attacks
-- Generates attack string
+The attacker uses a GOAT-style adaptive attack engine with intelligence modules:
+
+- **`agent.py`** — Main agent logic with round-by-round strategy adaptation
+- **`goat_loop.py`** — Signal extraction, strategy selection, reconstruction attacks
+- **`pyrit_converters.py`** — Obfuscation: base64, ROT13, unicode confusables
+- **`diagnosis.py`** — Defender response diagnosis (5 categories, 5 failure modes)
+- **`strategy_router.py`** — Surface/family routing with diversity rules
+- **`contract_sequential.py`** — Contract awareness + sequential attack chaining
+
+**Key intelligence flow:**
+```
+Round N:
+1. Extract signals from defender response (goat_loop.py)
+2. Diagnose failure mode (diagnosis.py)
+3. Route to next surface/family (strategy_router.py)
+4. Check contract constraints (contract_sequential.py)
+5. Generate attack message
+```
 
 ### Defender Agent
 
-- Parses filtered JSON context (no attack info, no history)
-- Builds dynamic system prompt from context
-- Processes `formatted_input` from context
-- Returns response
+The defender uses a 7-layer security gateway based on NeuralShield's architecture:
+
+- **`agent.py`** — Main agent logic orchestrating the 7-layer pipeline
+- **`normalization.py`** — 14 deterministic transforms (0 LLM calls)
+- **`threat_classifier.py`** — Rule-based threat classification (0 LLM calls)
+- **`segmenter.py`** — Trust boundary segmentation (0 LLM calls)
+- **`execution_modes.py`** — 4-mode execution scaling (0 LLM calls)
+- **`pyrit_defense.py`** — PPA spotlighting, invariants, exchange classifier
+- **`output_guardrails.py`** — Output PII/code/reference sanitization (0 LLM calls)
+
+**Key defense flow:**
+```
+Input:
+1. Normalize (14 transforms) → Layer 0
+2. Classify threat (rule-based) → Layer 0.5
+3. Segment by trust → Layer 0.7
+4. Select execution mode → Layer 0.9
+5. Generate invariants (1 LLM call) → Layer 1
+6. Apply PPA spotlighting → Layer 2
+7. Generate response (1 LLM call) → Layer 3
+8. Classify exchange (1 LLM call) → Layer 4
+9. Sanitize output → Layer 5
+```
 

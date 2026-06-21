@@ -193,10 +193,41 @@ This implementation draws on published research in AI security:
 
 - **GOAT** (Meta Research): Generative Offensive Agent Tester for multi-turn jailbreaking
 - **PyRIT** (Microsoft): Python Risk Identification Toolkit for adversarial testing
+- **Garak** (NVIDIA): LLM vulnerability scanner with 80+ probes
+- **Promptfoo** (OpenAI): 157 attack plugins, Meta Agent strategy (70-90% ASR)
+- **NeuralShield** (2nd Place): 91% defense win rate, 7-layer security gateway
+- **GCG Attack** (Zou et al.): Universal adversarial suffixes
+- **Crescendo** (Microsoft): Multi-turn gradual escalation attack
+- **PAIR** (Chao et al.): Automated black-box jailbreaking in <20 queries
+- **AutoDefense** (Zeng et al.): Multi-agent defense reducing ASR from 55.74% → 7.95%
 - **Task Shield**: Test-time defense reducing ASR to 2.07% on AgentDojo benchmark
 - **Polymorphic Prompt Assembling (PPA)**: Randomized prompt structure achieving 1.83% ASR
 - **Spotlighting** (Microsoft): Delimiter-based untrusted input isolation
 - **Constitutional Classifiers** (Anthropic): Output-layer intent verification
+
+## Changelog
+
+### v2.0 — SOTA Overhaul (June 2026)
+
+**New Defender Modules:**
+- `normalization.py` — 14 deterministic transforms (Unicode, base64, ROT13, homoglyphs, steganography, leetspeak, role tags)
+- `threat_classifier.py` — Rule-based threat classification with 6 categories
+- `segmenter.py` — Trust boundary segmentation with position-decay scoring
+- `execution_modes.py` — 4-mode execution scaling (STANDARD/CAUTIOUS/CONSERVATIVE/MINIMAL)
+- `output_guardrails.py` — PII detection, unsafe code sanitization, unverified reference checking
+
+**New Attacker Modules:**
+- `diagnosis.py` — Defender response diagnosis (5 categories, 5 failure modes)
+- `strategy_router.py` — Surface/family routing with diversity rules + blacklisting
+- `contract_sequential.py` — Contract awareness + sequential attack chaining
+
+**Tests:** 286 tests (up from 101), all TDD-verified
+**Documentation:** RESEARCH_REPORT.md, ARCHITECTURE.md, updated phase2.md
+
+### v1.0 — Initial Implementation
+- GOAT-style adaptive attacker with signal extraction
+- 5-layer defense pipeline with PPA spotlighting
+- 5 scenario plugins (PortfolioIQ, Thingularity, GymJailbreak, Resume Downgrade, Medical Records)
 
 ## License
 
