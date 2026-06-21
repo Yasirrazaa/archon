@@ -3,7 +3,7 @@
 Defender Agent - Processes inputs and performs assigned tasks.
 
 Receives filtered scenario context as JSON (no attack info), builds dynamic prompts,
-and processes formatted input according to the scenario using a 4-Layer Defense Pipeline.
+and processes formatted input according to the scenario using a 5-Layer Defense Pipeline.
 """
 
 import argparse
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,10 +23,17 @@ load_dotenv()
 
 from openai import AsyncOpenAI
 
-# Load custom defense modules
-import sys
-sys.path.append(str(Path(__file__).parent))
+# Add parent directory to path for local module imports
+sys.path.insert(0, str(Path(__file__).parent))
+
 import pyrit_defense
+
+# Load new defense modules
+import normalization
+import threat_classifier
+import segmenter
+import execution_modes
+import output_guardrails
 
 # Load templates
 _template_dir = Path(__file__).parent / "templates"
@@ -134,9 +142,43 @@ class Defender(AgentExecutor):
             logger.info("Processing task: %s...", ctx.defender_task[:50])
 
             # ---------------------------------------------------------
-            # LAYER 0: Pure Python Sanitization (0 LLM Calls)
+            # LAYER 0: Deterministic Normalization (0 LLM Calls)
             # ---------------------------------------------------------
-            sanitized_input = pyrit_defense.layer0_sanitize_input(ctx.formatted_input)
+            normalizer = normalization.DeterministicNormalizer()
+            normalized_input = normalizer.normalize(ctx.formatted_input)
+            
+            # ---------------------------------------------------------
+            # LAYER 0.5: Threat Classification (0 LLM Calls - rule-based)
+            # ---------------------------------------------------------
+            classifier = threat_classifier.ThreatClassifier()
+            threat_result = classifier.classify(normalized_input)
+            logger.info("Threat classification: %s (confidence: %.2f)", 
+                       threat_result.category.value, threat_result.confidence)
+            
+            # ---------------------------------------------------------
+            # LAYER 0.7: Trust Boundary Segmentation (0 LLM Calls)
+            # ---------------------------------------------------------
+            input_segmenter = segmenter.InputSegmenter()
+            segments = input_segmenter.segment(normalized_input, {
+                "defender_role": ctx.defender_role,
+                "defender_task": ctx.defender_task,
+                "output_format": ctx.output_format,
+            })
+            logger.info("Input segmented into %d parts", len(segments))
+            
+            # ---------------------------------------------------------
+            # LAYER 0.9: Execution Mode Selection (0 LLM Calls)
+            # ---------------------------------------------------------
+            mode_selector = execution_modes.ExecutionModeSelector()
+            suspicion_score = threat_result.confidence * threat_result.flags.risk_score
+            exec_mode = mode_selector.select(suspicion_score)
+            mode_config = mode_selector.get_config(exec_mode)
+            logger.info("Execution mode: %s (suspicion: %.2f)", exec_mode.value, suspicion_score)
+            
+            # ---------------------------------------------------------
+            # LAYER 0 OLD: Pure Python Sanitization (0 LLM Calls)
+            # ---------------------------------------------------------
+            sanitized_input = pyrit_defense.layer0_sanitize_input(normalized_input)
             
             combined_context = (ctx.domain_description + " " + ctx.defender_task).lower()
             is_conversational = "shopping assistant" in combined_context or "thingularity" in combined_context
@@ -253,6 +295,20 @@ class Defender(AgentExecutor):
                 final_resp = await self._generate(fallback_sys, safe_fallback, temperature=0.0)
                 if final_resp:
                     candidate_response = final_resp
+
+            # ---------------------------------------------------------
+            # LAYER 5: Output Guardrails (0 LLM Calls)
+            # ---------------------------------------------------------
+            guardrails = output_guardrails.OutputGuardrails()
+            guardrail_result = guardrails.sanitize(candidate_response, {
+                "defender_task": ctx.defender_task,
+                "output_format": ctx.output_format,
+                "trusted_packages": [],
+            })
+            if guardrail_result.was_modified:
+                logger.warning("Output guardrails modified response: %d violations", 
+                              len(guardrail_result.violations_found))
+                candidate_response = guardrail_result.sanitized_output
 
             logger.info("Generated final response (%d chars)", len(candidate_response))
             logger.info("LLM calls used: %d/4", llm_calls)

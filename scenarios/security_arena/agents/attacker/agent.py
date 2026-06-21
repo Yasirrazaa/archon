@@ -10,8 +10,10 @@ import argparse
 import json
 import logging
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import uvicorn
 from dotenv import load_dotenv
@@ -21,11 +23,14 @@ load_dotenv()
 
 from openai import AsyncOpenAI
 
-# Load custom attacker modules
-import sys
-sys.path.append(str(Path(__file__).parent))
+# Add parent directory to path for local module imports
+sys.path.insert(0, str(Path(__file__).parent))
+
 import pyrit_converters
 import goat_loop
+import diagnosis
+import strategy_router
+import contract_sequential
 
 # Load templates
 _template_dir = Path(__file__).parent / "templates"
@@ -125,6 +130,7 @@ class Attacker(AgentExecutor):
             
             # Extract Python-side deterministic signals from the PREVIOUS round's defender message
             last_round_signals = {}
+            diag_result = None
             if ctx.current_round > 0 and ctx.battle_history:
                 last_defender_msg = ctx.battle_history[-1].get("defender_message", "")
                 last_round_signals = goat_loop.extract_battle_signals(
@@ -132,6 +138,12 @@ class Attacker(AgentExecutor):
                     ctx.attack_goal,
                     {"scenario_name": ctx.domain_description, "domain_description": ctx.domain_description}
                 )
+                
+                # NEW: Defender response diagnosis
+                diag = diagnosis.DefenderDiagnosis()
+                diag_result = diag.diagnose(last_defender_msg, {"attack_goal": ctx.attack_goal})
+                logger.info("Defender diagnosis: %s / %s (tone: %d)", 
+                           diag_result.category.value, diag_result.failure_mode.value, diag_result.tone_score)
                 
                 # Update our tracking state for the current round
                 self.round_data[ctx.current_round - 1]["signals"] = last_round_signals

@@ -3,11 +3,23 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agentbeats-tutorial"
+name = "agentbeats-security-arena"
 version = "0.1.0"
-description = "Agentbeats Tutorial"
+description = "Adversarial AI agent security testing framework for the Lambda × Berkeley RDI AgentBeats Competition"
 readme = "README.md"
 requires-python = ">=3.11"
+license = {text = "MIT"}
+keywords = ["ai-security", "adversarial-testing", "prompt-injection", "agent-security", "llm-security"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "a2a-sdk>=0.3.5",
     "google-adk>=1.14.1",
@@ -26,7 +38,20 @@ agentbeats-run = "agentbeats.run_scenario:main"
 package = true
 dev-dependencies = [
     "mypy>=1.18.1",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/agentbeats"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external services",
+]

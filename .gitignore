@@ -4,4 +4,13 @@
 .venv/
 __pycache__/
 *.pyc
-results
+*.pyo
+results/
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+*.egg-info/
+dist/
+build/
+.claude/
