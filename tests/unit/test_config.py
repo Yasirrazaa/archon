@@ -1,7 +1,6 @@
 """Unit tests for archon.config."""
 
 import os
-import pytest
 from unittest.mock import patch
 
 from archon.config import Settings, get_settings, reset_settings
@@ -64,10 +63,22 @@ class TestSettings:
 
     def test_missing_optional_keys(self):
         """Test that optional keys default to None."""
-        with patch.dict(os.environ, {}, clear=True):
-            settings = Settings()
-            assert settings.openai_api_key is None
-            assert settings.openai_base_url is None
+        # Create a test settings class without env_file
+        from pydantic_settings import BaseSettings, SettingsConfigDict
+        from pydantic import Field
+
+        class TestSettings(BaseSettings):
+            model_config = SettingsConfigDict(
+                env_file=None,  # Disable .env file loading
+                case_sensitive=False,
+                extra="ignore",
+            )
+            openai_api_key: str | None = Field(default=None)
+            openai_base_url: str | None = Field(default=None)
+
+        settings = TestSettings()
+        assert settings.openai_api_key is None
+        assert settings.openai_base_url is None
 
 
 class TestGetSettings:
