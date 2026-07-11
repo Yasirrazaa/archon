@@ -64,8 +64,8 @@ class TestSettings:
     def test_missing_optional_keys(self):
         """Test that optional keys default to None."""
         # Create a test settings class without env_file
-        from pydantic_settings import BaseSettings, SettingsConfigDict
         from pydantic import Field
+        from pydantic_settings import BaseSettings, SettingsConfigDict
 
         class TestSettings(BaseSettings):
             model_config = SettingsConfigDict(

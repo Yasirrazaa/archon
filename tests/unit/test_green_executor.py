@@ -1,12 +1,11 @@
 """Unit tests for archon.green_executor."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from a2a.server.agent_execution import RequestContext
 from a2a.server.events import EventQueue
-from a2a.types import Task, TaskState
-from a2a.utils import new_task
+from a2a.types import Task
 from a2a.utils.errors import ServerError
 
 from archon.green_executor import GreenAgent, GreenExecutor

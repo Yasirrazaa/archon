@@ -1,9 +1,9 @@
 """Test configuration and fixtures for Archon tests."""
 
-import pytest
 import asyncio
-from typing import AsyncGenerator
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
+
+import pytest
 
 from archon.models import EvalRequest, EvalResult
 

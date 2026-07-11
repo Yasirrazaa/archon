@@ -1,21 +1,22 @@
 """Unit tests for archon defender pyrit_defense module."""
 
-import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
+
+import pytest
 
 from scenarios.security_arena.agents.defender.pyrit_defense import (
-    needs_adversarial_paraphrase,
-    is_injection_scenario,
-    response_is_borderline,
-    layer0_sanitize_input,
-    layer1_adversarial_paraphrase_prompt,
-    spotlight_datamark,
-    spotlight_encode_rot13,
-    layer2_spotlighting_wrap,
+    backtranslate_check,
     build_output_skeleton,
     generate_dynamic_invariants,
-    backtranslate_check,
+    is_injection_scenario,
+    layer0_sanitize_input,
+    layer1_adversarial_paraphrase_prompt,
+    layer2_spotlighting_wrap,
+    needs_adversarial_paraphrase,
+    response_is_borderline,
+    spotlight_datamark,
+    spotlight_encode_rot13,
 )
 
 

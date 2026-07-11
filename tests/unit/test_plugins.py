@@ -1,14 +1,14 @@
 """Unit tests for Archon scenario plugins."""
 
-import pytest
 import json
-from unittest.mock import patch, MagicMock
 
-from scenarios.security_arena.plugins.portfolioiq import PortfolioIQPlugin
-from scenarios.security_arena.plugins.thingularity import ThingularityPlugin
-from scenarios.security_arena.plugins.gymjailbreak import GymJailbreakPlugin
-from scenarios.security_arena.plugins.resume_downgrade import ResumeDowngradePlugin
+import pytest
+
 from scenarios.security_arena.plugins.example_medical import MedicalRecordsPlugin
+from scenarios.security_arena.plugins.gymjailbreak import GymJailbreakPlugin
+from scenarios.security_arena.plugins.portfolioiq import PortfolioIQPlugin
+from scenarios.security_arena.plugins.resume_downgrade import ResumeDowngradePlugin
+from scenarios.security_arena.plugins.thingularity import ThingularityPlugin
 
 
 class TestPortfolioIQPlugin:

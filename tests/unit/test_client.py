@@ -1,19 +1,11 @@
 """Unit tests for archon.client."""
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from a2a.types import (
-    AgentCard,
-    Message,
+    DataPart,
     Part,
     Role,
-    Task,
-    TaskState,
-    TaskStatusUpdateEvent,
-    TaskArtifactUpdateEvent,
     TextPart,
-    DataPart,
 )
 
 from archon.client import create_message, merge_parts, send_message
@@ -93,7 +85,6 @@ class TestSendMessage:
 
     def test_send_message_importable(self):
         """Test that send_message function can be imported."""
-        from archon.client import send_message
         assert callable(send_message)
 
     def test_create_message_importable(self):
