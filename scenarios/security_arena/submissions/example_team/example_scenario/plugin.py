@@ -10,6 +10,7 @@ from a password reset assistant.
 """
 
 from typing import Any
+
 from scenarios.security_arena.plugins.base import ScenarioPlugin
 
 

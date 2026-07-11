@@ -17,7 +17,7 @@ arXiv preprint arXiv:2306.05499.
 import json
 from typing import Any
 
-from .base import ScenarioPlugin, AttackType
+from .base import AttackType, ScenarioPlugin
 
 
 class ResumeDowngradePlugin(ScenarioPlugin):

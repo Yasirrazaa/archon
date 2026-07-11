@@ -10,7 +10,6 @@ import argparse
 import json
 import logging
 import os
-import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,10 +19,11 @@ from jinja2 import Environment, FileSystemLoader
 
 load_dotenv()
 
-from openai import AsyncOpenAI
-
 # Load custom defense modules
 import sys
+
+from openai import AsyncOpenAI
+
 sys.path.append(str(Path(__file__).parent))
 import pyrit_defense
 
@@ -34,14 +34,18 @@ _system_template = _env.get_template("system.j2")
 _user_template = _env.get_template("user.j2")
 _classifier_template = _env.get_template("exchange_classifier.j2")
 
+from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.apps import A2AStarletteApplication
+from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.events import EventQueue
 from a2a.types import (
-    AgentCard, AgentCapabilities, TaskState,
-    InvalidParamsError, UnsupportedOperationError, Task
+    AgentCapabilities,
+    AgentCard,
+    InvalidParamsError,
+    Task,
+    TaskState,
+    UnsupportedOperationError,
 )
 from a2a.utils import new_agent_text_message, new_task
 from a2a.utils.errors import ServerError
@@ -95,7 +99,7 @@ class Defender(AgentExecutor):
         }
         if response_format:
             kwargs["response_format"] = response_format
-            
+
         try:
             response = await self.client.chat.completions.create(timeout=60, **kwargs)
             content = response.choices[0].message.content
@@ -130,22 +134,22 @@ class Defender(AgentExecutor):
                 out = await self._generate(system, user, temperature=temperature, response_format=response_format)
                 llm_calls += 1
                 return out
-            
+
             logger.info("Processing task: %s...", ctx.defender_task[:50])
 
             # ---------------------------------------------------------
             # LAYER 0: Pure Python Sanitization (0 LLM Calls)
             # ---------------------------------------------------------
             sanitized_input = pyrit_defense.layer0_sanitize_input(ctx.formatted_input)
-            
+
             combined_context = (ctx.domain_description + " " + ctx.defender_task).lower()
             is_conversational = "shopping assistant" in combined_context or "thingularity" in combined_context
             is_injection = pyrit_defense.is_injection_scenario(ctx.formatted_input, ctx.security_guidelines)
-            
+
             # ---------------------------------------------------------
             # CALL 1: Dynamic Invariant Generation & Adaptive Paraphrase
             # ---------------------------------------------------------
-            
+
             paraphrased_input = sanitized_input
             if is_injection and not is_conversational:
                 paraphrase_prompt = pyrit_defense.layer1_adversarial_paraphrase_prompt(sanitized_input, False)
@@ -156,24 +160,24 @@ class Defender(AgentExecutor):
                 )
                 if p_out:
                     paraphrased_input = p_out
-            
+
             # Generate dynamic invariants using the LLM (Costs 1 Call)
             invariants = await pyrit_defense.generate_dynamic_invariants(
                 ctx.defender_role, ctx.defender_task, ctx.security_guidelines, guarded_generate
             )
-            
+
             # ---------------------------------------------------------
             # LAYER 2: Spotlighting + PPA (0 LLM Calls)
             # ---------------------------------------------------------
             wrapped_input = pyrit_defense.layer2_spotlighting_wrap(paraphrased_input, task_id, is_conversational)
-            
+
             # (D6) Output Skeleton Anchoring
             skeleton = pyrit_defense.build_output_skeleton(ctx.output_format)
-            
+
             # ---------------------------------------------------------
             # LAYER 3: Task Shield Generation (1 LLM Call)
             # ---------------------------------------------------------
-            system_prompt = self._render(_system_template, 
+            system_prompt = self._render(_system_template,
                                          defender_role=ctx.defender_role,
                                          domain_description=ctx.domain_description,
                                          defender_task=ctx.defender_task,
@@ -181,14 +185,14 @@ class Defender(AgentExecutor):
                                          output_skeleton=skeleton,
                                          security_guidelines=ctx.security_guidelines,
                                          invariants=invariants)
-                                          
+
             user_prompt = self._render(_user_template, processed_input=wrapped_input)
-            
+
             candidate_response = await guarded_generate(system_prompt, user_prompt, temperature=0.1)
-            
+
             if not candidate_response:
                 raise Exception("Rate limit or blank response during candidate generation.")
-            
+
             # ---------------------------------------------------------
             # LAYER 4 & 5: Backtranslation & Classifier (1-2 LLM Calls)
             # ---------------------------------------------------------
@@ -245,7 +249,7 @@ class Defender(AgentExecutor):
                 if not backtranslation_safe:
                     logger.warning("Backtranslation check blocked borderline response.")
                     is_safe = False
-                        
+
             # Fallback handling
             if not is_safe:
                 safe_fallback = f"Unable to process request due to security constraints. Please align query with: {ctx.defender_task}"
@@ -257,7 +261,7 @@ class Defender(AgentExecutor):
             logger.info("Generated final response (%d chars)", len(candidate_response))
             logger.info("LLM calls used: %d/4", llm_calls)
             await updater.update_status(TaskState.completed, new_agent_text_message(candidate_response))
-            
+
         except Exception as e:
             logger.error("Defender error: %s", e, exc_info=True)
             # GRACEFUL 429 FALLBACK: Never crash, always return a safe default

@@ -17,7 +17,6 @@ from typing import Any
 
 from .base import ScenarioPlugin
 
-
 # Whitespace pattern including non-breaking spaces (LLMs sometimes use these)
 _WS = r"[\s\u00A0\u202F\u2007]"
 
@@ -93,7 +92,7 @@ class GymJailbreakPlugin(ScenarioPlugin):
             scenario_root = Path(__file__).parent
             doc_path = str(scenario_root / doc_path)
         try:
-            with open(doc_path, 'r') as f:
+            with open(doc_path) as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return {}

@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Orchestrator (Green Agent) - runs the battle
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "scenarios.security_arena.orchestrator", "--host", "0.0.0.0", "--port", "9010"]
+    ports:
+      - "9010:9010"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+      - AGENT_TIMEOUT_SECONDS=300
+    networks:
+      - archon-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9010/.well-known/agent-card.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Attacker (Red Team) - generates attacks
+  attacker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "scenarios.security_arena.agents.attacker.agent", "--host", "0.0.0.0", "--port", "9021", "--model", "${ATTACKER_MODEL:-gpt-4o-mini}"]
+    ports:
+      - "9021:9021"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+    networks:
+      - archon-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9021/.well-known/agent-card.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Defender (Blue Team) - defends against attacks
+  defender:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "scenarios.security_arena.agents.defender.agent", "--host", "0.0.0.0", "--port", "9020", "--model", "${DEFENDER_MODEL:-gpt-4o-mini}"]
+    ports:
+      - "9020:9020"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+    networks:
+      - archon-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9020/.well-known/agent-card.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Normal User - tests defender helpfulness
+  normal_user:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "scenarios.security_arena.agents.normal_user.agent", "--host", "0.0.0.0", "--port", "9022", "--model", "${NORMAL_USER_MODEL:-gpt-4o-mini}"]
+    ports:
+      - "9022:9022"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+    networks:
+      - archon-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9022/.well-known/agent-card.json"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for distributed task storage (optional, for scaling)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - archon-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  archon-network:
+    driver: bridge
+
+volumes:
+  redis-data:

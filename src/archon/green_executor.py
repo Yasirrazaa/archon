@@ -1,23 +1,23 @@
 from abc import abstractmethod
-from pydantic import ValidationError
+from contextlib import suppress
 
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.tasks import TaskUpdater
 from a2a.types import (
+    InternalError,
     InvalidParamsError,
-    Task,
     TaskState,
     UnsupportedOperationError,
-    InternalError,
 )
 from a2a.utils import (
     new_agent_text_message,
     new_task,
 )
 from a2a.utils.errors import ServerError
+from pydantic import ValidationError
 
-from agentbeats.models import EvalRequest
+from archon.models import EvalRequest
 
 
 class GreenAgent:
@@ -46,16 +46,16 @@ class GreenExecutor(AgentExecutor):
             req: EvalRequest = EvalRequest.model_validate_json(request_text)
             ok, msg = self.agent.validate_request(req)
             if not ok:
-                raise ServerError(error=InvalidParamsError(message=msg))
+                raise ServerError(error=InvalidParamsError(message=msg)) from None
         except ValidationError as e:
-            raise ServerError(error=InvalidParamsError(message=e.json()))
+            raise ServerError(error=InvalidParamsError(message=e.json())) from e
 
-        msg = context.message
-        if msg:
-            task = new_task(msg)
+        msg_obj = context.message
+        if msg_obj:
+            task = new_task(msg_obj)
             await event_queue.enqueue_event(task)
         else:
-            raise ServerError(error=InvalidParamsError(message="Missing message."))
+            raise ServerError(error=InvalidParamsError(message="Missing message.")) from None
 
         updater = TaskUpdater(event_queue, task.id, task.context_id)
         await updater.update_status(
@@ -66,19 +66,14 @@ class GreenExecutor(AgentExecutor):
         try:
             await self.agent.run_eval(req, updater)
             # Only complete if not already in terminal state (agent may have called complete/failed)
-            try:
+            with suppress(RuntimeError):
                 await updater.complete()
-            except RuntimeError:
-                pass  # Task already completed by agent
         except Exception as e:
-            print(f"Agent error: {e}")
-            try:
+            with suppress(RuntimeError):
                 await updater.failed(new_agent_text_message(f"Agent error: {e}", context_id=context.context_id))
-            except RuntimeError:
-                pass  # Task already in terminal state
-            raise ServerError(error=InternalError(message=str(e)))
+            raise ServerError(error=InternalError(message=str(e))) from e
 
     async def cancel(
         self, request: RequestContext, event_queue: EventQueue
-    ) -> Task | None:
-        raise ServerError(error=UnsupportedOperationError())
+    ) -> None:
+        raise ServerError(error=UnsupportedOperationError()) from None

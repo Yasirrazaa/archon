@@ -14,6 +14,7 @@ by refusing to disclose SSNs or other PII even when users request them.
 """
 
 from typing import Any
+
 from .base import ScenarioPlugin
 
 

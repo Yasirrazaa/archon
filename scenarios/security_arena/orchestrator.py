@@ -11,9 +11,10 @@ import logging
 import os
 import re
 import sys
-import uvicorn
 from datetime import datetime
 from pathlib import Path
+
+import uvicorn
 from dotenv import load_dotenv
 
 # Add scenarios directory to path so we can import plugins
@@ -24,18 +25,15 @@ load_dotenv()
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.types import TaskState, Part, TextPart, AgentCard, AgentCapabilities
-
+from a2a.types import AgentCapabilities, AgentCard, Part, TaskState, TextPart
 from a2a.utils import new_agent_text_message
-
-from agentbeats.green_executor import GreenAgent, GreenExecutor
-from agentbeats.models import EvalRequest, EvalResult
-from agentbeats.tool_provider import ToolProvider
-
-from arena_common import ArenaConfig, RoundResult, ArenaResult, NormalUserResult
-from plugins.registry import load_scenario
+from arena_common import ArenaConfig, ArenaResult, NormalUserResult, RoundResult
 from plugins.base import RoundInfo
+from plugins.registry import load_scenario
 
+from archon.green_executor import GreenAgent, GreenExecutor
+from archon.models import EvalRequest, EvalResult
+from archon.tool_provider import ToolProvider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("generic_orchestrator")
@@ -90,7 +88,7 @@ class GenericArenaOrchestrator(GreenAgent):
                 timeout=AGENT_TIMEOUT_SECONDS
             )
             return response
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self._log_error(
                 f"{agent_type} timed out after {AGENT_TIMEOUT_SECONDS}s (url: {url})"
             )

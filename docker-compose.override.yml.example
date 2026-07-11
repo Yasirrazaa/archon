@@ -1,0 +1,59 @@
+# docker-compose.override.yml.example
+# Copy this file to docker-compose.override.yml and customize for local development
+#
+# This override file is automatically loaded by docker-compose and allows you to
+# customize the base configuration without modifying the main docker-compose.yml
+
+version: '3.8'
+
+services:
+  # Use local source code for development (hot reload)
+  orchestrator:
+    volumes:
+      - ./src/archon:/app/src/archon:ro
+      - ./scenarios:/app/scenarios:ro
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=DEBUG
+
+  attacker:
+    volumes:
+      - ./src/archon:/app/src/archon:ro
+      - ./scenarios:/app/scenarios:ro
+      - ./scenarios/security_arena/agents/attacker:/app/scenarios/security_arena/agents/attacker:ro
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=DEBUG
+
+  defender:
+    volumes:
+      - ./src/archon:/app/src/archon:ro
+      - ./scenarios:/app/scenarios:ro
+      - ./scenarios/security_arena/agents/defender:/app/scenarios/security_arena/agents/defender:ro
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=DEBUG
+
+  normal_user:
+    volumes:
+      - ./src/archon:/app/src/archon:ro
+      - ./scenarios:/app/scenarios:ro
+      - ./scenarios/security_arena/agents/normal_user:/app/scenarios/security_arena/agents/normal_user:ro
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=DEBUG
+
+  # Use a specific model for local development (e.g., Ollama local model)
+  # Uncomment and configure if using a local LLM
+  #
+  # attacker:
+  #   environment:
+  #     - OPENAI_API_KEY=ollama
+  #     - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
+  #     - ATTACKER_MODEL=llama3.1:70b
+  #
+  # defender:
+  #   environment:
+  #     - OPENAI_API_KEY=ollama
+  #     - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
+  #     - DEFENDER_MODEL=llama3.1:70b

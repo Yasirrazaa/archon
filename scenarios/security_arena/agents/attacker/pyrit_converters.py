@@ -2,6 +2,7 @@ import base64
 import codecs
 import random
 
+
 def to_base64(text: str) -> str:
     """Encode text to base64."""
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
@@ -43,12 +44,12 @@ def apply_converter(text: str, current_round: int) -> str:
         if random.random() < 0.5:
              return apply_persuasion_wrapper(text, "authority")
         return text
-    
+
     # Rounds 3-5: Heavier wrappers, start mixing in base64/rot13 if desperate (but usually degrades ASR)
     # Better to use technical formatting for injections
     if current_round <= 5:
          return apply_persuasion_wrapper(text, "technical")
-    
+
     # Rounds 6-7: Last resort evasion
     text = apply_persuasion_wrapper(text, "urgency")
     return apply_unicode_confusables(text)

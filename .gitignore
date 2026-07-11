@@ -1,7 +1,42 @@
+# Archon .gitignore
+
+# Environment
 .env
-.DS_Store
-.python-version
+.env.local
+.env.*.local
+
+# Python
 .venv/
 __pycache__/
-*.pyc
-results
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+dist/
+build/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Archon specific
+results/
+*.log
+*.err
+battle_logs/
+
+# Docker
+.docker/
+
+# OS
+Thumbs.db

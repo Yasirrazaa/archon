@@ -28,14 +28,18 @@ _env = Environment(loader=FileSystemLoader(_template_dir), trim_blocks=True, lst
 _system_template = _env.get_template("system.j2")
 _question_template = _env.get_template("question.j2")
 _evaluate_template = _env.get_template("evaluate.j2")
+from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.apps import A2AStarletteApplication
+from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.events import EventQueue
 from a2a.types import (
-    AgentCard, AgentCapabilities, TaskState,
-    InvalidParamsError, UnsupportedOperationError, Task
+    AgentCapabilities,
+    AgentCard,
+    InvalidParamsError,
+    Task,
+    TaskState,
+    UnsupportedOperationError,
 )
 from a2a.utils import new_agent_text_message, new_task
 from a2a.utils.errors import ServerError

@@ -3,8 +3,9 @@
 Common types and utilities for Security Arena
 """
 
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
-from typing import Any, Union
 
 
 class NormalUserConfig(BaseModel):
@@ -22,7 +23,7 @@ class ArenaConfig(BaseModel):
     """
     scenario_type: str = Field(description="Scenario plugin to use")
     num_rounds: int = Field(default=5, ge=1, le=20, description="Battle rounds")
-    normal_user: Union[bool, NormalUserConfig] = Field(
+    normal_user: bool | NormalUserConfig = Field(
         default=False, description="Run helpfulness test (bool or config dict)"
     )
 

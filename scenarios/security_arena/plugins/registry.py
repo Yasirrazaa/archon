@@ -9,12 +9,11 @@ a factory function to load scenario plugins from configuration.
 from typing import Any
 
 from .base import ScenarioPlugin
-from .portfolioiq import PortfolioIQPlugin
-from .thingularity import ThingularityPlugin
 from .example_medical import MedicalRecordsPlugin
-from .resume_downgrade import ResumeDowngradePlugin
 from .gymjailbreak import GymJailbreakPlugin
-
+from .portfolioiq import PortfolioIQPlugin
+from .resume_downgrade import ResumeDowngradePlugin
+from .thingularity import ThingularityPlugin
 
 # Registry mapping scenario names to plugin classes
 SCENARIO_PLUGINS: dict[str, type[ScenarioPlugin]] = {

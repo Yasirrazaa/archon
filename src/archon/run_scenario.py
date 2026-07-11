@@ -1,20 +1,26 @@
 import argparse
 import asyncio
-import os, sys, time, subprocess, shlex, signal
-from pathlib import Path
+import contextlib
+import os
+import shlex
+import signal
+import subprocess
+import sys
+import time
 import tomllib
+from pathlib import Path
+from typing import Any
+
 import httpx
-from dotenv import load_dotenv
-
 from a2a.client import A2ACardResolver
-
+from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
 
-async def wait_for_agents(cfg: dict, timeout: int = 30) -> bool:
+async def wait_for_agents(cfg: dict[str, Any], timeout: int = 30) -> bool:
     """Wait for all agents to be healthy and responding."""
-    endpoints = []
+    endpoints: list[str] = []
 
     # Collect all endpoints to check
     for p in cfg["participants"]:
@@ -27,7 +33,6 @@ async def wait_for_agents(cfg: dict, timeout: int = 30) -> bool:
     if not endpoints:
         return True  # No agents to wait for
 
-    print(f"Waiting for {len(endpoints)} agent(s) to be ready...")
     start_time = time.time()
 
     async def check_endpoint(endpoint: str) -> bool:
@@ -50,22 +55,19 @@ async def wait_for_agents(cfg: dict, timeout: int = 30) -> bool:
         if ready_count == len(endpoints):
             return True
 
-        print(f"  {ready_count}/{len(endpoints)} agents ready, waiting...")
         await asyncio.sleep(1)
 
-    print(f"Timeout: Only {ready_count}/{len(endpoints)} agents became ready after {timeout}s")
     return False
 
 
-def parse_toml(scenario_path: str) -> dict:
+def parse_toml(scenario_path: str) -> dict[str, Any]:
     path = Path(scenario_path)
     if not path.exists():
-        print(f"Error: Scenario file not found: {path}")
         sys.exit(1)
 
     data = tomllib.loads(path.read_text())
 
-    def host_port(ep: str):
+    def host_port(ep: str) -> tuple[str, int]:
         s = (ep or "")
         s = s.replace("http://", "").replace("https://", "")
         s = s.split("/", 1)[0]
@@ -76,7 +78,7 @@ def parse_toml(scenario_path: str) -> dict:
     g_host, g_port = host_port(green_ep)
     green_cmd = data.get("green_agent", {}).get("cmd", "")
 
-    parts = []
+    parts: list[dict[str, Any]] = []
     for p in data.get("participants", []):
         if isinstance(p, dict) and "endpoint" in p:
             h, pt = host_port(p["endpoint"])
@@ -95,7 +97,7 @@ def parse_toml(scenario_path: str) -> dict:
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run agent scenario")
     parser.add_argument("scenario", help="Path to scenario TOML file")
     parser.add_argument("--show-logs", action="store_true",
@@ -117,13 +119,12 @@ def main():
     base_env = os.environ.copy()
     base_env["PATH"] = parent_bin + os.pathsep + base_env.get("PATH", "")
 
-    procs = []
+    procs: list[subprocess.Popen[str]] = []
     try:
         # start participant agents
         for p in cfg["participants"]:
             cmd_args = shlex.split(p.get("cmd", ""))
             if cmd_args:
-                print(f"Starting {p['role']} at {p['host']}:{p['port']}")
                 procs.append(subprocess.Popen(
                     cmd_args,
                     env=base_env,
@@ -135,7 +136,6 @@ def main():
         # start host
         green_cmd_args = shlex.split(cfg["green_agent"].get("cmd", ""))
         if green_cmd_args:
-            print(f"Starting green agent at {cfg['green_agent']['host']}:{cfg['green_agent']['port']}")
             procs.append(subprocess.Popen(
                 green_cmd_args,
                 env=base_env,
@@ -146,24 +146,22 @@ def main():
 
         # Wait for all agents to be ready
         if not asyncio.run(wait_for_agents(cfg)):
-            print("Error: Not all agents became ready. Exiting.")
             return
 
-        print("Agents started. Press Ctrl+C to stop.")
         if args.serve_only:
             while True:
                 for proc in procs:
                     if proc.poll() is not None:
-                        print(f"Agent exited with code {proc.returncode}")
                         break
                     time.sleep(0.5)
         else:
-            client_cmd = [sys.executable, "-m", "agentbeats.client_cli", args.scenario]
+            client_cmd = [sys.executable, "-m", "archon.client_cli", args.scenario]
             if args.normal_user:
                 client_cmd.append("--normal-user")
             client_proc = subprocess.Popen(
                 client_cmd,
                 env=base_env,
+                text=True,
                 start_new_session=True,
             )
             procs.append(client_proc)
@@ -173,20 +171,15 @@ def main():
         pass
 
     finally:
-        print("\nShutting down...")
         for p in procs:
             if p.poll() is None:
-                try:
+                with contextlib.suppress(ProcessLookupError):
                     os.killpg(p.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
         time.sleep(1)
         for p in procs:
             if p.poll() is None:
-                try:
+                with contextlib.suppress(ProcessLookupError):
                     os.killpg(p.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
 
 
 if __name__ == "__main__":

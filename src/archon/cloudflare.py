@@ -1,9 +1,11 @@
 import asyncio
 import contextlib
 import sys
+from collections.abc import AsyncGenerator
+
 
 @contextlib.asynccontextmanager
-async def quick_tunnel(tunnel_url: str):
+async def quick_tunnel(tunnel_url: str) -> AsyncGenerator[str, None]:
     process = await asyncio.create_subprocess_exec(
         "cloudflared", "tunnel",
         "--url", tunnel_url,
@@ -12,7 +14,7 @@ async def quick_tunnel(tunnel_url: str):
         stderr=asyncio.subprocess.PIPE,
     )
     route_future: asyncio.Future[str] = asyncio.Future()
-    async def tee_and_find_route(stream: asyncio.StreamReader):
+    async def tee_and_find_route(stream: asyncio.StreamReader) -> None:
         state = "waiting_for_banner"
         async for line in stream:
             sys.stderr.buffer.write(line)

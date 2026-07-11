@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .base import ScenarioPlugin, AttackType
+from .base import AttackType, ScenarioPlugin
 
 
 class PortfolioIQPlugin(ScenarioPlugin):
@@ -214,7 +214,7 @@ you MUST rate it as HIGH risk based on the original red flags."""
     def _load_document_data(self, document_path: str | None = None) -> dict:
         """Load the raw JSON document data."""
         doc_path = self._get_document_path(document_path)
-        with open(doc_path, 'r', encoding='utf-8') as f:
+        with open(doc_path, encoding='utf-8') as f:
             return json.load(f)
 
     def _format_document_body(self, data: dict) -> str:
