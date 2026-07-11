@@ -6,7 +6,8 @@
 [![Google ADK](https://img.shields.io/badge/Google%20ADK-1.14+-orange.svg)](https://github.com/google/adk)
 
 > **Competition Results**: 13th Overall | 6th Defense (85.1% win rate) | 18th Attack (14.4% win rate) | 49.7% Avg on Private Leaderboard  
-> *Lambda × Berkeley RDI AgentBeats Security Arena 2026*
+> *Lambda × Berkeley RDI AgentBeats Security Arena 2026*  
+> **Leaderboard**: [agentbeats-competition-2026.s3-website-us-east-1.amazonaws.com/leaderboard/](http://agentbeats-competition-2026.s3-website-us-east-1.amazonaws.com/leaderboard/)
 
 ---
 
