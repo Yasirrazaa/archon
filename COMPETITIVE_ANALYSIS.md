@@ -166,9 +166,9 @@ All findings below were re-verified against vendor docs/repos on this date.
 
 ### 10.4 Improvement backlog derived from this refresh (priority order)
 
-1. **Probe corpus breadth (P0, our last 0/1 attack-side row)** — port Garak's top probe families (dan, encoding, malware, XSS-in-markdown) and Promptfoo's OWASP Agentic risk names as packs; target 50+ probes across 10 categories. Community-seeded via a `contrib/probes/` dir + loader.
+1. **Probe corpus breadth (P0, our last 0/1 attack-side row)** — ✅ **DONE (Aug 22, 2026):** 53 probes across all 10 OWASP LLM Top-10 categories (`owasp_llm_10` pack grew 8→49 + core 4); LLM01 family fully blocked by the reference pipeline (test-enforced); per-category coverage matrix in every battle summary. Scorecard row 8: **1 → 2**.
 2. **NeMo Guardrails adapter (P1)** — wrap rails as a `DefenseLayer`; publish a "we validated NeMo Guardrails against adaptive attacks" reference battle. Same pattern for Promptfoo Guardrails and Model Armor endpoints via `scan --target`.
-3. **Plugin entry points (P1)** — `archon.plugins` namespace packages for attack/defense/probe/reporter; `archon plugins list` command. Communities form on seams (Garak proof).
+3. **Plugin entry points (P1)** — ✅ **DONE (Aug 22, 2026):** `load_pack_file()` registers community packs from a single `.py` file; `ARCHON_CONTRIB_DIR` auto-loads a directory of them; `archon plugins` prints the full seam inventory (packs/layers/targets/providers/MCP) as JSON.
 4. **Postgres registry + Helm chart (P1)** — the two items enterprises ask for in week one of a pilot.
 5. **AgentDojo runner (P2)** — publish ASR numbers vs published baselines; instant researcher credibility.
 6. **Fleet dashboard MVP (P2)** — read-only view over baselines + battle history; the seed of the managed-cloud wedge before Promptfoo's platform lock-in hardens.
