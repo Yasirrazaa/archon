@@ -240,6 +240,7 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 | Date | Phase | Status | Evidence |
 |---|---|---|---|
 | Aug 22, 2026 | §5.2 Registry MVP: `Registry` ABC, `AgentCard`/`SecurityPolicy`, InMemory + SQLite backends | ✅ Done | `packages/archon_core/registry/`, 14 TDD tests; suite 300→314 passing |
+| Aug 22, 2026 | §5.2 Observability: LocalTracer (async-safe contextvar nesting), OTel-shaped JSON export, armor.request + per-layer spans with verdict attributes | ✅ Done | `observability/base.py`, 5 TDD tests; suite 322→327 passing |
 | Aug 22, 2026 | §5.2 archon-armor proxy: FastAPI OpenAI-compatible endpoint, zero-trust X-Agent-ID, policy-driven pipeline, output guardrails, upstream abstraction (HTTPOpenAIUpstream) | ✅ Done | `packages/archon_armor/`, 8 TDD tests; suite 314→322 passing |
 | Aug 22, 2026 | §3 core contracts: `Exchange` model, `DefenseLayer` ABC, `DefensePipeline` (fail-closed, budget-aware, tracer hooks), 7 concrete layers wrapping proven defender modules via compat bridge | ✅ Done | `packages/archon_core/`, 14 new TDD tests; suite 286→300 passing |
 

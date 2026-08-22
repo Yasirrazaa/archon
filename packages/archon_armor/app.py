@@ -28,7 +28,7 @@ from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
 
-from .upstream import LLMUpstream
+from .upstream import LLMUpstream, UpstreamError
 
 _REFUSAL_CONTENT = (
     "I cannot help with that request. If you believe this is a mistake, "
@@ -103,6 +103,26 @@ def create_app(
                 status_code=404,
             )
 
+        request_span = (
+            tracer.start_span(
+                "armor.request",
+                attributes={"agent_id": agent_id, "route": "/v1/chat/completions"},
+            )
+            if tracer is not None
+            else None
+        )
+        try:
+            return await _handle_chat(
+                request, card, upstream, tracer, request_span
+            )
+        except UpstreamError as exc:
+            if request_span is not None:
+                tracer.end_span(request_span, attributes={"error": str(exc)})
+            return JSONResponse(
+                {"error": {"message": str(exc)}}, status_code=502
+            )
+
+    async def _handle_chat(request, card, upstream, tracer, request_span):
         # --- 2. Validate body -------------------------------------------------------
         try:
             payload = await request.json()
@@ -110,6 +130,8 @@ def create_app(
             if not isinstance(messages, list) or not messages:
                 raise ValueError("messages must be a non-empty list")
         except Exception:
+            if request_span is not None:
+                tracer.end_span(request_span, attributes={"status": 400})
             return JSONResponse(
                 {"error": {"message": "Body must be JSON with a non-empty 'messages' list"}},
                 status_code=400,
@@ -119,15 +141,22 @@ def create_app(
 
         # --- 3. Request guard pipeline ----------------------------------------------
         pipeline = _build_request_pipeline(card.policy, tracer)
-        exchange = Exchange(content=user_content, metadata={"agent_id": agent_id})
+        exchange = Exchange(content=user_content, metadata={"agent_id": card.agent_id})
         exchange = await pipeline.run(exchange)
 
+        blocked_attrs = {
+            "blocked": exchange.blocked,
+            "block_reason": exchange.block_reason or "",
+            "execution_mode": exchange.metadata.get("execution_mode", ""),
+        }
         if exchange.blocked:
+            if request_span is not None:
+                tracer.end_span(request_span, attributes={**blocked_attrs})
             body = _completion_shape(payload, _REFUSAL_CONTENT)
             body["archon"] = {
                 "blocked": True,
                 "block_reason": exchange.block_reason,
-                "agent_id": agent_id,
+                "agent_id": card.agent_id,
             }
             return JSONResponse(body, headers={"x-archon-blocked": "true"})
 
@@ -157,7 +186,9 @@ def create_app(
                 )
 
         result.setdefault("archon", {})
-        result["archon"].update({"blocked": False, "agent_id": agent_id})
+        result["archon"].update({"blocked": False, "agent_id": card.agent_id})
+        if request_span is not None:
+            tracer.end_span(request_span, attributes={**blocked_attrs})
         return JSONResponse(result)
 
     return app
