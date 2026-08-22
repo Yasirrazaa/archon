@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 517 passed / 3 skipped
+**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 538 passed / 3 skipped
 
 ---
 
@@ -24,7 +24,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Capability | Implementation | Notes |
 |---|---|---|
 | Defense pipeline | 8 layers (Normalization → ThreatClassification → Segmentation → Spotlighting → ExecutionMode → OutputGuardrails → ExternalGuardrail + exchange/backtranslation logic) wrapping the proven AgentBeats defender | layer-0 deterministic; LLM-budget-aware; fail-closed |
-| Probe corpus | 72 probes, all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries (harmless_helpfulness pack, test-enforced unblocked); LLM01 family deterministically blocked by reference pipeline | `owasp_llm_10` (56) + `harmless_helpfulness` (12) + `core` (4); per-category coverage matrix in every battle summary |
+| Probe corpus | 102 probes: all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries (test-enforced unblocked) + Garak-lineage `encoding_evasion` (15) and `latent_injection` (15) packs — every encoded/latent probe deterministically decoded and blocked by the reference pipeline (test-enforced) | `owasp_llm_10` (56) + `encoding_evasion` (15) + `latent_injection` (15) + `harmless_helpfulness` (12) + `core` (4); per-category coverage matrix in every battle summary |
 | Adaptive attacker | `BranchingAttacker` — Hydra-style fan-out/pivot/prune; **deterministic** refusal-vs-leak scoring (no LLM judge); provider-failure degradation | First-class in battle API + `archon battle --ci` |
 | Runtime product | `archon-armor` — FastAPI OpenAI-compatible proxy, HMAC signed identity, per-agent policy, rate limiting, output redaction | Drop-in: change `OPENAI_BASE_URL` |
 | Identity & governance | HMAC replay-protection, per-agent secrets, immutable append-only audit trail, versioned policies | Enterprise-grade |
@@ -40,7 +40,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Compliance evidence | OWASP-mapped HTML/Markdown evidence reports | CISO-facing |
 | Benchmarks | AgentDojo v1 harness: all 27 published injection tasks × 3 wrappers = 81 attacks; published ASR/block numbers | [`RESULTS.md`](./RESULTS.md) |
 
-System health: **517 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **538 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---
@@ -52,7 +52,7 @@ Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 | Dimension | **Archon** | Promptfoo | Garak | PyRIT | NeMo Guardrails | Snyk Agent Scan | Model Armor |
 |---|---|---|---|---|---|---|---|
 | Multi-turn adaptive attacks | ● | ◐ (brains cloud-side) | ● (GOAT/TAP/Agent Breaker) | ● | — | — | — |
-| Attack corpus breadth | ◐ 72 + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
+| Attack corpus breadth | ◐ 102 + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
 | Defense evaluation (red/blue) | ● | — | — | — | — | — | — |
 | Runtime guardrail product | ● proxy | ◐ guardrails (cloud client) | — | — | ● | ◐ hooks (cloud-enforced) | ● |
 | Layer per-request telemetry | ● | ◐ | — | — | ◐ | — | ◐ |
@@ -74,7 +74,7 @@ these projects publishing reproducible AgentDojo numbers from its own harness.
 
 These are the rows we must own to be the best at anything, not just the best "gap".
 
-1. **Probe/plugin corpus** — 72 probes is respectable but Promptfoo (~150 plugins) and
+1. **Probe/plugin corpus** — 102 probes is respectable but Promptfoo (~150 plugins) and
    Garak (195 probes) are ahead. Our loader now lets the community scale this; the
    AgentDojo harness adds benchmark credibility that raw plugin count can't.
 2. **Model/harness breadth** — Garak's generator/transport matrix and Promptfoo's
@@ -129,5 +129,5 @@ closes a gap the incumbents still hold.
 ---
 
 *Sources: live vendor docs/repos verified Aug 22, 2026; competitor source code
-(cloned repos) verified Aug 23, 2026; project internals verified by the 517-test
+(cloned repos) verified Aug 23, 2026; project internals verified by the 538-test
 suite and `archon plugins` output on `hackathon-v2`.*

@@ -3,7 +3,7 @@
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
-> Everything below reflects what is actually in `packages/` today (**517 tests passing**).
+> Everything below reflects what is actually in `packages/` today (**538 tests passing**).
 > Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 
@@ -17,7 +17,7 @@
 | Multi-provider support | `LLMProvider` ABC; OpenAI-compat + Gemini providers (Gemini is the default attack provider via OpenAI-compat) | `packages/archon_core/providers/` |
 | YAML configuration | `archon scan --config archon.yaml`, flag-over-config precedence (`examples/archon.yaml`) | `packages/archon_core/config.py` |
 | CLI with CI exit codes | `archon register / scan / scan-mcp / battle / serve / report / fleet / plugins` — all major commands emit JSON + exit codes | `packages/archon_cli/` |
-| Probe corpus + OWASP mapping | 72 probes across all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `packages/archon_armor/probes.py` |
+| Probe corpus + OWASP mapping | 102 probes across all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries; Garak-lineage encoding_evasion (15) and latent_injection (15) packs | `packages/archon_armor/probes.py` |
 | Community plugin packs | `load_pack_file()`, `ARCHON_CONTRIB_DIR` auto-load, `archon plugins` seam inventory | `probes.py`, `archon_cli/main.py` |
 | Runtime defense product | archon-armor FastAPI OpenAI-compat proxy: HMAC identity, rate limiting, per-agent policy, output redaction | `packages/archon_armor/` |
 | Enterprise governance | Versioned policies, immutable append-only audit trail, Postgres registry (`ARCHON_DATABASE_URL`) | `registry/versioned.py`, `registry/postgres.py`, `audit.py` |
@@ -37,7 +37,6 @@
 ### Phase N1 — Credibility compounding (weeks 1–2)
 1. **Full-pipeline benchmark run** — re-run the AgentDojo harness with LLM layers enabled; publish end-to-end ASR next to the deterministic-tier number in `RESULTS.md`.
 2. **Attacker diversity** — `ClaudeNativeProvider` (+ optional local vLLM) under the existing `LLMProvider` seam; benchmark-driven tuning.
-3. **Corpus 100+** — port top Garak families (encoding, latent injection) and HarmBench seeds as community packs.
 
 ### Phase N2 — The unclaimed gaps (weeks 3–8)
 *Each of these was verified absent-or-weak across all 9 competitor repos (see `COMPETITIVE_ANALYSIS.md` §10.5):*

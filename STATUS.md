@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 517 passed / 3 skipped
+> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 538 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -17,7 +17,7 @@ vendor-neutral.
 | 8-layer defense pipeline (deterministic tier → LLM layers) | `packages/archon_core/defenses/layers.py` |
 | Adaptive multi-turn attacker (Hydra-style fan-out/pivot/prune, deterministic verdicts) | `archon battle --target URL --goal G --ci` |
 | Runtime defense proxy (OpenAI-compatible; drop-in via `OPENAI_BASE_URL`) | `packages/archon_armor/` · HMAC identity, rate limiting, per-agent policy, output redaction |
-| Probe corpus: 72 probes, all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `archon plugins --ci` |
+| Probe corpus: 102 probes (encoding-evasion + latent-injection packs added), all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `archon plugins --ci` |
 | MCP security: static tool-poisoning scan + live behavioral probing | `archon scan-mcp --url ... --probe-tool NAME` |
 | Third-party guardrail validation ("we validate them") | `archon scan --target <guardrail-url>` |
 | Pluggable external defenses (NeMo / Model Armor / Promptfoo Guardrails as DefenseLayers) | `ExternalGuardrailLayer` |
