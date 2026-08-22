@@ -1,0 +1,14 @@
+apiVersion: v2
+name: archon-armor
+description: Agent security armor — OpenAI-compatible guardrail proxy, registry, and battle/scan API
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - agent-security
+  - llm-security
+  - red-team
+  - guardrails
+maintainers:
+  - name: archon
+    email: security@archon.example

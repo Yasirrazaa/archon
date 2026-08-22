@@ -1,0 +1,74 @@
+# Default values for archon-armor.
+replicaCount: 2
+
+image:
+  repository: ghcr.io/yasirrazaa/archon-armor
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+# Registry backend: set databaseUrl to use Postgres (enterprise), else SQLite on /data.
+databaseUrl: ""
+registryDbPath: "/data/registry.db"
+auditPath: "/data/audit.db"
+spansJsonl: "/data/spans.jsonl"
+
+# Observability.
+otelExporter: "none"     # none | memory | otlp
+otelEndpoint: ""         # OTEL_EXPORTER_OTLP_ENDPOINT (Cloud Trace/collector)
+
+# Upstream default for agents registered without one.
+upstreamBaseUrl: ""
+
+# Enforce HMAC-signed requests in server mode.
+requireSigned: "1"
+
+# Secret material (put real values in a Kubernetes Secret, not these defaults).
+signingSecretsEnv: ""
+upstreamApiKey: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  hosts:
+    - host: armor.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  fsGroup: 65532
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

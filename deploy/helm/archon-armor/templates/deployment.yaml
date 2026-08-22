@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "archon-armor.fullname" . }}
+  labels:
+    app: {{ include "archon-armor.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "archon-armor.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "archon-armor.name" . }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "archon-armor.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: armor
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ARCHON_REGISTRY_PATH
+              value: {{ .Values.registryDbPath | quote }}
+            - name: ARCHON_AUDIT_PATH
+              value: {{ .Values.auditPath | quote }}
+            - name: ARCHON_SPANS_JSONL
+              value: {{ .Values.spansJsonl | quote }}
+            - name: ARCHON_OTEL_EXPORTER
+              value: {{ .Values.otelExporter | quote }}
+            - name: ARCHON_UPSTREAM_BASE_URL
+              value: {{ .Values.upstreamBaseUrl | quote }}
+            - name: ARCHON_REQUIRE_SIGNED
+              value: {{ .Values.requireSigned | quote }}
+            {{- if .Values.databaseUrl }}
+            - name: ARCHON_DATABASE_URL
+              value: {{ .Values.databaseUrl | quote }}
+            {{- end }}
+            {{- if .Values.otelEndpoint }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.otelEndpoint | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+      volumes:
+        - name: data
+          emptyDir: {}

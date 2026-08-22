@@ -2,6 +2,7 @@
 
 Wires a production-shaped app from environment variables:
     ARCHON_REGISTRY_PATH      SQLite registry file (default /data/registry.db)
+    ARCHON_DATABASE_URL       Postgres DSN — when set, uses PostgresRegistry (enterprise)
     ARCHON_AUDIT_PATH         audit trail file    (default /data/audit.db)
     ARCHON_SPANS_JSONL        optional span sink  (default /data/spans.jsonl)
     ARCHON_OTEL_EXPORTER      none|memory|otlp    (default none)
@@ -32,7 +33,13 @@ def build_app():
     audit_path = os.environ.get("ARCHON_AUDIT_PATH", "/tmp/archon-audit.db")
     spans_path = os.environ.get("ARCHON_SPANS_JSONL", "/tmp/archon-spans.jsonl")
 
-    registry = SqliteRegistry(registry_path)
+    database_url = os.environ.get("ARCHON_DATABASE_URL", "")
+    if database_url:
+        from archon_core.registry.postgres import PostgresRegistry
+
+        registry = PostgresRegistry(dsn=database_url)
+    else:
+        registry = SqliteRegistry(registry_path)
     # OTel mode (ARCHON_OTEL_EXPORTER=otlp|memory) takes precedence; default
     # remains the streaming JSONL sink so containers work with zero config.
     base_tracer = build_tracer_from_env()

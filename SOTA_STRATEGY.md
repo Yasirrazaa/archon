@@ -112,6 +112,11 @@ to roughly a quarter. Ruthless re-prioritization:
 7. Plugin entry-points (`archon.plugins` group) + docs for all five seams; seed marketplace repo.
 8. Fleet dashboard MVP (read-only views over armor telemetry) — groundwork for managed cloud.
 
+> **Status (Aug 22, 2026):** items 7–8 shipped as code in Sprint C+ sessions (community pack loader
+> + `archon plugins` inventory; `FleetSummary` + `archon fleet`). Enterprise hardening additions from
+> the backlog also landed: `PostgresRegistry` behind `ARCHON_DATABASE_URL` and a production Helm chart
+> (`deploy/helm/archon-armor/`, non-root + probes + /data volume). Suite 505 passing.
+
 ## 3.1 Execution log
 
 | Date | Item | Status | Evidence |

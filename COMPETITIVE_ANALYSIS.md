@@ -167,11 +167,11 @@ All findings below were re-verified against vendor docs/repos on this date.
 ### 10.4 Improvement backlog derived from this refresh (priority order)
 
 1. **Probe corpus breadth (P0, our last 0/1 attack-side row)** — ✅ **DONE (Aug 22, 2026):** 53 probes across all 10 OWASP LLM Top-10 categories (`owasp_llm_10` pack grew 8→49 + core 4); LLM01 family fully blocked by the reference pipeline (test-enforced); per-category coverage matrix in every battle summary. Scorecard row 8: **1 → 2**.
-2. **NeMo Guardrails adapter (P1)** — wrap rails as a `DefenseLayer`; publish a "we validated NeMo Guardrails against adaptive attacks" reference battle. Same pattern for Promptfoo Guardrails and Model Armor endpoints via `scan --target`.
+2. **NeMo Guardrails adapter (P1)** — ✅ **DONE (Aug 22, 2026):** `ExternalGuardrailLayer` (`archon_core/defenses/external.py`) — any OpenAI-compatible guardrail endpoint (NeMo rails server, Model Armor proxy, Promptfoo Guardrails) becomes a pluggable `DefenseLayer`, fail-closed on transport errors, listed in `archon plugins`. The same endpoint stays attackable via `scan --target` — "we validate them" is now a demo, not a plan.
 3. **Plugin entry points (P1)** — ✅ **DONE (Aug 22, 2026):** `load_pack_file()` registers community packs from a single `.py` file; `ARCHON_CONTRIB_DIR` auto-loads a directory of them; `archon plugins` prints the full seam inventory (packs/layers/targets/providers/MCP) as JSON.
-4. **Postgres registry + Helm chart (P1)** — the two items enterprises ask for in week one of a pilot.
+4. **Postgres registry + Helm chart (P1)** — ✅ **DONE (Aug 22, 2026):** `PostgresRegistry` (`archon_core/registry/postgres.py`, psycopg3, JSON-column layout identical to SQLite for zero-migration code changes; injectable connector seam; UniqueViolation→DuplicateAgentError mapping), wired into `archon_armor.server` via `ARCHON_DATABASE_URL`; full Helm chart at `deploy/helm/archon-armor/` (non-root, probes, /data volume, Postgres env wiring, ingress) with structural tests + gated `helm lint`/`template`. Real-Postgres integration test runs when `ARCHON_TEST_DATABASE_URL` is set. Suite 491→505.
 5. **AgentDojo runner (P2)** — publish ASR numbers vs published baselines; instant researcher credibility.
-6. **Fleet dashboard MVP (P2)** — read-only view over baselines + battle history; the seed of the managed-cloud wedge before Promptfoo's platform lock-in hardens.
+6. **Fleet dashboard MVP (P2)** — ✅ **DONE (server-side primitive, Aug 22, 2026):** `FleetSummary` aggregates per-agent baselines into fleet metrics (registered/covered/avg-block-rate/degraded list), exposed as `archon fleet --registry --baselines --min-block-rate --ci` (exit 1 when agents fall below the fleet minimum) — the read-only dashboard seed before Promptfoo's lock-in hardens.
 
 
 
