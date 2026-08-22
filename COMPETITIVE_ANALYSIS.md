@@ -131,5 +131,48 @@ Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflect
 2. **Meet enterprises where they are:** CLI-first CI integration, OTel-native telemetry, Postgres/Helm deployment, compliance-mapped reports — boring reliability features beat exotic attack research for deal flow.
 3. **Out-open the incumbents:** Garak/Promptfoo proved communities form around plugin seams; Archon has five seams (attack/defense/provider/target/reporter) — make each one documented, versioned, and contribution-friendly before competitors copy the red/blue-loop category.
 
+---
+
+## 10. VERIFIED LANDSCAPE REFRESH — Aug 22, 2026 (live sources)
+
+All findings below were re-verified against vendor docs/repos on this date.
+
+### 10.1 What changed since the last refresh
+
+| Competitor | Verified change / current state | Implication for Archon |
+|---|---|---|
+| **Promptfoo (24.5k★)** | Product nav now lists **five** security products: Red Teaming, **Guardrails** (real-time jailbreak protection), **Model Security**, **MCP Proxy**, Code Scanning. Red teaming has plugin/strategy architecture incl. multi-turn strategies. Docs "last updated Aug 22, 2026" — shipping weekly. | The attack side is fully commoditized AND they now occupy runtime defense. Our **only** durable wedge: the *validation loop* — nothing in their stack adversarially validates their own Guardrails with per-layer evidence, and enterprises know vendor-graded homework is not evidence. |
+| **Garak (NVIDIA, 8.9k★, Apache-2.0)** | Unchanged posture: probe/detector/harness/generator plugin architecture, static + dynamic + adaptive probes, CLI-first, active (4.5k commits, 236 issues). Still **no defense evaluation, no runtime product**. | Attack-side rival, not a platform rival. Steal its plugin-community playbook: our five ABC seams need equivalent docs/`--list_*` ergonomics. |
+| **PyRIT (Microsoft, 4.3k★, MIT)** | Now ships a **frontend GUI**, docker, infra-as-code — investing in approachability. Still an offensive framework; **no defense product, no per-layer defense telemetry**. | Their GUI investment signals demand for accessibility; our CLI + YAML config covers the same need with less surface. |
+| **Snyk Agent Scan (2.9k★)** | v0.6: risk-scored indicators, CI mode, skills scanning. **Closed to external contributions**; analysis depends on Snyk's hosted API; behavioral testing limited (`--dangerously-run-mcp-servers` is inspection, not adversarial battles). | Our live behavioral MCP lane (`scan-mcp --url`, `--probe-tool`) remains **open and unmatched**. Their closed-source + cloud-analysis model is an enterprise objection we exploit with MIT neutrality. |
+| **NeMo Guardrails (NVIDIA, 7k★, Apache-2.0)** | Runtime rails toolkit; telemetry/audit file added; **no adversarial self-testing of rails**. | Prime integration target: ship an `archon-core` DefenseLayer adapter so NeMo rails become pluggable defenses *and* attackable targets — "we validate NeMo" is marketing they can't refute. |
+| **AgentDojo (ETH Zurich)** | Site unreachable from this network this session (prior verified state stands: attack+defense benchmark, not a tool). | Benchmark credibility lane still open; requires live datasets/models to run. |
+
+### 10.2 Updated scorecard deltas (vs §7)
+
+| Dimension | Prior | Now | Why |
+|---|---|---|---|
+| Multi-turn adaptive attacks | 2 | **2** (contested) | Promptfoo ships 5 multi-turn strategies; our BranchingAttacker matches the pattern with deterministic verdicts |
+| Runtime defense product | 2 | **2** (contested) | Promptfoo Guardrails exists — but is closed and unvalidated; ours is open + measured |
+| Per-layer defense telemetry | 2 | **2 (unique)** | Still nobody else: real OTel SDK → Cloud Trace, scrubbed, per-layer |
+| MCP testing | 2 | **2** | Behavioral live probing + static engine vs Snyk's closed static-only |
+| Defense evaluation (red vs blue) | 2 | **2 (unique)** | `archon battle` + Policy-CI baselines remain category-defining |
+| CI/CD DX | 2 | **2** | scan/scan-mcp/battle/report all have `--ci` exit codes |
+| Probe corpus breadth | 1 | **1** | Still our weakest attack-side row vs Promptfoo's plugin library & Garak's corpus |
+
+### 10.3 The honest competitive sentence (Aug 22, 2026)
+
+> Promptfoo now sells attack *and* defense — but as separate closed products, with the vendor grading its own homework. Garak and PyRIT attack but cannot measure a defense. NeMo and Model Armor defend but cannot prove it. Snyk scans configs but is closed-source and static. **Archon remains the only open platform where an adaptive attacker and a measurable defense fight in the same loop, with every verdict exported as evidence.**
+
+### 10.4 Improvement backlog derived from this refresh (priority order)
+
+1. **Probe corpus breadth (P0, our last 0/1 attack-side row)** — port Garak's top probe families (dan, encoding, malware, XSS-in-markdown) and Promptfoo's OWASP Agentic risk names as packs; target 50+ probes across 10 categories. Community-seeded via a `contrib/probes/` dir + loader.
+2. **NeMo Guardrails adapter (P1)** — wrap rails as a `DefenseLayer`; publish a "we validated NeMo Guardrails against adaptive attacks" reference battle. Same pattern for Promptfoo Guardrails and Model Armor endpoints via `scan --target`.
+3. **Plugin entry points (P1)** — `archon.plugins` namespace packages for attack/defense/probe/reporter; `archon plugins list` command. Communities form on seams (Garak proof).
+4. **Postgres registry + Helm chart (P1)** — the two items enterprises ask for in week one of a pilot.
+5. **AgentDojo runner (P2)** — publish ASR numbers vs published baselines; instant researcher credibility.
+6. **Fleet dashboard MVP (P2)** — read-only view over baselines + battle history; the seed of the managed-cloud wedge before Promptfoo's platform lock-in hardens.
+
+
 
 
