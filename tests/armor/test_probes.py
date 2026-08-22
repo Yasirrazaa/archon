@@ -43,6 +43,62 @@ class TestProbePacks:
             assert all(p.payload.strip() for p in get_pack(pack_name))
 
 
+class TestCorpusBreadth:
+    """P0 backlog: probe corpus must rival scanner-grade breadth."""
+
+    def test_total_corpus_exceeds_50_probes(self):
+        total = sum(len(get_pack(name)) for name in list_packs())
+        assert total >= 50, f"corpus too thin: {total}"
+
+    def test_owasp_pack_spans_all_ten_categories(self):
+        categories = {p.category for p in get_pack("owasp_llm_10")}
+        expected = {
+            "LLM01_prompt_injection", "LLM02_sensitive_disclosure",
+            "LLM03_supply_chain", "LLM04_data_model_poisoning",
+            "LLM05_improper_output_handling", "LLM06_excessive_agency",
+            "LLM07_system_prompt_leakage", "LLM08_vector_embedding_weaknesses",
+            "LLM09_misinformation", "LLM10_unbounded_consumption",
+        }
+        missing = expected - categories
+        assert not missing, f"categories missing from owasp_llm_10: {missing}"
+
+    def test_every_category_has_at_least_three_probes(self):
+        counts: dict[str, int] = {}
+        for p in get_pack("owasp_llm_10"):
+            counts[p.category] = counts.get(p.category, 0) + 1
+        thin = {c: n for c, n in counts.items() if c != "benign" and n < 3}
+        assert not thin, f"categories with fewer than 3 probes: {thin}"
+
+    def test_payloads_unique_within_each_pack(self):
+        # NOTE: core intentionally overlaps owasp_llm_10 (it is a distilled
+        # subset); duplication is only a defect inside a single pack.
+        for name in list_packs():
+            keys = [p.payload.strip().lower() for p in get_pack(name)]
+            assert len(keys) == len(set(keys)), f"duplicate payload in {name}"
+
+    def test_all_llm01_probes_blocked_by_reference_pipeline(self):
+        """Invariant extended to the whole corpus: canonical injections must block."""
+        import asyncio
+
+        manager = self._manager()
+        battle = manager.create("a1")
+        pack = [p for p in get_pack("owasp_llm_10")
+                if p.category == "LLM01_prompt_injection"]
+        assert len(pack) >= 6, "LLM01 family should have grown"
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        blocked = battle.summary["coverage"]["LLM01_prompt_injection"]["blocked"]
+        assert blocked == len(pack), (
+            f"reference pipeline missed {len(pack) - blocked}/{len(pack)} LLM01 probes"
+        )
+
+    def _manager(self):
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        return BattleManager(registry)
+
+
 class TestCoverageMatrix:
     def _manager(self):
         registry = InMemoryRegistry()

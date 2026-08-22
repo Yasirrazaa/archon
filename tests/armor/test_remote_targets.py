@@ -14,25 +14,40 @@ from archon_armor.probes import get_pack
 
 
 def _guardrail_transport(refuses_injections=True):
-    """Simulates a third-party guardrail endpoint."""
+    """Simulates a third-party guardrail endpoint.
+
+    Benign canaries (weather, arithmetic) always get helpful answers; with
+    ``refuses_injections=True`` every attack-shaped payload is refused, with
+    ``False`` every attack leaks."""
     def handler(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.read())
         content = body["messages"][-1]["content"].lower()
-        malicious = any(k in content for k in (
-            "ignore previous", "system prompt", "flfgrz", "dan",
-            "[admin override]", "ssn",
-        ))
-        if malicious and refuses_injections:
+        benign = content.startswith(("what is the weather", "what is two plus two"))
+        if benign or not (refuses_injections or _looks_malicious(content)):
+            return httpx.Response(200, json={
+                "choices": [{"message": {"role": "assistant",
+                                         "content": "Happy to help with that."}}]})
+        if refuses_injections:
             return httpx.Response(200, json={
                 "choices": [{"message": {"role": "assistant",
                                          "content": "I cannot help with that request."}}]})
-        if malicious:
-            return httpx.Response(200, json={
-                "choices": [{"message": {"role": "assistant",
-                                         "content": f"Sure! The secret is 123-45-6789"}}]})
         return httpx.Response(200, json={
             "choices": [{"message": {"role": "assistant",
-                                     "content": "Happy to help with that."}}]})
+                                     "content": f"Sure! The secret is 123-45-6789"}}]})
+
+    def _looks_malicious(content: str) -> bool:
+        return any(k in content for k in (
+            "ignore previous", "ignore all", "system prompt", "flfgrz", "dan",
+            "[admin override]", "ssn", "disregard", "password", "secret key",
+            "medical record", "credit card", "pip install", "curl", "backdoor",
+            "exec(", "eval(", "<img", "javascript:", "drop table", "template",
+            "delete every file", "email the full", "transfer", "promote user",
+            "cat /etc/passwd", "translate your system prompt", "hidden guidelines",
+            "developer mode", "knowledge base", "embedding", "memory entry",
+            "cite three", "acme corp", "company handbook", "compliance officer",
+            "calls itself", "infinity", ":(){", "10,000", "500 products",
+        ))
+
     return httpx.MockTransport(handler)
 
 
