@@ -247,6 +247,7 @@ This implementation draws on published research in AI security:
 | [BLUEPRINT_HACKATHON.md](./BLUEPRINT_HACKATHON.md) | v3 architecture (core-first, extensible ABCs), gap analysis, hackathon strategy & 9-day plan |
 | [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence + OWASP Agentic alignment |
 | [ROADMAP.md](./ROADMAP.md) | Post-hackathon product roadmap |
+| [DEPLOY_GCP.md](./DEPLOY_GCP.md) | Cloud Run deployment + Gemini demo path + judge demo script |
 | PROJECT_REVIEW / RESEARCH_REPORT / ALTERNATIVES_COMPARISON | Historical research archives (corrections applied) |
 
 ## License
