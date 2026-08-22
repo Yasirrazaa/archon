@@ -64,10 +64,18 @@ def build_app():
 
 # Module-level app for `uvicorn archon_armor.server:app`
 app = None
-if os.environ.get("ARCHON_SERVER_AUTOSTART", "1") == "1":
-    try:
-        app = build_app()
-    except Exception as exc:  # pragma: no cover - surfaced at startup, not import
-        import logging
 
-        logging.getLogger("archon").error("failed to build armor app: %s", exc)
+
+def initialize_app() -> None:
+    """Build the app eagerly and fail fast.
+
+    A container whose dependencies are misconfigured must crash on startup —
+    Cloud Run (and any orchestrator with a startup probe) rejects the revision
+    — instead of silently serving 500s as an ``app = None`` zombie.
+    """
+    global app
+    if os.environ.get("ARCHON_SERVER_AUTOSTART", "1") == "1":
+        app = build_app()
+
+
+initialize_app()

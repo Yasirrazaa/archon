@@ -3,11 +3,12 @@ FROM python:3.12-slim AS base
 
 WORKDIR /app
 
-# Install the project (packages/* are declared as hatch build targets)
+# Install the project (packages/* are declared as hatch build targets).
+# Extras: otel = OTLP/Cloud Trace span export; postgres = PostgresRegistry.
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 COPY packages ./packages
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir ".[otel,postgres]"
 
 # Non-root runtime user
 RUN useradd -m -u 10001 archon

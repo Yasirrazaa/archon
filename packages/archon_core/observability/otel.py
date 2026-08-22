@@ -88,6 +88,24 @@ class OtelTracer(Tracer):
             recording.end()
 
 
+def _fetch_gcp_token() -> str:
+    """Fetch an access token from the GCP metadata server (Cloud Run / GCE).
+
+    Cloud Trace's managed OTLP endpoint (telemetry.googleapis.com) rejects
+    unauthenticated writes; the service's identity token authorizes them.
+    """
+    import json as _json
+    import urllib.request as _ur
+
+    req = _ur.Request(
+        "http://metadata.google.internal/computeMetadata/v1/instance"
+        "/service-accounts/default/token",
+        headers={"Metadata-Flavor": "Google"},
+    )
+    with _ur.urlopen(req, timeout=2) as resp:
+        return str(_json.loads(resp.read())["access_token"])
+
+
 def build_tracer_from_env(env: dict[str, str] | None = None) -> Tracer:
     """Env-driven tracer factory.
 
@@ -122,6 +140,8 @@ def build_tracer_from_env(env: dict[str, str] | None = None) -> Tracer:
         kwargs = {"timeout": 5}
         if endpoint:
             kwargs["endpoint"] = endpoint.rstrip("/") + "/v1/traces"
+        if environ.get("ARCHON_OTEL_GCP_AUTH", "") == "1":
+            kwargs["headers"] = {"Authorization": f"Bearer {_fetch_gcp_token()}"}
         provider = TracerProvider(
             resource=Resource.create({"service.name": "archon-armor"})
         )

@@ -1,5 +1,6 @@
 """TDD Phase 10: server factory wiring (container entry point)."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from archon_armor.server import build_app
@@ -24,3 +25,29 @@ def test_build_app_wires_full_production_stack(tmp_path, monkeypatch):
 
     # infrastructure files get created
     assert (tmp_path / "registry.db").exists()
+
+
+# ------------------------------------------------------------ fail fast ---
+
+
+def test_initialize_app_fails_fast_on_broken_paths(monkeypatch):
+    """A misconfigured container must crash at startup, not serve 500s.
+
+    Cloud Run rejects revisions whose process exits before the startup probe
+    passes; a silent ``app = None`` zombie instead accepts traffic and fails
+    every request with an opaque ASGI error.
+    """
+    from archon_armor import server
+
+    monkeypatch.setenv("ARCHON_SERVER_AUTOSTART", "1")
+    monkeypatch.setenv("ARCHON_REGISTRY_PATH", "/nonexistent-dir-zz/reg.db")
+    monkeypatch.setenv("ARCHON_AUDIT_PATH", "/nonexistent-dir-zz/audit.db")
+    with pytest.raises(Exception):
+        server.initialize_app()
+
+
+def test_initialize_app_respects_autostart_off(monkeypatch):
+    from archon_armor import server
+
+    monkeypatch.setenv("ARCHON_SERVER_AUTOSTART", "0")
+    server.initialize_app()  # must not raise; app stays untouched

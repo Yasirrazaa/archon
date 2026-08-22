@@ -143,6 +143,67 @@ def test_factory_unknown_mode_raises(monkeypatch):
         build_tracer_from_env()
 
 
+def test_factory_otlp_gcp_auth_attaches_metadata_token(monkeypatch):
+    """ARCHON_OTEL_GCP_AUTH=1 fetches an identity token from the GCP metadata
+    server and attaches it to every OTLP export — required for Cloud Trace's
+    managed OTLP endpoint (telemetry.googleapis.com), which rejects
+    unauthenticated writes."""
+    import archon_core.observability.otel as otel_mod
+
+    captured: dict = {}
+
+    class FakeExporter:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+        def export(self, spans):
+            return 0
+
+        def shutdown(self):
+            return None
+
+    monkeypatch.setattr(otel_mod, "_fetch_gcp_token", lambda: "fake-token")
+    monkeypatch.setattr(
+        "opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter",
+        FakeExporter,
+    )
+    monkeypatch.setenv("ARCHON_OTEL_EXPORTER", "otlp")
+    monkeypatch.setenv("ARCHON_OTEL_GCP_AUTH", "1")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://telemetry.googleapis.com")
+
+    tracer = otel_mod.build_tracer_from_env()
+    assert isinstance(tracer, otel_mod.OtelTracer)
+    assert captured["endpoint"] == "https://telemetry.googleapis.com/v1/traces"
+    assert captured["headers"]["Authorization"] == "Bearer fake-token"
+
+
+def test_factory_otlp_without_gcp_auth_sends_no_headers(monkeypatch):
+    import archon_core.observability.otel as otel_mod
+
+    captured: dict = {}
+
+    class FakeExporter:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+        def export(self, spans):
+            return 0
+
+        def shutdown(self):
+            return None
+
+    monkeypatch.setattr(
+        "opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter",
+        FakeExporter,
+    )
+    monkeypatch.setenv("ARCHON_OTEL_EXPORTER", "otlp")
+    monkeypatch.delenv("ARCHON_OTEL_GCP_AUTH", raising=False)
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://127.0.0.1:4318")
+
+    otel_mod.build_tracer_from_env()
+    assert "headers" not in captured
+
+
 # ------------------------------------------------------------ server wire ---
 
 
