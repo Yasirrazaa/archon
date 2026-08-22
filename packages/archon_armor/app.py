@@ -27,6 +27,7 @@ from archon_core.defenses.base import DefensePipeline
 from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
+from archon_core.audit import SqliteAuditTrail
 from archon_core.security.authn import AllowAllVerifier, IdentityVerifier
 from archon_core.security.ratelimit import TokenBucketRateLimiter
 
@@ -86,6 +87,7 @@ def create_app(
     battles: BattleManager | None = None,
     identity: IdentityVerifier | None = None,
     rate_limiter: TokenBucketRateLimiter | None = None,
+    audit: SqliteAuditTrail | None = None,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier."""
@@ -175,6 +177,9 @@ def create_app(
         if exchange.blocked:
             if request_span is not None:
                 tracer.end_span(request_span, attributes={**blocked_attrs})
+            if audit is not None:
+                audit.append("request.blocked", card.agent_id, actor="armor",
+                             details={"reason": exchange.block_reason})
             body = _completion_shape(payload, _REFUSAL_CONTENT)
             body["archon"] = {
                 "blocked": True,
@@ -208,6 +213,8 @@ def create_app(
                     "output_guardrails"
                 )
 
+        if audit is not None:
+            audit.append("request.allowed", card.agent_id, actor="armor")
         result.setdefault("archon", {})
         result["archon"].update({"blocked": False, "agent_id": card.agent_id})
         if request_span is not None:
