@@ -248,6 +248,7 @@ This implementation draws on published research in AI security:
 | [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence + OWASP Agentic alignment |
 | [ROADMAP.md](./ROADMAP.md) | Post-hackathon product roadmap |
 | [DEPLOY_GCP.md](./DEPLOY_GCP.md) | Cloud Run deployment + Gemini demo path + judge demo script |
+| [SOTA_STRATEGY.md](./SOTA_STRATEGY.md) | Verified market-shift analysis & revised 90-day plan (Aug 2026) |
 | PROJECT_REVIEW / RESEARCH_REPORT / ALTERNATIVES_COMPARISON | Historical research archives (corrections applied) |
 
 ## License
