@@ -374,24 +374,17 @@ def _run_battle(args) -> dict:
     """Run one multi_turn branching battle against a remote target.
 
     Provider comes from the environment (never CLI flags):
-        ARCHON_ATTACK_PROVIDER_BASE_URL  e.g. Gemini OpenAI-compat endpoint
+        ARCHON_ATTACK_PROVIDER_KIND      'anthropic' (native Claude) | 'openai' (default)
+        ARCHON_ATTACK_PROVIDER_BASE_URL  e.g. Gemini OpenAI-compat endpoint (openai kind)
         ARCHON_ATTACK_PROVIDER_API_KEY
-        ARCHON_ATTACK_PROVIDER_MODEL     default: gemini-2.5-flash
+        ARCHON_ATTACK_PROVIDER_MODEL     default: gemini-2.5-flash / claude-sonnet-4-5
     Returns the attack-tree summary dict.
     """
-    from archon_core.providers.openai_compat import OpenAICompatProvider
+    from archon_core.providers import provider_from_env
     from archon_core.targets.openai_compat import OpenAICompatTarget
     from archon_armor.battles import BattleManager
 
-    provider = OpenAICompatProvider(
-        base_url=os.environ.get(
-            "ARCHON_ATTACK_PROVIDER_BASE_URL",
-            "https://generativelanguage.googleapis.com/v1beta/openai",
-        ),
-        api_key=os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"),
-        model=os.environ.get("ARCHON_ATTACK_PROVIDER_MODEL", "gemini-2.5-flash"),
-        transport=_target_transport(),
-    )
+    provider = provider_from_env(transport=_target_transport())
     target = OpenAICompatTarget(
         base_url=args.target,
         api_key=args.target_api_key or os.environ.get("ARCHON_TARGET_API_KEY"),
@@ -436,13 +429,24 @@ def _contrib_packs() -> list[str]:
     return loaded
 
 
-def _cmd_plugins(args) -> int:
-    from archon_core.defenses import layers as defense_layers
-    from archon_core.defenses.external import ExternalGuardrailLayer
+def _provider_names() -> list[str]:
+    """Seam inventory: every LLMProvider implementation archon ships."""
+    from archon_core.providers.anthropic import ClaudeNativeProvider
     from archon_core.providers.openai_compat import (
         GeminiOpenAICompatProvider,
         OpenAICompatProvider,
     )
+
+    return [
+        OpenAICompatProvider.__name__,
+        GeminiOpenAICompatProvider.__name__,
+        ClaudeNativeProvider.__name__,
+    ]
+
+
+def _cmd_plugins(args) -> int:
+    from archon_core.defenses import layers as defense_layers
+    from archon_core.defenses.external import ExternalGuardrailLayer
     from archon_core.targets.mcp_live import probe_tool, scan_live_mcp
     from archon_core.targets.openai_compat import OpenAICompatTarget
     from archon_armor.probes import PROBE_PACKS
@@ -457,7 +461,7 @@ def _cmd_plugins(args) -> int:
             and cls.__module__.endswith("layers")
         ] + [ExternalGuardrailLayer.name],
         "targets": [OpenAICompatTarget.__name__],
-        "providers": [OpenAICompatProvider.__name__, GeminiOpenAICompatProvider.__name__],
+        "providers": _provider_names(),
         "mcp": ["scan_live_mcp", "probe_tool", "McpConfigScanner"],
     }
     # include seam functions imported above so the names survive linting
