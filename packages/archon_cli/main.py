@@ -346,6 +346,10 @@ def build_parser() -> argparse.ArgumentParser:
                           help="exit 1 if the attack SUCCEEDS (defense failed)")
     p_battle.set_defaults(func=_cmd_battle)
 
+    p_plugins = sub.add_parser("plugins", help="list extension seams (packs, layers, targets, providers)")
+    p_plugins.add_argument("--ci", action="store_true")
+    p_plugins.set_defaults(func=_cmd_plugins)
+
     p_serve = sub.add_parser("serve", help="run the archon-armor proxy")
     p_serve.add_argument("--registry", required=True)
     p_serve.add_argument("--host", default="0.0.0.0")
@@ -404,6 +408,52 @@ def _cmd_battle(args) -> int:
     if args.ci and tree["success"]:
         print("battle: attack succeeded — gate FAILED", file=sys.stderr)
         return 1
+    return 0
+
+
+def _contrib_packs() -> list[str]:
+    """Load community packs from ARCHON_CONTRIB_DIR (best-effort)."""
+    from archon_armor.probes import load_pack_file
+
+    d = os.environ.get("ARCHON_CONTRIB_DIR", "")
+    loaded: list[str] = []
+    if d and os.path.isdir(d):
+        for f in sorted(os.listdir(d)):
+            if f.endswith(".py") and not f.startswith("_"):
+                try:
+                    loaded.append(load_pack_file(os.path.join(d, f)))
+                except Exception as exc:
+                    print(f"warn: contrib pack {f}: {exc}", file=sys.stderr)
+    return loaded
+
+
+def _cmd_plugins(args) -> int:
+    from archon_core.defenses import layers as defense_layers
+    from archon_core.providers.openai_compat import (
+        GeminiOpenAICompatProvider,
+        OpenAICompatProvider,
+    )
+    from archon_core.targets.mcp_live import probe_tool, scan_live_mcp
+    from archon_core.targets.openai_compat import OpenAICompatTarget
+    from archon_armor.probes import PROBE_PACKS
+
+    inventory = {
+        "probe_packs": {name: len(probes) for name, probes in sorted(PROBE_PACKS.items())},
+        "contrib_packs": _contrib_packs(),
+        "defense_layers": [
+            cls.name
+            for cls in vars(defense_layers).values()
+            if isinstance(cls, type) and hasattr(cls, "process") and hasattr(cls, "name")
+            and cls.__module__.endswith("layers")
+        ],
+        "targets": [OpenAICompatTarget.__name__],
+        "providers": [OpenAICompatProvider.__name__, GeminiOpenAICompatProvider.__name__],
+        "mcp": ["scan_live_mcp", "probe_tool", "McpConfigScanner"],
+    }
+    # include seam functions imported above so the names survive linting
+    inventory["mcp"].append(scan_live_mcp.__name__)
+    inventory["mcp"].append(probe_tool.__name__)
+    print(json.dumps(inventory, indent=None if args.ci else 2))
     return 0
 
 
