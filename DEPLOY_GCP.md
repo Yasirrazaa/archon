@@ -57,7 +57,12 @@ Bonus (hackathon): run the paraphrase layer on **Gemma** via
 
 ## 5. Observability proof (for judges)
 
-- **Spans:** every request writes scrubbed OTLP-JSON lines to
+- **OpenTelemetry (recommended):** set
+  `ARCHON_OTEL_EXPORTER=otlp` and `OTEL_EXPORTER_OTLP_ENDPOINT` to your
+  Cloud Trace endpoint — armor request/layer spans export via OTLP/HTTP with
+  `service.name=archon-armor` and land in **Cloud Trace** directly. PII
+  scrubbing still applies before export.
+- **Spans (file fallback):** every request writes scrubbed OTLP-JSON lines to
   `$ARCHON_SPANS_JSONL` → tail with `gcloud logging tail` or ship via
   Fluent Bit; each span names the defense layer and its verdict.
 - **Audit:** `request.blocked` / `request.allowed` events land in

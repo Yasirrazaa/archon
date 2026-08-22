@@ -93,6 +93,7 @@ def create_app(
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier."""
     app = FastAPI(title="archon-armor", version="0.1.0")
+    app.state.tracer = tracer
     identity = identity or AllowAllVerifier()
     battles = battles or BattleManager(registry, tracer=tracer)
 

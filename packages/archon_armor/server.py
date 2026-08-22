@@ -4,6 +4,8 @@ Wires a production-shaped app from environment variables:
     ARCHON_REGISTRY_PATH      SQLite registry file (default /data/registry.db)
     ARCHON_AUDIT_PATH         audit trail file    (default /data/audit.db)
     ARCHON_SPANS_JSONL        optional span sink  (default /data/spans.jsonl)
+    ARCHON_OTEL_EXPORTER      none|memory|otlp    (default none)
+    OTEL_EXPORTER_OTLP_ENDPOINT  collector URL for otlp mode (e.g. Cloud Trace)
     ARCHON_UPSTREAM_BASE_URL  default upstream for agents registered without one
     ARCHON_REQUIRE_SIGNED     "1" enforces HMAC-signed requests (default on)
 
@@ -15,7 +17,9 @@ from __future__ import annotations
 import os
 
 from archon_core.audit import SqliteAuditTrail
+from archon_core.observability.base import NullTracer
 from archon_core.observability.jsonl import JsonlTracer
+from archon_core.observability.otel import build_tracer_from_env
 from archon_core.observability.scrubbing import AttributeScrubber, ScrubbingTracer
 from archon_core.registry.sqlite import SqliteRegistry
 from archon_core.security.authn import HmacVerifier
@@ -29,7 +33,12 @@ def build_app():
     spans_path = os.environ.get("ARCHON_SPANS_JSONL", "/tmp/archon-spans.jsonl")
 
     registry = SqliteRegistry(registry_path)
-    tracer = ScrubbingTracer(JsonlTracer(spans_path), AttributeScrubber())
+    # OTel mode (ARCHON_OTEL_EXPORTER=otlp|memory) takes precedence; default
+    # remains the streaming JSONL sink so containers work with zero config.
+    base_tracer = build_tracer_from_env()
+    if isinstance(base_tracer, NullTracer):
+        base_tracer = JsonlTracer(spans_path)
+    tracer = ScrubbingTracer(base_tracer, AttributeScrubber())
     identity = HmacVerifier(registry)  # signed requests enforced in server mode
     rate_limiter = TokenBucketRateLimiter(capacity=60, refill_per_second=10)
     audit = SqliteAuditTrail(audit_path)

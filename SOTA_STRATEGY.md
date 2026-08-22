@@ -95,6 +95,7 @@ to roughly a quarter. Ruthless re-prioritization:
 | Date | Item | Status | Evidence |
 |---|---|---|---|
 | Aug 22, 2026 | Sprint A1 — remote target scanning: `TargetAdapter`/`TargetResponse` seam, `OpenAICompatTarget` with deterministic refusal detection, `BattleManager.execute(target=...)` remote battles, `archon scan --target URL --pack owasp_llm_10 --ci` | ✅ Done | 8 TDD tests; suite 404→412 passing |
+| Aug 22, 2026 | Sprint A2 — production OpenTelemetry: `OtelTracer` bridging the Tracer ABC onto the real OTel SDK (contextvar parenting, async-safe per-task span trees, OTLP type coercion), env factory (`ARCHON_OTEL_EXPORTER=none\|memory\|otlp`), server wiring with PII scrubbing preserved, `[otel]` extra in pyproject | ✅ Done | `observability/otel.py`, 11 TDD tests; suite 412→423 passing; spans export to Cloud Trace/Jaeger/any OTLP collector |
 ## 4. Hackathon (deadline Aug 31) — unchanged, still first
 
 Everything in BLUEPRINT §5.3 stands: deploy armor to Cloud Run, Gemini/Gemma demo path, 4-min
