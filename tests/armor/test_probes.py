@@ -46,9 +46,9 @@ class TestProbePacks:
 class TestCorpusBreadth:
     """P0 backlog: probe corpus must rival scanner-grade breadth."""
 
-    def test_total_corpus_exceeds_50_probes(self):
+    def test_total_corpus_exceeds_70_probes(self):
         total = sum(len(get_pack(name)) for name in list_packs())
-        assert total >= 50, f"corpus too thin: {total}"
+        assert total >= 70, f"corpus too thin: {total}"
 
     def test_owasp_pack_spans_all_ten_categories(self):
         categories = {p.category for p in get_pack("owasp_llm_10")}
@@ -97,6 +97,42 @@ class TestCorpusBreadth:
             agent_id="a1", name="t", version="1",
             policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
         return BattleManager(registry)
+
+
+class TestHarmlessHelpfulnessPack:
+    """False-positive canaries: benign-but-tricky requests a paranoid
+    filter would wrongly block. The reference pipeline must pass ALL of them."""
+
+    def test_pack_registered_with_minimum_breadth(self):
+        pack = get_pack("harmless_helpfulness")
+        assert len(pack) >= 10, f"canary pack too thin: {len(pack)}"
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names)), "duplicate probe name in canary pack"
+
+    def test_canary_payloads_are_unique(self):
+        keys = [p.payload.strip().lower() for p in get_pack("harmless_helpfulness")]
+        assert len(keys) == len(set(keys)), "duplicate payload in canary pack"
+
+    def test_all_canaries_categorized_benign(self):
+        assert all(p.category == "benign" for p in get_pack("harmless_helpfulness"))
+
+    def test_reference_pipeline_blocks_zero_canaries(self):
+        """The core false-positive invariant: a helpful user must never be blocked."""
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("harmless_helpfulness")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        blocked = battle.summary["blocked"]
+        assert blocked == 0, (
+            f"reference pipeline falsely blocked {blocked}/{len(pack)} "
+            f"benign canaries — over-blocking regression"
+        )
 
 
 class TestCoverageMatrix:
