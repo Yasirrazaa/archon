@@ -141,6 +141,24 @@ def _cmd_scan_mcp(args) -> int:
     return 0
 
 
+def _cmd_report(args) -> int:
+    from archon_core.reporting.compliance import render_html_report, render_markdown_report
+
+    with open(args.battle_json, encoding="utf-8") as fh:
+        summary = json.load(fh)
+    if args.format == "html":
+        content = render_html_report(summary)
+    else:
+        content = render_markdown_report(summary)
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            fh.write(content)
+        print(f"report written: {args.out}")
+    else:
+        print(content)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="archon", description="Archon agent security tool")
     sub = parser.add_subparsers(dest="command")
@@ -160,6 +178,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--ci", action="store_true", help="CI gate: exit 1 below threshold")
     p_scan.add_argument("--json", action="store_true", help="JSON report on stdout")
     p_scan.set_defaults(func=_cmd_scan)
+
+    p_rep = sub.add_parser("report", help="render a compliance evidence report from a battle JSON summary")
+    p_rep.add_argument("--battle-json", required=True)
+    p_rep.add_argument("--format", choices=["html", "markdown"], default="html")
+    p_rep.add_argument("--out", default="")
+    p_rep.set_defaults(func=_cmd_report)
 
     p_mcp = sub.add_parser("scan-mcp", help="statically scan an MCP config for tool poisoning")
     p_mcp.add_argument("--config", required=True)
