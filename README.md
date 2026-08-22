@@ -159,6 +159,29 @@ uv run agentbeats-run scenarios/security_arena/scenario_portfolioiq.toml --show-
 uv run agentbeats-run scenarios/security_arena/scenario_portfolioiq.toml --normal-user
 ```
 
+## Archon Armor (v3 preview — `hackathon-v2`)
+
+The defense pipeline is now a **deployable OpenAI-compatible proxy**. Any agent can adopt Archon protection by changing one env var:
+
+```bash
+# Run the armor proxy locally
+uv run uvicorn archon_armor.app:create_app --factory --port 8080   # see packages/archon_armor/app.py for factory wiring
+
+# Point any agent at it
+export OPENAI_BASE_URL="http://localhost:8080/v1"
+# ...and send your registered identity with each request: X-Agent-ID header
+```
+
+API surface:
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/chat/completions` | OpenAI-compatible proxy: normalizes → classifies → segments → spotlights → forwards guarded content → redacts output |
+| `POST /v1/battles` | Async security scan: runs a probe suite through the agent's policy, returns per-probe verdicts + block-rate summary |
+| `GET /v1/battles/{id}` | Poll battle status/results |
+| `GET /healthz` | Liveness |
+
+Core packages (zero vendor deps): `packages/archon_core` (defense layers, registry, providers, observability), `packages/archon_armor` (FastAPI proxy, battle manager). Gemini is supported via `GeminiOpenAICompatProvider` (OpenAI-compat endpoint).
+
 ## Research Foundation
 
 This implementation draws on published research in AI security:

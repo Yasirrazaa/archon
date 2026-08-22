@@ -12,7 +12,7 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from archon_core.defenses.layers import (
@@ -28,6 +28,7 @@ from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
 
+from .battles import BattleManager
 from .upstream import LLMUpstream, UpstreamError
 
 _REFUSAL_CONTENT = (
@@ -80,8 +81,10 @@ def create_app(
     registry: Registry,
     upstream: LLMUpstream,
     tracer: Tracer | None = None,
+    battles: BattleManager | None = None,
 ) -> FastAPI:
     app = FastAPI(title="archon-armor", version="0.1.0")
+    battles = battles or BattleManager(registry, tracer=tracer)
 
     @app.get("/healthz")
     def healthz() -> dict:
@@ -190,5 +193,56 @@ def create_app(
         if request_span is not None:
             tracer.end_span(request_span, attributes={**blocked_attrs})
         return JSONResponse(result)
+
+    # ------------------------------------------------------------------
+    # Battle/scan API: batch security probes against a registered agent
+    # ------------------------------------------------------------------
+    @app.post("/v1/battles")
+    async def create_battle(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
+        try:
+            payload = await request.json()
+            agent_id = payload["agent_id"]
+        except Exception:
+            return JSONResponse(
+                {"error": {"message": "Body must be JSON with an 'agent_id'"}},
+                status_code=400,
+            )
+        try:
+            registry.get(agent_id)
+        except AgentNotFoundError:
+            return JSONResponse(
+                {"error": {"message": f"Unknown agent identity: {agent_id}"}},
+                status_code=404,
+            )
+        battle = battles.create(agent_id)
+        background_tasks.add_task(battles.execute, battle.battle_id)
+        return JSONResponse(
+            {"battle_id": battle.battle_id, "status": battle.status}, status_code=202
+        )
+
+    @app.get("/v1/battles/{battle_id}")
+    async def get_battle(battle_id: str) -> JSONResponse:
+        battle = battles.get(battle_id)
+        if battle is None:
+            return JSONResponse(
+                {"error": {"message": f"Unknown battle: {battle_id}"}}, status_code=404
+            )
+        return JSONResponse(
+            {
+                "battle_id": battle.battle_id,
+                "agent_id": battle.agent_id,
+                "status": battle.status,
+                "results": [
+                    {
+                        "probe_name": r.probe_name,
+                        "blocked": r.blocked,
+                        "block_reason": r.block_reason,
+                        "execution_mode": r.execution_mode,
+                    }
+                    for r in battle.results
+                ],
+                "summary": battle.summary,
+            }
+        )
 
     return app
