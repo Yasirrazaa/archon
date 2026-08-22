@@ -176,18 +176,18 @@ def _upstream_from_env(args):
     return HTTPOpenAIUpstream()
 
 
-def _live_scan(url: str):
+def _live_scan(url: str, probe_tools: list[str] | None = None):
     """Connect to a running MCP server and scan its live tool metadata."""
     import asyncio
 
     from archon_core.targets.mcp_live import scan_live_mcp
 
-    return asyncio.run(scan_live_mcp(url))
+    return asyncio.run(scan_live_mcp(url, probe_tools=probe_tools))
 
 
 def _cmd_scan_mcp(args) -> int:
     if getattr(args, "url", None) and not args.config:
-        result = _live_scan(args.url)
+        result = _live_scan(args.url, probe_tools=getattr(args, "probe_tool", None))
         print(json.dumps(result.to_dict(), indent=None if args.ci else 2))
         if result.errors:
             print("\n".join(f"warn: {e}" for e in result.errors), file=sys.stderr)
@@ -325,6 +325,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_mcp = sub.add_parser("scan-mcp", help="scan an MCP config file or a live server (--url)")
     p_mcp.add_argument("--config", required=False)
     p_mcp.add_argument("--url", required=False, help="live MCP server endpoint (Streamable HTTP)")
+    p_mcp.add_argument("--probe-tool", action="append", default=None,
+                       help="behaviorally invoke this tool with injection probes (repeatable)")
     p_mcp.add_argument("--ci", action="store_true", help="exit 1 on any HIGH finding")
     p_mcp.add_argument("--json", action="store_true")
     p_mcp.set_defaults(func=_cmd_scan_mcp)

@@ -93,6 +93,13 @@ to roughly a quarter. Ruthless re-prioritization:
 4. **YAML battle config** (`archon-config.yaml`) for policy-as-code security tests in Git.
 
 ### Sprint C (Weeks 6–9): Match their best attacker, keep our engine honest
+> **Status (Aug 22, 2026):** C1 ✅ `BranchingAttacker` (`archon_core/attacks/branching.py`):
+> Hydra-style fan-out/pivot/prune with deterministic response scoring — the LLM only
+> mutates payloads, verdicts stay model-free (10 tests) · C2 ✅ behavioral MCP probing:
+> `probe_tool()` invokes live tools with canonical injection payloads and judges replies;
+> `archon scan-mcp --url ... --probe-tool NAME` (8 tests). Suite 445→463.
+> Remaining in C: AgentDojo benchmark numbers (needs live datasets/models), wiring the
+> branching attacker into BattleManager battles.
 5. **GOAT-loop upgrade**: add Hydra-style branching with shared refusal learnings across parallel
    conversation paths (our deterministic signal extraction makes this cheaper per attack than theirs).
 6. **AgentDojo benchmark runs + published numbers** — researcher credibility while the category is hot.

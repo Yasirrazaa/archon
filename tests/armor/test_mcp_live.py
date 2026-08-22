@@ -131,7 +131,7 @@ def test_cli_scan_mcp_url_gate_fails_on_high(monkeypatch, capsys):
         tool="t", category="hidden_instruction", severity=Severity.HIGH,
         description="hidden", evidence="<IMPORT...",
     ))
-    monkeypatch.setattr(cli, "_live_scan", lambda url: poisoned)
+    monkeypatch.setattr(cli, "_live_scan", lambda url, probe_tools=None: poisoned)
 
     args = cli.build_parser().parse_args(["scan-mcp", "--url", "http://x/mcp", "--ci"])
     rc = cli._cmd_scan_mcp(args)
@@ -144,7 +144,7 @@ def test_cli_scan_mcp_url_gate_passes_clean(monkeypatch, capsys):
     from archon_cli import main as cli
 
     clean = LiveScanResult(url="http://x/mcp")
-    monkeypatch.setattr(cli, "_live_scan", lambda url: clean)
+    monkeypatch.setattr(cli, "_live_scan", lambda url, probe_tools=None: clean)
 
     args = cli.build_parser().parse_args(["scan-mcp", "--url", "http://x/mcp", "--ci"])
     rc = cli._cmd_scan_mcp(args)
