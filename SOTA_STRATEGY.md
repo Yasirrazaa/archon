@@ -90,6 +90,11 @@ to roughly a quarter. Ruthless re-prioritization:
 7. Plugin entry-points (`archon.plugins` group) + docs for all five seams; seed marketplace repo.
 8. Fleet dashboard MVP (read-only views over armor telemetry) — groundwork for managed cloud.
 
+## 3.1 Execution log
+
+| Date | Item | Status | Evidence |
+|---|---|---|---|
+| Aug 22, 2026 | Sprint A1 — remote target scanning: `TargetAdapter`/`TargetResponse` seam, `OpenAICompatTarget` with deterministic refusal detection, `BattleManager.execute(target=...)` remote battles, `archon scan --target URL --pack owasp_llm_10 --ci` | ✅ Done | 8 TDD tests; suite 404→412 passing |
 ## 4. Hackathon (deadline Aug 31) — unchanged, still first
 
 Everything in BLUEPRINT §5.3 stands: deploy armor to Cloud Run, Gemini/Gemma demo path, 4-min

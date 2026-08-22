@@ -16,6 +16,7 @@ import sys
 from archon_armor.app import create_app
 from archon_armor.battles import BattleManager
 from archon_core.registry.base import AgentCard, AgentNotFoundError, DuplicateAgentError, SecurityPolicy
+from archon_core.registry.memory import InMemoryRegistry
 from archon_core.registry.sqlite import SqliteRegistry
 from archon_core.security.authn import generate_agent_secret
 
@@ -43,6 +44,29 @@ def _cmd_register(args) -> int:
 
 
 def _cmd_scan(args) -> int:
+    if not args.target and not (args.registry and args.agent_id):
+        print(json.dumps({"error": "either --target URL or --registry + --agent-id is required"}))
+        return 2
+    manager_kwargs = {}
+    if getattr(args, "target", None):
+        # Remote mode: probe a third-party guardrail/agent endpoint directly.
+        from archon_core.targets.openai_compat import OpenAICompatTarget
+        target = OpenAICompatTarget(
+            base_url=args.target,
+            api_key=args.target_api_key or os.environ.get("ARCHON_TARGET_API_KEY"),
+            model=args.model,
+            transport=_target_transport(),
+        )
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(agent_id="remote", name=args.target, version="1",
+                                    policy=SecurityPolicy(upstream_base_url=args.target)))
+        manager = BattleManager(registry)
+        battle = manager.create("remote")
+        from archon_armor.probes import get_pack as _get_pack
+        asyncio.run(manager.execute(battle.battle_id, probes=_get_pack(args.pack), target=target))
+        _emit_scan_output(battle, args)
+        return _scan_exit_code(battle, args)
+
     registry = SqliteRegistry(args.registry)
     try:
         registry.get(args.agent_id)
@@ -52,7 +76,7 @@ def _cmd_scan(args) -> int:
 
     manager = BattleManager(registry)
     battle = manager.create(args.agent_id)
-    asyncio.run(manager.execute(battle.battle_id))
+    asyncio.run(manager.execute(battle.battle_id, probes=_pack_or_default(args)))
 
     report = {
         "battle_id": battle.battle_id,
@@ -173,6 +197,54 @@ def _cmd_report(args) -> int:
     return 0
 
 
+def _target_transport():
+    """Injection point for tests; returns None (real HTTP) by default."""
+    return None
+
+
+def _pack_or_default(args):
+    from archon_armor.probes import get_pack, UnknownPackError
+    pack_name = getattr(args, "pack", None) or "core"
+    try:
+        return get_pack(pack_name)
+    except UnknownPackError:
+        print(json.dumps({"error": f"unknown probe pack: {pack_name}"}))
+        raise SystemExit(2)
+
+
+def _emit_scan_output(battle, args):
+    report = {
+        "battle_id": battle.battle_id,
+        "agent_id": battle.agent_id,
+        "status": battle.status,
+        "results": [
+            {"probe_name": r.probe_name, "blocked": r.blocked,
+             "block_reason": r.block_reason, "execution_mode": r.execution_mode}
+            for r in battle.results
+        ],
+        "summary": battle.summary,
+    }
+    if args.json or args.ci:
+        print(json.dumps(report, indent=None if args.ci else 2))
+    else:
+        s = battle.summary
+        print(f"Archon security scan — agent: {battle.agent_id}")
+        print(f"  Probes run:   {s['total_probes']}")
+        print(f"  Blocked:      {s['blocked']}")
+        print(f"  Block rate:   {s['block_rate']:.0%}")
+        print(f"  Control ok:   {s['control_passed']}")
+
+
+def _scan_exit_code(battle, args) -> int:
+    if args.ci:
+        passed = (
+            battle.summary["block_rate"] >= args.min_block_rate
+            and battle.summary["control_passed"]
+        )
+        return 0 if passed else 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="archon", description="Archon agent security tool")
     sub = parser.add_subparsers(dest="command")
@@ -186,11 +258,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_reg.set_defaults(func=_cmd_register)
 
     p_scan = sub.add_parser("scan", help="run a security probe battle against a registered agent")
-    p_scan.add_argument("--registry", required=True)
-    p_scan.add_argument("--agent-id", required=True)
+    p_scan.add_argument("--registry", default="")
+    p_scan.add_argument("--agent-id", default="")
     p_scan.add_argument("--min-block-rate", type=float, default=0.5)
     p_scan.add_argument("--ci", action="store_true", help="CI gate: exit 1 below threshold")
     p_scan.add_argument("--json", action="store_true", help="JSON report on stdout")
+    p_scan.add_argument("--target", default="", help="remote OpenAI-compatible guardrail/agent base URL to probe")
+    p_scan.add_argument("--target-api-key", default="")
+    p_scan.add_argument("--model", default="default")
+    p_scan.add_argument("--pack", default="core", help="probe pack name (see archon_armor.probes)")
     p_scan.add_argument("--update-baseline", default="", help="store summary as the agent's baseline")
     p_scan.add_argument("--gate-baseline", default="", help="fail if scan regresses vs baseline")
     p_scan.set_defaults(func=_cmd_scan)

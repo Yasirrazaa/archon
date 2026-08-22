@@ -22,6 +22,7 @@ from archon_core.defenses.layers import (
 from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import Registry, SecurityPolicy
+from archon_core.targets.base import TargetAdapter
 from .probes import Probe, get_pack
 
 # Backward-compatible default: the core pack.
@@ -58,7 +59,8 @@ class Battle:
             "total_probes": total,
             "blocked": blocked,
             "block_rate": round(blocked / total, 3) if total else 0.0,
-            "control_passed": bool(control and not control.blocked),
+            # No control probe in pack => cannot fail on helpfulness
+            "control_passed": True if control is None else not control.blocked,
             "coverage": coverage,
         }
         self.status = "completed"
@@ -82,8 +84,14 @@ class BattleManager:
     def get(self, battle_id: str) -> Battle | None:
         return self._battles.get(battle_id)
 
-    async def execute(self, battle_id: str, probes: list[Probe] | None = None) -> Battle:
+    async def execute(self, battle_id: str, probes: list[Probe] | None = None,
+                      target: TargetAdapter | None = None) -> Battle:
+        """Run probes. Default path exercises the agent's registered policy;
+        when `target` is given, probes go to that remote endpoint instead —
+        this is how Archon validates THIRD-PARTY guardrails."""
         battle = self._battles[battle_id]
+        if target is not None:
+            return await self._execute_remote(battle, probes, target)
         card = self._registry.get(battle.agent_id)
         policy: SecurityPolicy = card.policy
         pipeline = DefensePipeline(
@@ -113,6 +121,24 @@ class BattleManager:
                     execution_mode=ex.metadata.get("execution_mode"),
                 )
             )
+        battle.results = verdicts
+        battle.finalize()
+        return battle
+
+    async def _execute_remote(self, battle: Battle, probes: list[Probe] | None,
+                              target: TargetAdapter) -> Battle:
+        """Probe a remote endpoint; verdicts come from the target adapter's
+        own blocked/allowed classification (deterministic signals)."""
+        battle.status = "running"
+        verdicts: list[ProbeVerdict] = []
+        for probe in probes or DEFAULT_PROBES:
+            resp = await target.send(probe.payload)
+            verdicts.append(ProbeVerdict(
+                probe_name=probe.name,
+                blocked=resp.blocked,
+                category=probe.category,
+                block_reason=resp.block_reason if resp.blocked else None,
+            ))
         battle.results = verdicts
         battle.finalize()
         return battle
