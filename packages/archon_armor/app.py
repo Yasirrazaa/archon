@@ -32,6 +32,7 @@ from archon_core.security.authn import AllowAllVerifier, IdentityVerifier
 from archon_core.security.ratelimit import TokenBucketRateLimiter
 
 from .battles import BattleManager
+from .probes import get_pack, UnknownPackError
 from .upstream import LLMUpstream, UpstreamError
 
 _REFUSAL_CONTENT = (
@@ -254,7 +255,14 @@ def create_app(
                 status_code=404,
             )
         battle = battles.create(agent_id)
-        background_tasks.add_task(battles.execute, battle.battle_id)
+        pack_name = payload.get("pack", "core")
+        try:
+            probes = get_pack(pack_name)
+        except UnknownPackError:
+            return JSONResponse(
+                {"error": {"message": f"Unknown probe pack: {pack_name}"}}, status_code=400
+            )
+        background_tasks.add_task(battles.execute, battle.battle_id, probes)
         return JSONResponse(
             {"battle_id": battle.battle_id, "status": battle.status}, status_code=202
         )
