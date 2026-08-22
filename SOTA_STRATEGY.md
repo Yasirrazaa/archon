@@ -98,8 +98,12 @@ to roughly a quarter. Ruthless re-prioritization:
 > mutates payloads, verdicts stay model-free (10 tests) · C2 ✅ behavioral MCP probing:
 > `probe_tool()` invokes live tools with canonical injection payloads and judges replies;
 > `archon scan-mcp --url ... --probe-tool NAME` (8 tests). Suite 445→463.
-> Remaining in C: AgentDojo benchmark numbers (needs live datasets/models), wiring the
-> branching attacker into BattleManager battles.
+> Remaining in C: AgentDojo benchmark numbers (needs live datasets/models).
+> **C3 ✅** multi-turn battles are now first-class: `BattleManager.execute(mode="multi_turn")`
+> converts the attack tree into per-branch verdicts (`summary.attack_tree`), and
+> `archon battle --target URL --goal G --seed S --ci` gates on attack success
+> (exit 1 = defense failed). Attack provider via env (`ARCHON_ATTACK_PROVIDER_*`,
+> Gemini OpenAI-compat by default). 6 tests; suite 463→469; live smoke verified.
 5. **GOAT-loop upgrade**: add Hydra-style branching with shared refusal learnings across parallel
    conversation paths (our deterministic signal extraction makes this cheaper per attack than theirs).
 6. **AgentDojo benchmark runs + published numbers** — researcher credibility while the category is hot.

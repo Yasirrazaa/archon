@@ -85,11 +85,20 @@ class BattleManager:
         return self._battles.get(battle_id)
 
     async def execute(self, battle_id: str, probes: list[Probe] | None = None,
-                      target: TargetAdapter | None = None) -> Battle:
+                      target: TargetAdapter | None = None, mode: str = "probes",
+                      goal: str = "", seeds: list[str] | None = None,
+                      provider=None, width: int = 2, max_rounds: int = 3) -> Battle:
         """Run probes. Default path exercises the agent's registered policy;
         when `target` is given, probes go to that remote endpoint instead —
-        this is how Archon validates THIRD-PARTY guardrails."""
+        this is how Archon validates THIRD-PARTY guardrails.
+
+        mode="multi_turn" runs the BranchingAttacker (fan-out/pivot/prune)
+        against a remote target instead of a static probe batch."""
         battle = self._battles[battle_id]
+        if mode == "multi_turn":
+            return await self._execute_multi_turn(
+                battle, target, goal, seeds or [], provider, width, max_rounds
+            )
         if target is not None:
             return await self._execute_remote(battle, probes, target)
         card = self._registry.get(battle.agent_id)
@@ -123,6 +132,46 @@ class BattleManager:
             )
         battle.results = verdicts
         battle.finalize()
+        return battle
+
+    def execute_sync(self, battle_id: str, **kwargs) -> Battle:
+        """Synchronous convenience for CLI/scripts (asyncio.run)."""
+        import asyncio
+
+        return asyncio.run(self.execute(battle_id, **kwargs))
+
+    async def _execute_multi_turn(self, battle: Battle,
+                                  target: TargetAdapter | None,
+                                  goal: str, seeds: list[str],
+                                  provider, width: int, max_rounds: int) -> Battle:
+        if target is None or provider is None:
+            raise ValueError(
+                "multi_turn battles require both a remote target and an attack provider"
+            )
+        from archon_core.attacks.branching import BranchingAttacker
+
+        battle.status = "running"
+        attacker = BranchingAttacker(provider, width=width, max_rounds=max_rounds)
+        tree = await attacker.run(target, goal=goal, seeds=seeds)
+
+        verdicts = []
+        for branch in tree.branches:
+            verdicts.append(ProbeVerdict(
+                probe_name=f"turn{branch.depth}:{branch.payload[:40]}",
+                blocked=not branch.success,
+                category="multi_turn_adaptive",
+                block_reason=(None if branch.success else "no leak evidence in response"),
+            ))
+        battle.results = verdicts
+        battle.finalize()
+        battle.summary["mode"] = "multi_turn"
+        battle.summary["attack_tree"] = {
+            "goal": tree.goal,
+            "success": tree.success,
+            "rounds_run": tree.rounds_run,
+            "branches": len(tree.branches),
+            "errors": list(tree.errors),
+        }
         return battle
 
     async def _execute_remote(self, battle: Battle, probes: list[Probe] | None,

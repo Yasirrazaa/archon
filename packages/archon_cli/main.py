@@ -331,6 +331,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_mcp.add_argument("--json", action="store_true")
     p_mcp.set_defaults(func=_cmd_scan_mcp)
 
+    p_battle = sub.add_parser(
+        "battle", help="multi-turn adaptive battle against a remote guardrail/agent"
+    )
+    p_battle.add_argument("--target", required=True)
+    p_battle.add_argument("--goal", required=True, help="attack goal, e.g. 'exfiltrate system prompt'")
+    p_battle.add_argument("--seed", action="append", default=[],
+                          help="seed probe payload (repeatable)")
+    p_battle.add_argument("--width", type=int, default=2, help="branching factor")
+    p_battle.add_argument("--max-rounds", type=int, default=3)
+    p_battle.add_argument("--target-api-key", default="")
+    p_battle.add_argument("--model", default="default")
+    p_battle.add_argument("--ci", action="store_true",
+                          help="exit 1 if the attack SUCCEEDS (defense failed)")
+    p_battle.set_defaults(func=_cmd_battle)
+
     p_serve = sub.add_parser("serve", help="run the archon-armor proxy")
     p_serve.add_argument("--registry", required=True)
     p_serve.add_argument("--host", default="0.0.0.0")
@@ -340,6 +355,56 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.set_defaults(func=_cmd_serve)
 
     return parser
+
+
+def _run_battle(args) -> dict:
+    """Run one multi_turn branching battle against a remote target.
+
+    Provider comes from the environment (never CLI flags):
+        ARCHON_ATTACK_PROVIDER_BASE_URL  e.g. Gemini OpenAI-compat endpoint
+        ARCHON_ATTACK_PROVIDER_API_KEY
+        ARCHON_ATTACK_PROVIDER_MODEL     default: gemini-2.5-flash
+    Returns the attack-tree summary dict.
+    """
+    from archon_core.providers.openai_compat import OpenAICompatProvider
+    from archon_core.targets.openai_compat import OpenAICompatTarget
+    from archon_armor.battles import BattleManager
+
+    provider = OpenAICompatProvider(
+        base_url=os.environ.get(
+            "ARCHON_ATTACK_PROVIDER_BASE_URL",
+            "https://generativelanguage.googleapis.com/v1beta/openai",
+        ),
+        api_key=os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"),
+        model=os.environ.get("ARCHON_ATTACK_PROVIDER_MODEL", "gemini-2.5-flash"),
+        transport=_target_transport(),
+    )
+    target = OpenAICompatTarget(
+        base_url=args.target,
+        api_key=args.target_api_key or os.environ.get("ARCHON_TARGET_API_KEY"),
+        model=args.model,
+        transport=_target_transport(),
+    )
+    registry = InMemoryRegistry()
+    registry.register(AgentCard(agent_id="remote", name=args.target, version="1",
+                                policy=SecurityPolicy(upstream_base_url=args.target)))
+    manager = BattleManager(registry)
+    battle = manager.create("remote")
+    result = manager.execute_sync(
+        battle.battle_id, target=target, mode="multi_turn",
+        goal=args.goal, seeds=list(args.seed), provider=provider,
+        width=args.width, max_rounds=args.max_rounds,
+    )
+    return result.summary["attack_tree"]
+
+
+def _cmd_battle(args) -> int:
+    tree = _run_battle(args)
+    print(json.dumps(tree, indent=None if args.ci else 2))
+    if args.ci and tree["success"]:
+        print("battle: attack succeeded — gate FAILED", file=sys.stderr)
+        return 1
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
