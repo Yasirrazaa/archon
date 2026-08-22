@@ -119,6 +119,28 @@ def _upstream_from_env(args):
     return HTTPOpenAIUpstream()
 
 
+def _cmd_scan_mcp(args) -> int:
+    from archon_core.targets.mcp_scan import McpConfigScanner, Severity
+
+    findings = McpConfigScanner().scan_file(args.config)
+    report = [
+        {"tool": f.tool, "category": f.category, "severity": f.severity.value,
+         "description": f.description, "evidence": f.evidence}
+        for f in findings
+    ]
+    if args.json or args.ci:
+        print(json.dumps(report, indent=None if args.ci else 2))
+    else:
+        for f in findings:
+            print(f"[{f.severity.value.upper():6}] {f.tool}: {f.description} — {f.evidence}")
+        print(f"\n{len(findings)} finding(s)" if findings else "No findings — config looks clean.")
+
+    high = sum(1 for f in findings if f.severity == Severity.HIGH)
+    if args.ci and high > 0:
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="archon", description="Archon agent security tool")
     sub = parser.add_subparsers(dest="command")
@@ -138,6 +160,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--ci", action="store_true", help="CI gate: exit 1 below threshold")
     p_scan.add_argument("--json", action="store_true", help="JSON report on stdout")
     p_scan.set_defaults(func=_cmd_scan)
+
+    p_mcp = sub.add_parser("scan-mcp", help="statically scan an MCP config for tool poisoning")
+    p_mcp.add_argument("--config", required=True)
+    p_mcp.add_argument("--ci", action="store_true", help="exit 1 on any HIGH finding")
+    p_mcp.add_argument("--json", action="store_true")
+    p_mcp.set_defaults(func=_cmd_scan_mcp)
 
     p_serve = sub.add_parser("serve", help="run the archon-armor proxy")
     p_serve.add_argument("--registry", required=True)
