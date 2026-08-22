@@ -350,6 +350,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_plugins.add_argument("--ci", action="store_true")
     p_plugins.set_defaults(func=_cmd_plugins)
 
+    p_fleet = sub.add_parser("fleet", help="fleet overview from baselines (dashboard primitive)")
+    p_fleet.add_argument("--registry", required=True)
+    p_fleet.add_argument("--baselines", required=True, help="JSON baseline store path")
+    p_fleet.add_argument("--min-block-rate", type=float, default=0.75)
+    p_fleet.add_argument("--ci", action="store_true",
+                         help="exit 1 if any agent is below the fleet minimum")
+    p_fleet.add_argument("--json", action="store_true")
+    p_fleet.set_defaults(func=_cmd_fleet)
+
     p_serve = sub.add_parser("serve", help="run the archon-armor proxy")
     p_serve.add_argument("--registry", required=True)
     p_serve.add_argument("--host", default="0.0.0.0")
@@ -429,6 +438,7 @@ def _contrib_packs() -> list[str]:
 
 def _cmd_plugins(args) -> int:
     from archon_core.defenses import layers as defense_layers
+    from archon_core.defenses.external import ExternalGuardrailLayer
     from archon_core.providers.openai_compat import (
         GeminiOpenAICompatProvider,
         OpenAICompatProvider,
@@ -445,7 +455,7 @@ def _cmd_plugins(args) -> int:
             for cls in vars(defense_layers).values()
             if isinstance(cls, type) and hasattr(cls, "process") and hasattr(cls, "name")
             and cls.__module__.endswith("layers")
-        ],
+        ] + [ExternalGuardrailLayer.name],
         "targets": [OpenAICompatTarget.__name__],
         "providers": [OpenAICompatProvider.__name__, GeminiOpenAICompatProvider.__name__],
         "mcp": ["scan_live_mcp", "probe_tool", "McpConfigScanner"],
@@ -454,6 +464,32 @@ def _cmd_plugins(args) -> int:
     inventory["mcp"].append(scan_live_mcp.__name__)
     inventory["mcp"].append(probe_tool.__name__)
     print(json.dumps(inventory, indent=None if args.ci else 2))
+    return 0
+
+
+def _cmd_fleet(args) -> int:
+    from archon_core.registry.sqlite import SqliteRegistry
+    from archon_armor.baselines import BaselineStore
+    from archon_armor.fleet import FleetSummary
+
+    registry = SqliteRegistry(args.registry)
+    try:
+        metrics = FleetSummary(
+            registry=registry,
+            baselines=BaselineStore(args.baselines),
+            min_block_rate=args.min_block_rate,
+        ).metrics()
+    except FileNotFoundError as exc:
+        print(json.dumps({"error": f"baselines not found: {exc}"}))
+        return 2
+    print(json.dumps(metrics, indent=None if args.json else 2))
+    if args.ci and metrics["degraded"]:
+        print(
+            f"fleet: degraded agents under min block rate: "
+            f"{', '.join(metrics['degraded'])}",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
