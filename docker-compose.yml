@@ -1,0 +1,19 @@
+services:
+  armor:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      ARCHON_REGISTRY_PATH: /data/registry.db
+      ARCHON_AUDIT_PATH: /data/audit.db
+      ARCHON_SPANS_JSONL: /data/spans.jsonl
+    volumes:
+      - archon-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  archon-data:

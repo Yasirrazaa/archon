@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 
 from .base import (
     AgentCard,
@@ -27,7 +28,9 @@ CREATE TABLE IF NOT EXISTS agents (
 
 
 def _connect(path: str) -> sqlite3.Connection:
-    conn = sqlite3.connect(path)
+    # check_same_thread=False: the registry is used from server request threads.
+    # All access is serialized through SqliteRegistry._lock.
+    conn = sqlite3.connect(path, check_same_thread=False)
     conn.execute(_SCHEMA)
     return conn
 
@@ -35,8 +38,13 @@ def _connect(path: str) -> sqlite3.Connection:
 class SqliteRegistry(Registry):
     def __init__(self, path: str = "archon_registry.db") -> None:
         self._conn = _connect(path)
+        self._lock = threading.Lock()
 
     def register(self, card: AgentCard) -> None:
+        with self._lock:
+            self._register(card)
+
+    def _register(self, card: AgentCard) -> None:
         try:
             self._conn.execute(
                 "INSERT INTO agents VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -57,6 +65,10 @@ class SqliteRegistry(Registry):
             ) from exc
 
     def get(self, agent_id: str) -> AgentCard:
+        with self._lock:
+            return self._get(agent_id)
+
+    def _get(self, agent_id: str) -> AgentCard:
         row = self._conn.execute(
             "SELECT agent_id, name, version, capabilities, policy, created_at, api_secret "
             "FROM agents WHERE agent_id = ?",
@@ -70,12 +82,20 @@ class SqliteRegistry(Registry):
         return self.get(agent_id).policy
 
     def list_agents(self) -> list[AgentCard]:
+        with self._lock:
+            return self._list_agents()
+
+    def _list_agents(self) -> list[AgentCard]:
         rows = self._conn.execute(
             "SELECT agent_id, name, version, capabilities, policy, created_at, api_secret FROM agents"
         ).fetchall()
         return [_row_to_card(row) for row in rows]
 
     def delete(self, agent_id: str) -> bool:
+        with self._lock:
+            return self._delete(agent_id)
+
+    def _delete(self, agent_id: str) -> bool:
         cur = self._conn.execute("DELETE FROM agents WHERE agent_id = ?", (agent_id,))
         self._conn.commit()
         return cur.rowcount > 0

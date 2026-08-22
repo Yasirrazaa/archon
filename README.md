@@ -164,13 +164,27 @@ uv run agentbeats-run scenarios/security_arena/scenario_portfolioiq.toml --norma
 The defense pipeline is now a **deployable OpenAI-compatible proxy**. Any agent can adopt Archon protection by changing one env var:
 
 ```bash
-# Run the armor proxy locally
-uv run uvicorn archon_armor.app:create_app --factory --port 8080   # see packages/archon_armor/app.py for factory wiring
+# 1. Register an agent (prints its signing secret ONCE)
+uv run archon register --registry ./registry.db --agent-id my-agent --name "My Agent"
 
-# Point any agent at it
-export OPENAI_BASE_URL="http://localhost:8080/v1"
-# ...and send your registered identity with each request: X-Agent-ID header
+# 2. Run the armor proxy (HMAC-signed requests enforced in server mode)
+uv run archon serve --registry ./registry.db \
+    --upstream-base-url https://api.upstream.test/v1 --require-signed --port 8080
+
+# Or via container:
+docker compose up armor
+
+# 3. Point any agent at it
+export OPENAI_BASE_URL="http://localhost:8080/v1"   # per-request: sign with the agent secret
+
+# 4. Security-scan the agent's policy (CI gate: exit 1 below threshold)
+uv run archon scan --registry ./registry.db --agent-id my-agent --ci --min-block-rate 0.5
 ```
+
+Requests are authenticated with HMAC signatures (replay-protected, body-bound):
+`X-Signature = HMAC_SHA256(secret, "METHOD:path:timestamp:sha256(body)")` — see
+`archon_core.security.authn.sign_request`. Spans are exported as scrubbed OTLP-JSON lines;
+policy changes land in an append-only audit trail.
 
 API surface:
 | Endpoint | Purpose |

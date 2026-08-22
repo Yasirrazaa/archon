@@ -101,20 +101,7 @@ def create_app(
 
     @app.post("/v1/chat/completions")
     async def chat_completions(request: Request) -> JSONResponse:
-        # --- 1. Zero-trust identity -------------------------------------------------
-        agent_id = request.headers.get("X-Agent-ID")
-        if not agent_id:
-            return JSONResponse(
-                {"error": {"message": "Missing X-Agent-ID header"}}, status_code=401
-            )
-        try:
-            card = registry.get(agent_id)
-        except AgentNotFoundError:
-            return JSONResponse(
-                {"error": {"message": f"Unknown agent identity: {agent_id}"}},
-                status_code=404,
-            )
-
+        # --- 1. Zero-trust identity (verifier resolves + authenticates the agent) ---
         raw_body = await request.body()
         verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
         if not verdict.ok:
@@ -125,7 +112,20 @@ def create_app(
             return JSONResponse(
                 {"error": {"message": "Rate limit exceeded"}}, status_code=429
             )
+        agent_id = verdict.agent_id
+        try:
+            card = registry.get(agent_id)
+        except AgentNotFoundError:
+            return JSONResponse(
+                {"error": {"message": f"Unknown agent identity: {agent_id}"}},
+                status_code=404,
+            )
 
+        verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
+        if not verdict.ok:
+            return JSONResponse(
+                {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
+            )
         request_span = (
             tracer.start_span(
                 "armor.request",
