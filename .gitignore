@@ -14,3 +14,14 @@ htmlcov/
 dist/
 build/
 .claude/
+
+# competitor research clones (local only)
+/Guardrails/
+/PyRIT/
+/agent-scan/
+/agentdojo/
+/deepeval/
+/deepteam/
+/garak/
+/promptfoo/
+/ragas/

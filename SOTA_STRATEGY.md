@@ -1,22 +1,24 @@
-# ARCHON SOTA STRATEGY — Verified & Corrected (v2)
+# ARCHON SOTA STRATEGY — Verified & Corrected (v3)
 
-> **Date:** August 22, 2026 · **Branch:** `hackathon-v2` · **Supersedes:** earlier drafts of this strategy
-> Every competitor claim below was re-verified against live sources today. Where this document
-> differs from prior strategy drafts, this version wins.
+> **Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Supersedes:** earlier drafts of this strategy
+> Every competitor claim below was re-verified against live sources Aug 22 and against cloned
+> source code Aug 23. Where this document differs from prior strategy drafts, this version wins.
+> Execution history now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10 to avoid duplicate logs.
 
 ---
 
 ## 0. Status Correction (vs. older drafts)
 
-Prior drafts state *"334 passing tests, Phase 1–6 complete"*. Current reality:
+Prior drafts state *"334/404 passing tests"*. Current reality:
 
 | Area | Status |
 |---|---|
-| Tests | **404 passing** |
-| P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity, `archon` CLI + CI gates, scrubbed JSONL telemetry, policy versioning + audit trail, Dockerfile/compose/wheel |
-| P1 differentiators | ✅ **All shipped**: OWASP-mapped probe packs + coverage matrix, MCP tool-poisoning scanner (`archon scan-mcp --ci`), compliance evidence reports (HTML/MD), Policy-CI baseline regression gates, GCP deployment guide |
+| Tests | **517 passing / 3 skipped** |
+| P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity, `archon` CLI + CI gates, scrubbed OTel→Cloud Trace telemetry, policy versioning + audit trail, Postgres registry, Dockerfile/compose/wheel/Helm |
+| P1 differentiators | ✅ **All shipped**: 72-probe OWASP-mapped corpus + false-positive canaries, MCP static + live behavioral scanning, compliance evidence reports, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer |
+| Benchmarks | ✅ **AgentDojo v1 harness shipped**; deterministic-tier ASR published in [`RESULTS.md`](./RESULTS.md) |
 
-Remaining from old plans: live Cloud Run deployment (needs GCP creds), ADK/Gemini live demo path, demo video, behavioral (live-server) MCP testing, AgentDojo benchmark runs, real gRPC OTLP exporter, YAML config, plugin entry-points.
+Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), Claude-native attacker provider.
 
 ## 1. Verified Market Shifts (Aug 22, 2026) — What Changed Today
 
@@ -33,10 +35,13 @@ direction is unambiguous: they are building exactly the red-team + runtime combi
 was 6–12 months away.
 → **The window is ~3–6 months, not 12.** Speed is now the primary strategic variable.
 
-### 🟡 Shift 3: Garak keeps moving (partially verified)
-Garak is at **v0.16.0 (Aug 2026)** working on intent/technique annotation and IntentProbe.
-The claim that Garak shipped a "GOAT probe / agent-breaker" was **not verifiable in the release
-notes reviewed** — treat as plausible-but-unconfirmed; do not use in public materials without checking.
+### 🟢 Shift 3: Garak keeps moving — GOAT now VERIFIED in code (Aug 23)
+Garak is at **v0.16.1.pre1** with Context-Aware Scanning (CAS) + IntentProbe (self-described
+"experimental and incomplete"). The earlier "unverified" flag on the GOAT claim is **resolved**:
+`garak/probes/goat.py` exists (O-T-S-R attacker-LLM loop), alongside `tap.py` ×3,
+`agent_breaker.py` (tool-analyzing multi-turn), and `latentinjection.py` ×8. Garak is a serious
+multi-turn attacker now — but still scanner-only: no runtime defense, no defense evaluation,
+no live tool sandbox, and compliance *tags* rather than adversarially-validated evidence.
 
 ### 🟡 Shift 4: OWASP Agentic Top-10 (2026) is published and peer-reviewed (CONFIRMED)
 The exact risk numbering ("ASI01–ASI10") used in some drafts is **unverified** — refer to risks by
@@ -98,7 +103,7 @@ to roughly a quarter. Ruthless re-prioritization:
 > mutates payloads, verdicts stay model-free (10 tests) · C2 ✅ behavioral MCP probing:
 > `probe_tool()` invokes live tools with canonical injection payloads and judges replies;
 > `archon scan-mcp --url ... --probe-tool NAME` (8 tests). Suite 445→463.
-> Remaining in C: AgentDojo benchmark numbers (needs live datasets/models).
+> Remaining in C: ~~AgentDojo benchmark numbers~~ ✅ **DONE Aug 23** — `archon_benchmarks` + [`RESULTS.md`](./RESULTS.md).
 > **C3 ✅** multi-turn battles are now first-class: `BattleManager.execute(mode="multi_turn")`
 > converts the attack tree into per-branch verdicts (`summary.attack_tree`), and
 > `archon battle --target URL --goal G --seed S --ci` gates on attack success
@@ -119,10 +124,10 @@ to roughly a quarter. Ruthless re-prioritization:
 
 ## 3.1 Execution log
 
-| Date | Item | Status | Evidence |
-|---|---|---|---|
-| Aug 22, 2026 | Sprint A1 — remote target scanning: `TargetAdapter`/`TargetResponse` seam, `OpenAICompatTarget` with deterministic refusal detection, `BattleManager.execute(target=...)` remote battles, `archon scan --target URL --pack owasp_llm_10 --ci` | ✅ Done | 8 TDD tests; suite 404→412 passing |
-| Aug 22, 2026 | Sprint A2 — production OpenTelemetry: `OtelTracer` bridging the Tracer ABC onto the real OTel SDK (contextvar parenting, async-safe per-task span trees, OTLP type coercion), env factory (`ARCHON_OTEL_EXPORTER=none\|memory\|otlp`), server wiring with PII scrubbing preserved, `[otel]` extra in pyproject | ✅ Done | `observability/otel.py`, 11 TDD tests; suite 412→423 passing; spans export to Cloud Trace/Jaeger/any OTLP collector |
+> **Deduplicated Aug 23:** the full execution history (Sprints A–D, P0/P1 items, suite
+> progression 286→517) now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10.
+> Latest entries: probe corpus 53→72 with false-positive canaries (suite 505→509) and the
+> AgentDojo benchmark harness + published ASR (suite 509→517) — both Aug 23, 2026.
 ## 4. Hackathon (deadline Aug 31) — unchanged, still first
 
 Everything in BLUEPRINT §5.3 stands: deploy armor to Cloud Run, Gemini/Gemma demo path, 4-min
@@ -134,12 +139,12 @@ about someone else's guardrail. Nothing else on stage says that.
 
 | Prior claim | Verdict | Correction |
 |---|---|---|
-| "Promptfoo ships OWASP Agentic ASI01–ASI10 plugins" | 🟡 Partially verified | Multi-turn strategies confirmed; exact ASI numbering unverified — use risk names |
-| "Promptfoo Hydra adapts dynamically" | ✅ Verified | Branching attacker w/ shared tactics across scan |
-| "Garak v0.15.0 GOAT probe + agent-breaker" | ❓ Unverified | v0.16.0 exists w/ IntentProbe; GOAT-probe claim not found in reviewed notes |
-| "PyRIT v0.13 AttackTechnique abstraction" | ⚪ Plausible | Not re-verified today; no strategic impact |
+| "Promptfoo ships OWASP Agentic ASI01–ASI10 plugins" | ✅ Verified in code | `constants/frameworks.ts` maps 9 frameworks incl. OWASP Agentic ASI01-10 (Dec 2025), MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, GDPR, DoD |
+| "Promptfoo Hydra adapts dynamically" | 🟡 Corrected (code-verified) | The branching pattern is real but the adaptive brains run **cloud-side**; OSS ships provider stubs (`goblin.ts` admits it) |
+| "Garak v0.15.0 GOAT probe + agent-breaker" | ✅ Verified in code Aug 23 | `probes/goat.py` + `probes/agent_breaker.py` exist in v0.16.1.pre1 |
+| "PyRIT v0.13 AttackTechnique abstraction" | ✅ Superseded by v1.1 rewrite | Now scenario/registry architecture with `pyrit_scan` CLI + CoPyRIT GUI; still zero compliance mapping (grep-verified) |
 | "97M+ MCP downloads / 82% vulnerable" | ❓ Unverified | Do not cite without source |
-| "Status: 334 tests, Phase 1–6" | ❌ Stale | 404 tests; P0 + P1 complete (see §0) |
+| "Status: 334/404 tests" | ❌ Stale | 517 tests; P0 + P1 complete, benchmarks shipped (see §0) |
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
 
 ---

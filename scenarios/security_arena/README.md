@@ -77,4 +77,4 @@ python3 -m pytest tests/ -v
 - **[Phase 2: Attack & Defend](docs/phase2.md)** — Build attacker/defender agents, submit, and compete on the leaderboard
 - **[Phase 1: Scenario Implementation](docs/phase1.md)** — Framework architecture, plugin system, and scenario creation
 - **[Architecture](../../ARCHITECTURE.md)** — Design decisions and module documentation
-- **[Research Report](../../RESEARCH_REPORT.md)** — Competitive landscape analysis and implementation plan
+- **[Research Report](../../docs/archive/RESEARCH_REPORT.md)** — Historical competitive landscape analysis (archived)

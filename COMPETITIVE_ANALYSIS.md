@@ -1,6 +1,6 @@
-# Archon — Competitive & Market Analysis (v3)
+# Archon — Competitive & Market Analysis (v3.1)
 
-> **Date:** August 22, 2026 · **Method:** every tool claim below was verified against the project's live GitHub repo/docs on this date. Star counts are approximate (±0.2k). Historical versions of this file contained errors — see the Corrections Log at the end.
+> **Date:** August 22–23, 2026 · **Method:** every tool claim below was verified against live vendor docs/repos on Aug 22 and against **cloned source code** of 9 competitors (garak, promptfoo, PyRIT, NeMo Guardrails, AgentDojo, Snyk agent-scan, DeepTeam, DeepEval, RAGAS) on Aug 23. Star counts are approximate (±0.2k). Historical versions of this file contained errors — see the Corrections Log at the end.
 
 ---
 
@@ -44,7 +44,7 @@ Agent-specific testing exists only as a benchmark (**AgentDojo**, ETH Zurich) an
 | Helpfulness regression ("normal user test") alongside security | ✅ | ❌ nobody |
 | Extensible via stable ABCs across attack/defense/provider/target/reporter seams | 🚧 design done (BLUEPRINT §3.2) | Garak's plugin system is probe-side only |
 
-**Honest weaknesses to fix (priority order):** not pip-installable as a tool; single-provider config; no CI mode; small probe corpus vs Garak/Promptfoo; no MCP target adapter; no OTel; repo naming (`arcon`). Full table with closure paths: `BLUEPRINT_HACKATHON.md` §4.
+**Honest weaknesses remaining (Aug 23):** probe corpus breadth vs Garak/Promptfoo (72 probes — mitigated by community pack loader + AgentDojo benchmark credibility); attacker-side LLM diversity (OpenAI-compat + Gemini wired; Claude native pending); live Cloud Run demo (hackathon-pending, needs GCP creds). Closed since the last revision: pip-installable CLI with CI gates ✅, MCP target adapter ✅, OTel ✅, HMAC identity + Postgres + Helm ✅. Full table with closure paths: `BLUEPRINT_HACKATHON.md` §4.
 
 ## 4. Threat & Standards Alignment (OWASP Agentic Top-10 mapping)
 
@@ -72,33 +72,36 @@ Aligning terminology to this table in the Devpost description signals fluency to
 3. ✅ "Promptfoo = OpenAI" retained — now *verified* against Promptfoo's README rather than assumed.
 4. ➕ Added previously missing competitors: AgentDojo, NeMo Guardrails, Snyk Agent Scan/mcp-scan, Google Model Armor; commercial context (Lakera, Zenity, etc.).
 5. 🧹 Removed unverifiable claims ("157 plugins" kept only with approximation framing; PyRIT coverage percentages dropped).
+6. ✅ (Aug 23) "Garak primarily single-turn" → **corrected**: GOAT/TAP/Agent Breaker/Latent Injection verified in v0.16.1 source. Multi-turn is table stakes; the differentiator is the red/blue measurement loop.
+7. ✅ (Aug 23) §7 scorecard reconciled with §10.2 — rows 7–10 zeros were a stale pre-ship snapshot; updated to shipped state (517 tests).
+8. ➕ (Aug 23) Added DeepTeam/DeepEval/RAGAS to the landscape; added code-verified refresh §10.5.
 
 ---
 
-*Superseded historical analyses live in `ALTERNATIVES_COMPARISON.md`, `RESEARCH_REPORT.md`, `PROJECT_REVIEW.md` (correction banners applied).*
+*Superseded historical analyses live in `docs/archive/` (`ALTERNATIVES_COMPARISON`, `RESEARCH_REPORT`, `PROJECT_REVIEW`, `plan`, `research`).*
 
 ---
 
 ## 7. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (334 tests).
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**517 tests**, Aug 23). *Reconciled Aug 23: rows 7–10 previously showed hard zeros from a pre-ship snapshot (334-test era); §10.2's verified deltas were correct — the zeros below are now updated to match shipped reality.*
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Multi-turn adaptive attack engine | **2** ✅ | 1 | 1 | **2** | 0 | 0 | 0 |
-| 2 | Defense evaluation (red vs blue loop) | **2** ✅ | 0 | 0 | 0 | 0 | 0 | 0 |
-| 3 | Runtime defense as deployable product | **2** 🆕 armor proxy | 0 | 0 | 0 | **2** | **2** | 0 |
-| 4 | Per-layer defense telemetry (measurable defense) | **2** 🆕 unique | 0 | 0 | 0 | 0 | 1 (filter verdicts only) | 0 |
-| 5 | Agent identity/registry/policy governance | 1 ⚠️ basic | 0 | 0 | 0 | 0 | **2** (GCP IAM) | 0 |
-| 6 | Observability & audit evidence | 1 ⚠️ local tracer only | 1 | 1 | 0 | 1 | **2** | 1 |
-| 7 | CI/CD developer experience (CLI, exit codes) | **0 ❌** | **2** | 1 | 0 | 1 | n/a | **2** |
-| 8 | Threat/probe corpus breadth | **0 ❌** (4 probes) | **2** | **2** | 1 | 0 | internal | 1 (static MCP) |
-| 9 | MCP/tool-surface testing | **0 ❌** | 1 | 0 | 0 | 0 | 1 (integration) | **2** (static) |
-| 10 | Production hardening (authN/Z, HA, multi-tenant) | **0 ❌** header-only | 1 | 0 | 0 | 1 | **2** | 1 |
+| 1 | Multi-turn adaptive attack engine | **2** ✅ | 1 (brains cloud-side) | **2** (GOAT/TAP/Agent Breaker) | **2** | 0 | 0 | 0 |
+| 2 | Defense evaluation (red vs blue loop) | **2** ✅ unique | 0 | 0 | 0 | 0 | 0 | 0 |
+| 3 | Runtime defense as deployable product | **2** ✅ armor proxy + Helm | 1 (cloud client only) | 0 | 0 | **2** | **2** | 1 (hooks, cloud-enforced) |
+| 4 | Per-layer defense telemetry (measurable defense) | **2** 🆕 unique | 1 | 0 | 0 | 1 | 1 (filter verdicts only) | 0 |
+| 5 | Agent identity/registry/policy governance | **2** ✅ HMAC identity, versioned policies, audit trail | 0 | 0 | 0 | 0 | **2** (GCP IAM) | 0 |
+| 6 | Observability & audit evidence | **2** ✅ OTel→Cloud Trace, scrubbed, immutable audit | 1 | 1 | 0 | 1 | **2** | 1 |
+| 7 | CI/CD developer experience (CLI, exit codes) | **2** ✅ scan/battle/fleet/report all `--ci` | **2** | 1 | 1 (`pyrit_scan`) | 1 | n/a | **2** |
+| 8 | Threat/probe corpus breadth | **1** ⚠️ (72 probes; benchmark-backed via AgentDojo) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
+| 9 | MCP/tool-surface testing | **2** ✅ static scan + live behavioral probing | 1 (real MCP target) | 0 | 0 | 1 (schema rails) | 1 (integration) | **2** (static, closed analysis) |
+| 10 | Production hardening (authN/Z, HA, multi-tenant) | **2** ✅ HMAC+rate-limit, Postgres, Helm non-root | 1 | 0 | 0 | 1 | **2** | 1 |
 | 11 | Open source + self-hostable | **2** | **2** | **2** | **2** | **2** | 0 | 2 (no contribs) |
 | 12 | Cost efficiency (LLM-budget accounting built-in) | **2** ✅ | 0 | 0 | 0 | 0 | token-priced | n/a |
 
-**Reading the table:** nobody scores ≥2 on rows 1+3+4 simultaneously except Archon. That triple — *adaptive attacks, a shippable defense, and proof that the defense works* — is the company-making position. But rows 7, 8, 10 are hard zeros, and enterprises will not pilot a tool with a zero in CI/CD or production hardening regardless of how good the engine is.
+**Reading the table:** nobody scores ≥2 on rows 1+3+4 simultaneously except Archon. That triple — *adaptive attacks, a shippable defense, and proof that the defense works* — is the company-making position. The remaining soft row is corpus breadth (row 8): we close it with community packs and benchmark credibility rather than raw plugin count.
 
 ## 8. The Enterprise Gap List (prioritized by deal-blocking severity)
 
@@ -170,8 +173,23 @@ All findings below were re-verified against vendor docs/repos on this date.
 2. **NeMo Guardrails adapter (P1)** — ✅ **DONE (Aug 22, 2026):** `ExternalGuardrailLayer` (`archon_core/defenses/external.py`) — any OpenAI-compatible guardrail endpoint (NeMo rails server, Model Armor proxy, Promptfoo Guardrails) becomes a pluggable `DefenseLayer`, fail-closed on transport errors, listed in `archon plugins`. The same endpoint stays attackable via `scan --target` — "we validate them" is now a demo, not a plan.
 3. **Plugin entry points (P1)** — ✅ **DONE (Aug 22, 2026):** `load_pack_file()` registers community packs from a single `.py` file; `ARCHON_CONTRIB_DIR` auto-loads a directory of them; `archon plugins` prints the full seam inventory (packs/layers/targets/providers/MCP) as JSON.
 4. **Postgres registry + Helm chart (P1)** — ✅ **DONE (Aug 22, 2026):** `PostgresRegistry` (`archon_core/registry/postgres.py`, psycopg3, JSON-column layout identical to SQLite for zero-migration code changes; injectable connector seam; UniqueViolation→DuplicateAgentError mapping), wired into `archon_armor.server` via `ARCHON_DATABASE_URL`; full Helm chart at `deploy/helm/archon-armor/` (non-root, probes, /data volume, Postgres env wiring, ingress) with structural tests + gated `helm lint`/`template`. Real-Postgres integration test runs when `ARCHON_TEST_DATABASE_URL` is set. Suite 491→505.
-5. **AgentDojo runner (P2)** — publish ASR numbers vs published baselines; instant researcher credibility.
+5. **AgentDojo runner (P2)** — ✅ **DONE (Aug 23, 2026):** `packages/archon_benchmarks/` loads all 27 published AgentDojo v1 injection tasks (no agentdojo LLM-stack install needed) and runs 81 wrapped attacks through the reference pipeline. Published numbers in [`RESULTS.md`](./RESULTS.md): deterministic-tier ASR 66.7% / block 33.3% — direct overrides blocked 100%, structural wrappers documented honestly as LLM-layer territory.
 6. **Fleet dashboard MVP (P2)** — ✅ **DONE (server-side primitive, Aug 22, 2026):** `FleetSummary` aggregates per-agent baselines into fleet metrics (registered/covered/avg-block-rate/degraded list), exposed as `archon fleet --registry --baselines --min-block-rate --ci` (exit 1 when agents fall below the fleet minimum) — the read-only dashboard seed before Promptfoo's lock-in hardens.
+
+### 10.5 Code-verified refresh (Aug 23, 2026 — cloned-source deep dive)
+
+Findings from reading the actual source of all 9 competitors (not just docs):
+
+| Finding | Evidence | Archon implication |
+|---|---|---|
+| Garak is no longer single-turn | `probes/goat.py` (O-T-S-R attacker loop), `tap.py` ×3, `agent_breaker.py`, `latentinjection.py` ×8; new experimental Context-Aware Scanning + IntentProbe | Never claim "Garak can't do multi-turn." Our edge vs Garak remains: runtime defense, defense evaluation, live tool sandbox, compliance *evidence reports* (they have tags, not adversarially-validated evidence) |
+| Promptfoo's adaptive brains are cloud-proprietary | `goblin.ts`: "the provider and cloud task own the behavior"; ~65 plugins via `createRemotePlugin()` | OSS promptfoo without connectivity loses its best attacks. Our BranchingAttacker runs fully local with deterministic verdicts — a genuine air-gapped-enterprise selling point |
+| PyRIT has zero compliance mapping | grep across repo: no OWASP/NIST/MITRE hits | The "exploitation depth × compliance evidence" combination is unclaimed. Our OWASP-mapped HTML/MD reports are unique against PyRIT-class tools |
+| NeMo Guardrails cannot self-validate | No offensive testing capability anywhere in repo; zero compliance mapping | Prime adapter target: NeMo rails behind `ExternalGuardrailLayer` become pluggable defenses AND attackable targets — "we validate NeMo" is demoable today |
+| Snyk agent-scan never executes attacks | Static indicators only; analysis via closed Snyk API; Agent Guard enforcement cloud-side | Our live behavioral MCP lane (`scan-mcp --url --probe-tool`) stays open and unmatched; MIT neutrality vs their black box is an enterprise objection we exploit |
+| DeepTeam CVSS impact hardcoded | `red_teamer/cvss.py`: `DEFAULT_IMPACT = MEDIUM` | True severity derivation from exploit evidence is open — our per-layer verdict traces are the raw material for it |
+| DeepTeam/promptfoo agentic attacks are text-callback simulations | No live tool interception or real store poisoning in either | Live tool-execution attacks + real memory/vector-store poisoning remain fully open (AgentDojo has environments but static templates) |
+| DeepEval/RAGAS have zero security dimension | Red teaming split to DeepTeam post-v3; RAGAS stalled Feb 2026 | Not competitors — but their agentic *eval* metrics define the helpfulness-regression bar our "normal user test" already clears |
 
 
 

@@ -4,7 +4,7 @@
 
 Archon is an Agent security agent built for the [Lambda × Berkeley RDI AgentBeats Security Arena Competition](https://rdi.berkeley.edu/agentx-agentbeats.html) using A2A protocol and Google ADK. Our agent ranked **13th overall**, **18th Attack**, and **6th Defend** on the Private leaderboard with an avg win rate of 49.7% (14.4% Attack and 85.1% Defense win rate).
 
-> **Status (Aug 2026):** active development on branch `hackathon-v2` toward Archon v3 — a production-ready agent security platform (core library + deployable defense proxy + CLI). See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) for architecture and roadmap rationale, and [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md) for verified market intelligence.
+> **Status (Aug 2026):** active development on branch `hackathon-v2` toward Archon v3 — a production-ready agent security platform (core library + deployable defense proxy + CLI). See [`STATUS.md`](./STATUS.md) for the current-state snapshot, [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) for architecture and roadmap rationale, and [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md) for verified market intelligence.
 
 
 ## What This Is
@@ -244,12 +244,16 @@ This implementation draws on published research in AI security:
 
 | Doc | Purpose |
 |---|---|
-| [BLUEPRINT_HACKATHON.md](./BLUEPRINT_HACKATHON.md) | v3 architecture (core-first, extensible ABCs), gap analysis, hackathon strategy & 9-day plan |
-| [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence + OWASP Agentic alignment |
+| [STATUS.md](./STATUS.md) | **Current-state snapshot** — what's shipped, what remains (start here) |
+| [BLUEPRINT_HACKATHON.md](./BLUEPRINT_HACKATHON.md) | v3 architecture (core-first, extensible ABCs), gap analysis, hackathon strategy & progress log |
+| [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence (code-verified vs 9 repos) + OWASP Agentic alignment |
+| [RESULTS.md](./RESULTS.md) | Published AgentDojo v1 benchmark numbers |
+| [REPORT_COMPARATIVE.md](./REPORT_COMPARATIVE.md) | Current-state capability report vs competitors |
 | [ROADMAP.md](./ROADMAP.md) | Post-hackathon product roadmap |
 | [DEPLOY_GCP.md](./DEPLOY_GCP.md) | Cloud Run deployment + Gemini demo path + judge demo script |
 | [SOTA_STRATEGY.md](./SOTA_STRATEGY.md) | Verified market-shift analysis & revised 90-day plan (Aug 2026) |
-| PROJECT_REVIEW / RESEARCH_REPORT / ALTERNATIVES_COMPARISON | Historical research archives (corrections applied) |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Legacy competition-stack ADR (attacker/defender internals) |
+| docs/archive/ | Superseded historical research (`PROJECT_REVIEW`, `RESEARCH_REPORT`, `ALTERNATIVES_COMPARISON`, `plan`, `research`) |
 
 ## License
 

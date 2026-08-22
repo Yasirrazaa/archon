@@ -1,7 +1,7 @@
 # ARCHON v3 BLUEPRINT — World-Class Agent Security Platform & Hackathon Victory Plan
 
-> **Version:** 3.0 · **Date:** August 22, 2026 · **Branch:** `hackathon-v2` (`main` untouched)
-> **Supersedes:** all previous blueprint versions. Every competitor claim below was verified against live sources on Aug 22, 2026 (see §9 Corrections Log).
+> **Version:** 3.1 · **Date:** August 23, 2026 · **Branch:** `hackathon-v2` (`main` untouched)
+> **Supersedes:** all previous blueprint versions. Competitor claims verified against live sources Aug 22–23, 2026 (see §9 Corrections Log). v3.1 adds: AgentDojo benchmark shipped with published ASR (`RESULTS.md`), probe corpus 53→72 with false-positive canaries, and code-verified competitor intel across 9 cloned repos (garak, promptfoo, PyRIT, NeMo Guardrails, AgentDojo, Snyk agent-scan, DeepTeam, DeepEval, RAGAS).
 
 ---
 
@@ -10,31 +10,37 @@
 | Document | Role | Status |
 |---|---|---|
 | `README.md` | Product front door — what Archon is, how to run it | ✅ Updated v3 |
-| `COMPETITIVE_ANALYSIS.md` | Verified competitor & market intelligence | ✅ Rewritten v3 |
-| `BLUEPRINT_HACKATHON.md` | This file — product architecture + competition strategy | ✅ Rewritten v3 |
-| `ROADMAP.md` | Post-hackathon product roadmap (core-first) | ✅ Updated v3 |
-| `PROJECT_REVIEW.md`, `ALTERNATIVES_COMPARISON.md`, `RESEARCH_REPORT.md` | Historical research archives | ⚠️ Corrections applied; superseded by the two docs above |
+| `STATUS.md` | Single current-state snapshot (tests, capabilities, remaining work) | ✅ Added Aug 23 |
+| `COMPETITIVE_ANALYSIS.md` | Verified competitor & market intelligence | ✅ Rewritten v3.1 (code-verified vs 9 repos) |
+| `BLUEPRINT_HACKATHON.md` | This file — product architecture + competition strategy | ✅ Rewritten v3.1 |
+| `RESULTS.md` | Published AgentDojo v1 benchmark numbers (ASR/block-rate) | ✅ New Aug 23 |
+| `REPORT_COMPARATIVE.md` | Current-state capability report vs competitors | ✅ Updated v3.1 |
+| `ROADMAP.md` | Post-hackathon product roadmap (core-first) | ✅ Rewritten against shipped reality |
+| `ARCHITECTURE.md` | Legacy competition-stack ADR (attacker/defender internals) | ⚠️ Historical annex — see §3 here for the v3 package architecture |
+| `docs/archive/` | Superseded historical docs (`ALTERNATIVES_COMPARISON`, `PROJECT_REVIEW`, `RESEARCH_REPORT`, `plan`, `research`) | 🗄️ Archived Aug 23 |
 
-**Reading order for judges/collaborators:** README → COMPETITIVE_ANALYSIS → this file → ROADMAP.
+**Reading order for judges/collaborators:** README → STATUS → COMPETITIVE_ANALYSIS → this file → RESULTS → ROADMAP.
 
 ---
 
 ## 1. Strategy in One Paragraph
 
-Archon's core is already differentiated and proven (286 passing tests, ranked 6th Defense in the Berkeley AgentBeats arena): an adaptive multi-turn attack engine (GOAT-style) and a budgeted multi-layer defense pipeline that no open-source competitor combines. The path to world-class is **not** more attack research — it is **productization**: extract the attack engine and defense pipeline into a provider-agnostic core library, ship the defense pipeline as a deployable runtime proxy (the one thing Garak/Promptfoo/PyRIT categorically don't do), wrap everything in extensible ABCs so new providers/targets/plugins bolt on without touching core, and treat hackathon integrations (Google ADK, Gemini, GCP, Cloud Run) as **optional adapters**, not architectural dependencies. Win the hackathon *because* the product is good, not by warping the product around the hackathon.
+Archon's core is already differentiated and proven (**517 passing tests**, ranked 6th Defense in the Berkeley AgentBeats arena): an adaptive multi-turn attack engine (GOAT-style) and a budgeted multi-layer defense pipeline that no open-source competitor combines. The path to world-class is **not** more attack research — it is **productization**: extract the attack engine and defense pipeline into a provider-agnostic core library, ship the defense pipeline as a deployable runtime proxy (the one thing Garak/Promptfoo/PyRIT categorically don't do), wrap everything in extensible ABCs so new providers/targets/plugins bolt on without touching core, and treat hackathon integrations (Google ADK, Gemini, GCP, Cloud Run) as **optional adapters**, not architectural dependencies. Win the hackathon *because* the product is good, not by warping the product around the hackathon.
 
 ## 2. Verified Market Intelligence (as of Aug 22, 2026)
 
-### 2.1 Open-source leaders (all facts live-checked)
+### 2.1 Open-source leaders (verified against cloned source code, Aug 22–23, 2026)
 
-| Tool | Owner | Stars | License | What it actually does | Real weaknesses (honest) |
+| Tool | Owner | Stars | License | What it actually does | Real weaknesses (honest, code-verified) |
 |---|---|---|---|---|---|
-| **Promptfoo** | **Part of OpenAI** (per its own README; remains MIT open source) | ~24.5k | MIT | CLI/library for LLM evals + red teaming of prompts, agents, RAGs; declarative config; web viewer; CI/CD + code-scan action; pip/brew/npx | Attack-side only; assertion-centric; limited multi-*turn* statefulness; no runtime protection story |
-| **Garak** | NVIDIA (Derczynski, Galinkin et al.) | ~8.9k | Apache-2.0 | "nmap for LLMs": probe/detector/generator/harness plugin system; static, dynamic, adaptive probes; wide generator coverage | Primarily single-turn model probing; no defense evaluation; no agent-runtime visibility |
-| **PyRIT** | Microsoft (moved `Azure/PyRIT` → `microsoft/PyRIT`) | ~4.3k | MIT | Orchestrators, converters, targets, scorers; genuine multi-turn attack automation; works against **any** HTTP/OpenAI-compatible endpoint — Azure optional, not required | Library not tooling (steep ramp); no blue-team side; no runtime defense product |
-| **AgentDojo** | ETH Zurich Spy Lab (w/ Invariant Labs founders) | ~762 | MIT | Dynamic benchmark environments (workspace/travel/banking/slack) evaluating prompt-injection **attacks AND defenses** on LLM agents | Benchmark not product; fixed task suites; no continuous-testing or runtime component |
-| **Snyk Agent Scan** (ex Invariant Labs *mcp-scan*) | Snyk | ~2.9k | Apache-2.0 | Static scanner for MCP servers, agent skills, tool-poisoning detection; CI mode | Static/config scanning only; no behavioral multi-turn testing; closed to contributions |
-| **NeMo Guardrails** | NVIDIA | ~7.0k | Apache-2.0 | Programmable runtime guardrails (Colang rails) for conversational apps | Runtime toolkit, not a tester; no adversary; no eval harness |
+| **Promptfoo** v0.122 | **Part of OpenAI** (per its own README; remains MIT) | ~24.5k | MIT | ~150 red-team plugins × ~35 strategies (incl. real MCP target provider driving live tool calls); OTel GenAI tracing; **9 compliance frameworks** (OWASP LLM/API/Agentic ASI01-10, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, GDPR, DoD); code-scanning product | Adaptive multi-turn **brains (Hydra/Goblin/Crescendo) run in promptfoo's cloud** — OSS ships provider stubs (`goblin.ts`: "the provider and cloud task own the behavior"); guardrails are a paid cloud API client, not a self-hosted proxy; memory/RAG poisoning is simulated two-step, not live-store attacks; Node ≥22 only |
+| **Garak** v0.16.1 | NVIDIA | ~8.9k | Apache-2.0 | 195 probes / 122 detectors / 45 generators / 7 buffs; named attacks: **GOAT** (O-T-S-R attacker loop), TAP×3, Latent Injection×8, **Agent Breaker** (tool-analyzing multi-turn), GCG, AutoDAN; strongest compliance tagging (OWASP LLM01-10, AVID export, MISP ~180 tags, CWE, DeMIS, LMRC) | Scanner only — **zero runtime defense**; no live tool-execution sandbox, no environment-state verification, no multi-agent; new Context-Aware Scanning (CAS) self-described as "experimental and incomplete" |
+| **PyRIT** v1.1.0.dev | Microsoft | ~4.3k | MIT | Deepest attack orchestration: Crescendo/PAIR/TAP/SkeletonKey/ManyShot + ~90 converters + 94 jailbreak templates + 59 dataset loaders; scenario matrix builder; CentralMemory provenance; `pyrit_scan` CLI + CoPyRIT GUI | **No compliance mapping anywhere in code** (biggest gap); agent surface thin (XPIA workflow + ATR dataset only — no MCP orchestrator, no memory/RAG attacks); Azure-leaning deps |
+| **NeMo Guardrails** v0.24.0.dev | NVIDIA | ~7.0k | Apache-2.0 | Runtime defense product: LLMRails (Colang) + experimental IORails validating proxy (OpenAI wire only); ~30 guard integrations; streaming tool-call rails fail-closed; `/v1/checks` sidecar | **Zero offensive testing — cannot validate its own guards**; zero compliance mapping (grep-confirmed); tool rails are schema-level only (no env-state verification); heavy third-party detection glue |
+| **AgentDojo** v0.1.35 | ETH Zurich Spy Lab | ~762 | MIT | NeurIPS 2024 benchmark: 86 user + 27 injection tasks, ~108 tools, FunctionsRuntime sandboxed execution with DeepDiff env-state ground truth (best-in-class instrumented environments); only 4 defenses | Benchmark not product; 14 attack classes mostly static templates; single threat class (indirect injection); slow cadence (last commit Jun 2026) |
+| **Snyk Agent Scan** v0.6 (ex mcp-scan) | Snyk | ~2.9k | Apache-2.0 | Supply-chain static scanning: discovers 13 agents, 15 risk indicators (0-1000), Toxic Flows combination analysis; unique Agent Guard hooks into Claude Code/Cursor/Codex | **Never executes attacks** — analysis is a closed Snyk-API black box; enforcement cloud-side; no OWASP mapping; closed to contributions |
+| **DeepTeam** v1.0.9 | Confident AI | — | Apache-2.0 | 38 vulnerability classes / 124 sub-types (11 agentic), 27 attacks (5 multi-turn), ~56 judge metrics, 7 frameworks incl. OWASP ASI 2026; CVSS module; TraceScanner/CodeScanner | Everything flows through a text callback — **no live tool/MCP interception, no real store poisoning**; CVSS impact hardcoded MEDIUM; guards are DIY library calls, no proxy |
+| **DeepEval** v4.1.10 / **RAGAS** v0.4.3 | Confident AI / vibrantlabsai | 13.9k / 12.8k | Apache-2.0 | Eval-only: ~56 quality metrics (agentic: TaskCompletion, ToolCorrectness, MCP×3) / ~36 RAG metrics + KG testset synthesis | Zero security dimension (red teaming split out to DeepTeam post-v3); RAGAS cadence stalled Feb 2026 |
 
 ### 2.2 Platforms & commercial context
 
@@ -48,8 +54,22 @@ Buyers must currently stitch ≥3 tools: a scanner (Garak/Promptfoo) for pre-dep
 
 Three artifacts required — none of the competitors have all three:
 1. Multi-turn stateful attack engine with deterministic signal extraction ✅ *(exists today)*
-2. Defense pipeline packaged as a drop-in runtime proxy with per-layer telemetry 🚧 *(logic exists, packaging doesn't)*
-3. Extensible core where third parties add strategies/layers/providers via stable ABCs 🚧 *(partially exists via scenario plugins)*
+2. Defense pipeline packaged as a drop-in runtime proxy with per-layer telemetry ✅ *(shipped: archon-armor)*
+3. Extensible core where third parties add strategies/layers/providers via stable ABCs ✅ *(shipped: five seams + community pack loader)*
+
+### 2.4 The nine gaps NO competitor covers well (code-verified across 9 repos, Aug 23, 2026)
+
+This is Archon's opportunity space — each row was verified absent-or-weak in every cloned repo:
+
+1. **Closed-loop verified security** — attack → deploy shield → re-attack to *prove* the shield works. garak/promptfoo/PyRIT are test-time only; NeMo defends but cannot self-validate; Archon's `BattleManager` + Policy-CI baselines do this today.
+2. **Self-hosted runtime enforcement proxy** — promptfoo Guardrails is a paid cloud client; Snyk enforcement is a cloud black box; NeMo's IORails is closest but has zero offense and zero compliance mapping; archon-armor is an MIT OpenAI-compat proxy.
+3. **Live tool-execution attacks in instrumented sandboxes** — AgentDojo has environments but static templates + 4 defenses; DeepTeam/promptfoo simulate via text callbacks; PyRIT has none.
+4. **Live memory/vector-store poisoning** — everyone simulates (promptfoo's `agentic:memory-poisoning` is a two-step scenario); nobody manipulates real stores.
+5. **Multi-agent trust-boundary attacks** — OWASP ASI07 is mapped by promptfoo but not attacked; DeepTeam covers it as a metric only.
+6. **Compliance-mapped red teaming WITH exploitation** — promptfoo maps 9 frameworks but its adaptive brains are cloud-proprietary; PyRIT exploits deeply but has zero compliance mapping. Nobody combines both openly.
+7. **True CVSS derivation** — DeepTeam's impact score is hardcoded MEDIUM.
+8. **Trace-driven ATTACK generation** — promptfoo/DeepEval use OTel traces for evaluation only; nobody generates attacks from traces.
+9. **MIT-neutral vendor independence** — post-OpenAI-acquisition, "vendor grades its own homework" is a real enterprise buying objection that only an independent MIT project answers.
 
 ## 3. Core-First Product Architecture (No Hackathon Lock-In)
 
@@ -210,10 +230,10 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 
 ## 8. Post-Hackathon Trajectory (summary — details in ROADMAP.md)
 
-1. **v0.2:** pip-installable `archon` CLI, YAML config, CI exit codes → compete for Promptfoo's security niche.
-2. **v0.3:** MCP target adapter + tool-poisoning attack suite → own the OWASP Agentic Top-10 conversation before Snyk Agent Scan's static-only approach can follow.
-3. **v0.4:** AgentDojo benchmark integration + published results → researcher credibility.
-4. **v1.0:** registry server, multi-tenant armor deployments, OTel-native everywhere.
+1. **v0.2:** pip-installable `archon` CLI, YAML config, CI exit codes → compete for Promptfoo's security niche. ✅ *Shipped Aug 22.*
+2. **v0.3:** MCP target adapter + tool-poisoning attack suite → own the OWASP Agentic Top-10 conversation before Snyk Agent Scan's static-only approach can follow. ✅ *Shipped Aug 22 (static scan + live behavioral probing).*
+3. **v0.4:** AgentDojo benchmark integration + published results → researcher credibility. ✅ *Shipped Aug 23 — `archon_benchmarks` + `RESULTS.md` (81 attacks over all 27 published v1 injection tasks; deterministic-tier ASR 66.7%).*
+4. **v1.0:** registry server, multi-tenant armor deployments, OTel-native everywhere. 🚧 *Postgres registry + Helm + OTLP→Cloud Trace shipped; multi-tenant control plane remains.*
 
 ## 9. Corrections Log — False/Stale Claims Removed in v3
 
@@ -228,6 +248,11 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 | Blueprint's GCP-first build order (Pub/Sub+Redis+Firestore on days 1–2) | ⚠️ Reordered | Core-first: ship archon-armor + registry MVP first; cloud infra behind optional adapters; Pub/Sub/Redis descoped |
 | "LLM Guard (Protect AI)" | ⚠️ Context added | Protect AI was acquired by Palo Alto Networks (2025) |
 | mcp-scan (Invariant Labs) missing entirely | ⚠️ Added | Now Snyk Agent Scan (~2.9k★); static MCP/skills scanner |
+| "Garak GOAT probe unverified — do not use publicly" (SOTA_STRATEGY Shift 3) | ✅ Verified in code Aug 23 | `garak/probes/goat.py` exists in v0.16.1.pre1: O-T-S-R attacker-LLM loop; also `agent_breaker.py` (tool-analyzing multi-turn), TAP×3, Latent Injection×8. Garak is **not** single-turn anymore |
+| "Promptfoo Hydra/Goblin/Crescendo run locally" | ❌ False (code-verified) | Multi-turn strategy brains live in promptfoo's cloud; OSS ships provider stubs (`goblin.ts` admits it). OSS without connectivity loses adaptive coverage |
+| "DeepTeam CVSS scoring" | ⚠️ Weak (code-verified) | Impact component hardcoded `DEFAULT_IMPACT = MEDIUM` — not derived from vulnerability type |
+| "PyRIT has compliance mapping" | ❌ False (grep-verified) | Zero OWASP/NIST/MITRE mapping anywhere in PyRIT code — its biggest enterprise gap |
+| "NeMo Guardrails has no runtime product" | ❌ Corrected | It IS a runtime defense product (IORails validating proxy, `/v1/checks`, streaming tool-call rails) — but with zero offensive self-testing and zero compliance mapping |
 
 ---
 
@@ -239,6 +264,8 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 
 | Date | Phase | Status | Evidence |
 |---|---|---|---|
+| Aug 23, 2026 | P0 probe corpus expansion + false-positive canaries: corpus 53→72 (LLM02 ×4 new, LLM07 ×3 new, `harmless_helpfulness` pack of 12 benign canaries — security-article summary, lockpick fiction, wifi-password hygiene, recipes, etc.); test-enforced: ≥70 probes, all canaries unblocked by the reference pipeline (false-positive guard) | ✅ Done | `probes.py`, 9 TDD tests; suite 505→509; `archon plugins --ci`: core 4 / harmless_helpfulness 12 / owasp_llm_10 56 |
+| Aug 23, 2026 | AgentDojo benchmark harness: loads all **27 published v1 injection tasks** (banking 9 / slack 5 / travel 7 / workspace 6) without installing agentdojo's LLM stack (sys.modules stubbing of `agent_pipeline`); 3 wrappers incl. AgentDojo's canonical `<INFORMATION>` template → 81 attacks through the reference pipeline; published ASR 66.7% / block 33.3% (deterministic tier; direct_override 0% ASR, structural wrappers pass to LLM layers) | ✅ Done | `packages/archon_benchmarks/`, `RESULTS.md`, 8 TDD tests; suite 509→517 |
 | Aug 22, 2026 | §5.2 Registry MVP: `Registry` ABC, `AgentCard`/`SecurityPolicy`, InMemory + SQLite backends | ✅ Done | `packages/archon_core/registry/`, 14 TDD tests; suite 300→314 passing |
 | Aug 22, 2026 | §5.2 Observability: LocalTracer (async-safe contextvar nesting), OTel-shaped JSON export, armor.request + per-layer spans with verdict attributes | ✅ Done | `observability/base.py`, 5 TDD tests; suite 322→327 passing |
 | Aug 22, 2026 | §5.2 archon-armor proxy: FastAPI OpenAI-compatible endpoint, zero-trust X-Agent-ID, policy-driven pipeline, output guardrails, upstream abstraction (HTTPOpenAIUpstream) | ✅ Done | `packages/archon_armor/`, 8 TDD tests; suite 314→322 passing |
@@ -265,7 +292,9 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 | Aug 22, 2026 | P0 authN: HMAC-signed requests (body-bound, replay-protected), `HmacVerifier`, per-agent secrets on AgentCard, `TokenBucketRateLimiter`; legacy header mode isolated as `AllowAllVerifier` | ✅ Done | `security/authn.py`, `security/ratelimit.py`, 18 TDD tests; suite 334→352 passing |
 | Aug 22, 2026 | §3 provider seam + §5.2 battle/scan API: `LLMProvider` ABC, OpenAI-compat + Gemini providers (mock-transport tested), `BattleManager` with async submit/poll REST API and block-rate summaries | ✅ Done | `providers/`, `archon_armor/battles.py`, 7 TDD tests; suite 327→334 passing |
 
-**Remaining for hackathon submission (§5.3):** Cloud Run deployment + GCP proof artifacts, ADK target adapter + live Gemini demo path, demo video, Devpost package.
+**Remaining for hackathon submission (§5.3):** Cloud Run deployment + GCP proof artifacts (user-side, needs GCP credentials), demo video, Devpost package. ADK target adapter / live Gemini demo path optional — Gemini already wired as the default attack provider via OpenAI-compat.
+
+**Suite state:** 517 passed / 3 skipped (skips: live-Postgres integration behind `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 
 

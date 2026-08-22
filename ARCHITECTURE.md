@@ -1,5 +1,14 @@
 # Architecture Decision Record
 
+> ⚠️ **Scope note (Aug 23, 2026):** this ADR documents the **legacy competition stack**
+> (`scenarios/security_arena/` agents + `src/agentbeats/` harness) — the attacker loop and
+> defender layer internals below remain accurate for those components. It does **not** describe
+> the current product architecture. For the shipped v3 platform (the `packages/` monorepo:
+> archon-core 8-layer pipeline, archon-armor proxy, CLI, benchmarks, five extension seams),
+> see [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §3. The "Task Shield ASR 2.07%"
+> figure cited below is a published AgentDojo baseline used in [`RESULTS.md`](./RESULTS.md)
+> comparisons.
+
 ## Design Principles
 
 ### 1. Scenario-Agnostic Agents
