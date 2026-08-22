@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS agents (
     version TEXT NOT NULL,
     capabilities TEXT NOT NULL,
     policy TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    api_secret TEXT
 );
 """
 
@@ -38,7 +39,7 @@ class SqliteRegistry(Registry):
     def register(self, card: AgentCard) -> None:
         try:
             self._conn.execute(
-                "INSERT INTO agents VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO agents VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     card.agent_id,
                     card.name,
@@ -46,6 +47,7 @@ class SqliteRegistry(Registry):
                     json.dumps(card.capabilities),
                     json.dumps(_policy_to_dict(card.policy)),
                     card.created_at,
+                    card.api_secret,
                 ),
             )
             self._conn.commit()
@@ -56,7 +58,7 @@ class SqliteRegistry(Registry):
 
     def get(self, agent_id: str) -> AgentCard:
         row = self._conn.execute(
-            "SELECT agent_id, name, version, capabilities, policy, created_at "
+            "SELECT agent_id, name, version, capabilities, policy, created_at, api_secret "
             "FROM agents WHERE agent_id = ?",
             (agent_id,),
         ).fetchone()
@@ -69,7 +71,7 @@ class SqliteRegistry(Registry):
 
     def list_agents(self) -> list[AgentCard]:
         rows = self._conn.execute(
-            "SELECT agent_id, name, version, capabilities, policy, created_at FROM agents"
+            "SELECT agent_id, name, version, capabilities, policy, created_at, api_secret FROM agents"
         ).fetchall()
         return [_row_to_card(row) for row in rows]
 
@@ -92,7 +94,7 @@ def _policy_from_dict(data: dict) -> SecurityPolicy:
 
 
 def _row_to_card(row) -> AgentCard:
-    agent_id, name, version, capabilities, policy, created_at = row
+    agent_id, name, version, capabilities, policy, created_at, api_secret = row
     return AgentCard(
         agent_id=agent_id,
         name=name,
@@ -100,4 +102,5 @@ def _row_to_card(row) -> AgentCard:
         capabilities=json.loads(capabilities),
         policy=_policy_from_dict(json.loads(policy)),
         created_at=created_at,
+        api_secret=api_secret,
     )

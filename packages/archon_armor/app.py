@@ -27,6 +27,8 @@ from archon_core.defenses.base import DefensePipeline
 from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
+from archon_core.security.authn import AllowAllVerifier, IdentityVerifier
+from archon_core.security.ratelimit import TokenBucketRateLimiter
 
 from .battles import BattleManager
 from .upstream import LLMUpstream, UpstreamError
@@ -82,8 +84,13 @@ def create_app(
     upstream: LLMUpstream,
     tracer: Tracer | None = None,
     battles: BattleManager | None = None,
+    identity: IdentityVerifier | None = None,
+    rate_limiter: TokenBucketRateLimiter | None = None,
 ) -> FastAPI:
+    """identity=None enables legacy header-only mode (dev/test only).
+    Production deployments must pass an HmacVerifier."""
     app = FastAPI(title="archon-armor", version="0.1.0")
+    identity = identity or AllowAllVerifier()
     battles = battles or BattleManager(registry, tracer=tracer)
 
     @app.get("/healthz")
@@ -106,6 +113,17 @@ def create_app(
                 status_code=404,
             )
 
+        raw_body = await request.body()
+        verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
+        if not verdict.ok:
+            return JSONResponse(
+                {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
+            )
+        if rate_limiter is not None and not rate_limiter.allow(verdict.agent_id):
+            return JSONResponse(
+                {"error": {"message": "Rate limit exceeded"}}, status_code=429
+            )
+
         request_span = (
             tracer.start_span(
                 "armor.request",
@@ -116,7 +134,7 @@ def create_app(
         )
         try:
             return await _handle_chat(
-                request, card, upstream, tracer, request_span
+                raw_body, card, upstream, tracer, request_span
             )
         except UpstreamError as exc:
             if request_span is not None:
@@ -125,10 +143,12 @@ def create_app(
                 {"error": {"message": str(exc)}}, status_code=502
             )
 
-    async def _handle_chat(request, card, upstream, tracer, request_span):
+    async def _handle_chat(raw_body, card, upstream, tracer, request_span):
         # --- 2. Validate body -------------------------------------------------------
         try:
-            payload = await request.json()
+            import json as _json
+
+            payload = _json.loads(raw_body)
             messages = payload["messages"]
             if not isinstance(messages, list) or not messages:
                 raise ValueError("messages must be a non-empty list")
@@ -199,8 +219,20 @@ def create_app(
     # ------------------------------------------------------------------
     @app.post("/v1/battles")
     async def create_battle(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
+        raw_body = await request.body()
+        verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
+        if not verdict.ok:
+            return JSONResponse(
+                {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
+            )
+        if rate_limiter is not None and not rate_limiter.allow(verdict.agent_id):
+            return JSONResponse(
+                {"error": {"message": "Rate limit exceeded"}}, status_code=429
+            )
         try:
-            payload = await request.json()
+            import json as _json
+
+            payload = _json.loads(raw_body)
             agent_id = payload["agent_id"]
         except Exception:
             return JSONResponse(

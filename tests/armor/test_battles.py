@@ -28,7 +28,7 @@ def make_client(policy=None):
 
 def test_submit_battle_returns_id_and_completes():
     client = make_client()
-    resp = client.post("/v1/battles", json={"agent_id": "agent-1"})
+    resp = client.post("/v1/battles", json={"agent_id": "agent-1"}, headers={"X-Agent-ID": "agent-1"})
     assert resp.status_code == 202
     battle_id = resp.json()["battle_id"]
     assert resp.json()["status"] == "queued"
@@ -44,7 +44,7 @@ def test_submit_battle_returns_id_and_completes():
 
 def test_battle_includes_benign_control_and_injection_probe():
     client = make_client()
-    battle_id = client.post("/v1/battles", json={"agent_id": "agent-1"}).json()["battle_id"]
+    battle_id = client.post("/v1/battles", json={"agent_id": "agent-1"}, headers={"X-Agent-ID": "agent-1"}).json()["battle_id"]
     status = client.get(f"/v1/battles/{battle_id}").json()
 
     by_name = {r["probe_name"]: r for r in status["results"]}
@@ -55,7 +55,7 @@ def test_battle_includes_benign_control_and_injection_probe():
 
 def test_battle_for_unknown_agent_rejected():
     client = make_client()
-    resp = client.post("/v1/battles", json={"agent_id": "ghost"})
+    resp = client.post("/v1/battles", json={"agent_id": "ghost"}, headers={"X-Agent-ID": "agent-1"})
     assert resp.status_code == 404
 
 

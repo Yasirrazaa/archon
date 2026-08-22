@@ -49,6 +49,7 @@ class AgentCard:
     version: str
     capabilities: list[str] = field(default_factory=list)
     policy: SecurityPolicy = field(default_factory=SecurityPolicy)
+    api_secret: str | None = None  # HMAC signing secret (server-side only)
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
