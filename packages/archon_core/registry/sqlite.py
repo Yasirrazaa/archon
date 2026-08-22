@@ -81,6 +81,17 @@ class SqliteRegistry(Registry):
     def get_policy(self, agent_id: str) -> SecurityPolicy:
         return self.get(agent_id).policy
 
+    def update_policy(self, agent_id: str, policy: SecurityPolicy) -> None:
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE agents SET policy = ? WHERE agent_id = ?",
+                (json.dumps(_policy_to_dict(policy)), agent_id),
+            )
+            self._conn.commit()
+            if cur.rowcount == 0:
+                from .base import AgentNotFoundError
+                raise AgentNotFoundError(f"unknown agent: {agent_id}")
+
     def list_agents(self) -> list[AgentCard]:
         with self._lock:
             return self._list_agents()

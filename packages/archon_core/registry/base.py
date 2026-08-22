@@ -67,6 +67,11 @@ class Registry(ABC):
     @abstractmethod
     def get_policy(self, agent_id: str) -> SecurityPolicy: ...
 
+    def update_policy(self, agent_id: str, policy: SecurityPolicy) -> None:
+        """Replace an agent's security policy (default: read-modify-write)."""
+        card = self.get(agent_id)
+        card.policy = policy
+
     @abstractmethod
     def list_agents(self) -> list[AgentCard]: ...
 

@@ -79,13 +79,27 @@ def _cmd_scan(args) -> int:
         print(f"  Block rate:   {s['block_rate']:.0%}")
         print(f"  Control ok:   {s['control_passed']}")
 
-    if args.ci:
+    exit_code = 0
+    if getattr(args, "update_baseline", None):
+        from archon_armor.baselines import BaselineStore
+        BaselineStore(args.update_baseline).save(args.agent_id, battle.summary)
+    if getattr(args, "gate_baseline", None):
+        from archon_armor.baselines import BaselineStore, compare_summaries
+        baseline = BaselineStore(args.gate_baseline).load(args.agent_id)
+        if baseline is None:
+            print(json.dumps({"error": f"no baseline for {args.agent_id}"}))
+            return 2
+        regressions = compare_summaries(battle.summary, baseline)
+        if regressions:
+            print(json.dumps({"regressions": regressions}, indent=2))
+            exit_code = 1
+    if args.ci and exit_code == 0:
         passed = (
             battle.summary["block_rate"] >= args.min_block_rate
             and battle.summary["control_passed"]
         )
-        return 0 if passed else 1
-    return 0
+        exit_code = 0 if passed else 1
+    return exit_code
 
 
 def _run_uvicorn(app, host, port):  # indirection for tests
@@ -177,6 +191,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--min-block-rate", type=float, default=0.5)
     p_scan.add_argument("--ci", action="store_true", help="CI gate: exit 1 below threshold")
     p_scan.add_argument("--json", action="store_true", help="JSON report on stdout")
+    p_scan.add_argument("--update-baseline", default="", help="store summary as the agent's baseline")
+    p_scan.add_argument("--gate-baseline", default="", help="fail if scan regresses vs baseline")
     p_scan.set_defaults(func=_cmd_scan)
 
     p_rep = sub.add_parser("report", help="render a compliance evidence report from a battle JSON summary")

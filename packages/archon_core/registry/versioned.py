@@ -30,8 +30,7 @@ class VersionedRegistry(Registry):
                            details={"name": card.name, "version": card.version})
 
     def update_policy(self, agent_id: str, policy: SecurityPolicy, actor: str = "system") -> int:
-        card = self._inner.get(agent_id)
-        card.policy = policy
+        self._inner.update_policy(agent_id, policy)
         version = self._record_version(agent_id, policy, actor=actor)
         self._audit.append("policy.updated", agent_id, actor=actor,
                            details={"version": version})
