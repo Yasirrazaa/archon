@@ -1,8 +1,13 @@
 # SOTA Attack & Defense Agent: Deep Research Report & Implementation Plan
 
+> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Competition-era research; the implemented plan below shipped as v2.0 (286 tests). Star counts cited are stale (Promptfoo ~24.5k, Garak ~8.9k, PyRIT ~4.3k at `microsoft/PyRIT`); current market analysis lives in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
+
+
+# SOTA Attack & Defense Agent: Deep Research Report & Implementation Plan
+
 **Date**: June 2026  
-**Project**: AgentBeats Security Arena  
-**Current Ranking**: 12th overall (#4 attack, #11 defend)  
+**Project**: Archon  
+**Current Ranking**: 13th overall (18th Attack, 6th Defend)  
 **Target**: #1 overall, #1 in both attack and defense  
 
 ---

@@ -1,8 +1,11 @@
-# AgentBeats Security Arena
+# Archon
 
 **Adversarial AI Agent Security Testing Framework**
 
-Built for the [Lambda × Berkeley RDI AgentBeats Security Arena Competition](https://rdi.berkeley.edu/agentx-agentbeats.html). Scored **12th overall** (#4 attack, #11 defend) on the competitive leaderboard.
+Archon is an Agent security agent built for the [Lambda × Berkeley RDI AgentBeats Security Arena Competition](https://rdi.berkeley.edu/agentx-agentbeats.html) using A2A protocol and Google ADK. Our agent ranked **13th overall**, **18th Attack**, and **6th Defend** on the Private leaderboard with an avg win rate of 49.7% (14.4% Attack and 85.1% Defense win rate).
+
+> **Status (Aug 2026):** active development on branch `hackathon-v2` toward Archon v3 — a production-ready agent security platform (core library + deployable defense proxy + CLI). See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) for architecture and roadmap rationale, and [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md) for verified market intelligence.
+
 
 ## What This Is
 
@@ -38,37 +41,6 @@ A multi-scenario adversarial testing framework where AI attacker and defender ag
 │  • Contract awareness   │           │  NEW:                   │
 │  • Sequential chaining  │           │  • 14 normalization txns │
 └─────────────────────────┘           └─────────────────────────┘
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Security Arena Orchestrator                    │
-│  Loads scenario plugins → Injects context → Manages battles      │
-└────────────────────────────────┬────────────────────────────────┘
-                                 │
-              ┌──────────────────┴──────────────────┐
-              ▼                                      ▼
-┌─────────────────────────┐           ┌─────────────────────────┐
-│    Attacker Agent       │           │    Defender Agent        │
-│                         │           │                         │
-│  GOAT-style loop with   │  7-round  │  5-layer defense        │
-│  adaptive strategy      │◄────────►│  pipeline                │
-│  selection              │  battle   │                         │
-│                         │           │  • Python sanitization   │
-│  • Signal extraction    │           │  • Dynamic invariants    │
-│  • Fragment reconstruc. │           │  • PPA spotlighting      │
-│  • Vocabulary exploits  │           │  • Task Shield prompt    │
-│  • Payload scoring      │           │  • Exchange classifier   │
-└─────────────────────────┘           └─────────────────────────┘
-              │                                      │
-              └──────────────────┬──────────────────┘
-                                 ▼
-                    ┌─────────────────────┐
-                    │  Scenario Plugins    │
-                    │  portfolioiq         │
-                    │  thingularity        │
-                    │  gymjailbreak        │
-                    │  resume_downgrade    │
-                    │  medical_records     │
-                    └─────────────────────┘
 ```
 
 ## Scenario Types
@@ -114,9 +86,9 @@ New scenarios can be added without modifying any core code.
 
 ## Competition Results
 
-- **Overall**: 12th place (42.5% win rate)
-- **Attack**: 4th place (#4)
-- **Defense**: 11th place (#20)
+- **Overall**: 13th place (49.7% avg win rate)
+- **Attack**: 18th place (14.4% win rate)
+- **Defense**: 6th place (85.1% win rate)
 
 Battle-tested against 5 scenario types plus unseen private leaderboard scenarios.
 
@@ -192,9 +164,11 @@ uv run agentbeats-run scenarios/security_arena/scenario_portfolioiq.toml --norma
 This implementation draws on published research in AI security:
 
 - **GOAT** (Meta Research): Generative Offensive Agent Tester for multi-turn jailbreaking
-- **PyRIT** (Microsoft): Python Risk Identification Toolkit for adversarial testing
+- **PyRIT** (Microsoft — [microsoft/PyRIT](https://github.com/microsoft/PyRIT)): Python Risk Identification Toolkit; endpoint-agnostic multi-turn attack orchestration
 - **Garak** (NVIDIA): LLM vulnerability scanner with 80+ probes
-- **Promptfoo** (OpenAI): 157 attack plugins, Meta Agent strategy (70-90% ASR)
+- **Promptfoo** (now part of OpenAI, still MIT OSS): red-teaming plugins and strategies (plugin counts and ASR figures are vendor-reported)
+- **AgentDojo** (ETH Zurich Spy Lab): benchmark for prompt-injection attacks *and defenses* on LLM agents
+- **OWASP Agentic Security Initiative**: Top 10 for Agentic Applications (2026) — Archon's threat taxonomy aligns to it
 - **NeuralShield** (2nd Place): 91% defense win rate, 7-layer security gateway
 - **GCG Attack** (Zou et al.): Universal adversarial suffixes
 - **Crescendo** (Microsoft): Multi-turn gradual escalation attack
@@ -228,6 +202,15 @@ This implementation draws on published research in AI security:
 - GOAT-style adaptive attacker with signal extraction
 - 5-layer defense pipeline with PPA spotlighting
 - 5 scenario plugins (PortfolioIQ, Thingularity, GymJailbreak, Resume Downgrade, Medical Records)
+
+## Documentation
+
+| Doc | Purpose |
+|---|---|
+| [BLUEPRINT_HACKATHON.md](./BLUEPRINT_HACKATHON.md) | v3 architecture (core-first, extensible ABCs), gap analysis, hackathon strategy & 9-day plan |
+| [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence + OWASP Agentic alignment |
+| [ROADMAP.md](./ROADMAP.md) | Post-hackathon product roadmap |
+| PROJECT_REVIEW / RESEARCH_REPORT / ALTERNATIVES_COMPARISON | Historical research archives (corrections applied) |
 
 ## License
 
