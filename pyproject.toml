@@ -33,6 +33,7 @@ dependencies = [
 
 [project.scripts]
 agentbeats-run = "agentbeats.run_scenario:main"
+archon = "archon_cli.main:main"
 
 [tool.uv]
 package = true
@@ -43,7 +44,7 @@ dev-dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agentbeats", "packages/archon_core", "packages/archon_armor"]
+packages = ["src/agentbeats", "packages/archon_core", "packages/archon_armor", "packages/archon_cli"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
