@@ -233,6 +233,15 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 
 *End of BLUEPRINT v3. Maintain this document alongside code changes on `hackathon-v2`; bump version and date on every substantive edit.*
 
+---
+
+## 10. Implementation Progress Log
+
+| Date | Phase | Status | Evidence |
+|---|---|---|---|
+| Aug 22, 2026 | §3 core contracts: `Exchange` model, `DefenseLayer` ABC, `DefensePipeline` (fail-closed, budget-aware, tracer hooks), 7 concrete layers wrapping proven defender modules via compat bridge | ✅ Done | `packages/archon_core/`, 14 new TDD tests; suite 286→300 passing |
+
+
 
 
 

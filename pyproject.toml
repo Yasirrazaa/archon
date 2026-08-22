@@ -43,7 +43,7 @@ dev-dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agentbeats"]
+packages = ["src/agentbeats", "packages/archon_core", "packages/archon_armor"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -51,6 +51,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+pythonpath = ["packages"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests requiring external services",
