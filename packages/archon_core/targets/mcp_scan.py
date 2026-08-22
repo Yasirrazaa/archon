@@ -32,14 +32,8 @@ class Finding:
     description: str
     evidence: str  # redacted snippet
 
-    def __dict__(self):  # pragma: no cover - convenience for json.dumps
-        return {
-            "tool": self.tool,
-            "category": self.category,
-            "severity": self.severity.value,
-            "description": self.description,
-            "evidence": self.evidence,
-        }
+    # NOTE: do not define `__dict__` as a method here — instances must expose
+    # their real attribute dict so `finding.__dict__` JSON-serializes.
 
 
 _DESCRIPTION_PATTERNS = [

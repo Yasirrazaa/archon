@@ -76,7 +76,18 @@ to roughly a quarter. Ruthless re-prioritization:
    most viral capability available to us. (Core seam exists; mostly CLI + adapter plumbing.)
 2. **Real OTLP exporter** (HTTP/protobuf or JSON) alongside the JSONL sink → Cloud Trace proof.
 
+> **Status (Aug 22, 2026):** A1 ✅ `archon scan --target` (8 tests, suite 404→412) ·
+> A2 ✅ `OtelTracer` on the real OTel SDK, `ARCHON_OTEL_EXPORTER=otlp` → Cloud Trace,
+> scrubbed, `[otel]` extra (11 tests, suite 412→423).
+
 ### Sprint B (Weeks 3–5): Behavioral MCP before Promptfoo's MCP Proxy matures
+> **Status (Aug 22, 2026):** B1 ✅ live MCP scanning `archon scan-mcp --url` over
+> Streamable HTTP with the pattern engine on real tool metadata (10 tests, suite
+> 423→433) · B2 ✅ YAML policy-as-code `archon scan --config archon.yaml`
+> (`examples/archon.yaml`, 12 tests, suite 433→445). Remaining: tool-invocation
+> battles (behavioral probing beyond metadata) — deferred to Sprint C alongside
+> the Hydra-style attacker upgrade.
+
 3. **Live `MCPTarget` adapter**: spawn/connect an MCP server, enumerate tools, run poisoning +
    confused-deputy battles against real tool calls (static scanner already shipped).
 4. **YAML battle config** (`archon-config.yaml`) for policy-as-code security tests in Git.

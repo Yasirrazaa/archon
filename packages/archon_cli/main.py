@@ -44,6 +44,25 @@ def _cmd_register(args) -> int:
 
 
 def _cmd_scan(args) -> int:
+    if getattr(args, "config", ""):
+        from archon_core.config import apply_config_to_args, load_scan_config
+
+        try:
+            from archon_armor.probes import list_packs
+
+            known = set(list_packs())
+        except Exception:  # probes unavailable — validate structure only
+            known = None
+        try:
+            cfg = load_scan_config(args.config, known_packs=known)
+        except ValueError as exc:
+            print(json.dumps({"error": f"config: {exc}"}))
+            return 2
+        env_name = cfg.target_api_key_env or getattr(args, "target_api_key_env", "")
+        if env_name and not args.target_api_key:
+            args.target_api_key = os.environ.get(env_name, "")
+        apply_config_to_args(args, cfg, defaults=getattr(args, "_defaults", {}))
+
     if not args.target and not (args.registry and args.agent_id):
         print(json.dumps({"error": "either --target URL or --registry + --agent-id is required"}))
         return 2
@@ -157,7 +176,29 @@ def _upstream_from_env(args):
     return HTTPOpenAIUpstream()
 
 
+def _live_scan(url: str):
+    """Connect to a running MCP server and scan its live tool metadata."""
+    import asyncio
+
+    from archon_core.targets.mcp_live import scan_live_mcp
+
+    return asyncio.run(scan_live_mcp(url))
+
+
 def _cmd_scan_mcp(args) -> int:
+    if getattr(args, "url", None) and not args.config:
+        result = _live_scan(args.url)
+        print(json.dumps(result.to_dict(), indent=None if args.ci else 2))
+        if result.errors:
+            print("\n".join(f"warn: {e}" for e in result.errors), file=sys.stderr)
+        if args.ci and result.has_high:
+            return 1
+        return 0
+
+    if not args.config:
+        print("error: scan-mcp requires --config FILE or --url URL", file=sys.stderr)
+        return 2
+
     from archon_core.targets.mcp_scan import McpConfigScanner, Severity
 
     findings = McpConfigScanner().scan_file(args.config)
@@ -269,7 +310,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--pack", default="core", help="probe pack name (see archon_armor.probes)")
     p_scan.add_argument("--update-baseline", default="", help="store summary as the agent's baseline")
     p_scan.add_argument("--gate-baseline", default="", help="fail if scan regresses vs baseline")
-    p_scan.set_defaults(func=_cmd_scan)
+    p_scan.add_argument("--config", default="", help="YAML policy file (flags override config)")
+    p_scan.set_defaults(
+        func=_cmd_scan,
+        _defaults={a.dest: a.default for a in p_scan._actions},
+    )
 
     p_rep = sub.add_parser("report", help="render a compliance evidence report from a battle JSON summary")
     p_rep.add_argument("--battle-json", required=True)
@@ -277,8 +322,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_rep.add_argument("--out", default="")
     p_rep.set_defaults(func=_cmd_report)
 
-    p_mcp = sub.add_parser("scan-mcp", help="statically scan an MCP config for tool poisoning")
-    p_mcp.add_argument("--config", required=True)
+    p_mcp = sub.add_parser("scan-mcp", help="scan an MCP config file or a live server (--url)")
+    p_mcp.add_argument("--config", required=False)
+    p_mcp.add_argument("--url", required=False, help="live MCP server endpoint (Streamable HTTP)")
     p_mcp.add_argument("--ci", action="store_true", help="exit 1 on any HIGH finding")
     p_mcp.add_argument("--json", action="store_true")
     p_mcp.set_defaults(func=_cmd_scan_mcp)

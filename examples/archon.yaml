@@ -1,0 +1,30 @@
+# archon.yaml — policy-as-code for `archon scan`
+#
+# Usage:   archon scan --config archon.yaml
+# Precedence: explicit non-default CLI flags override values here.
+#
+# Remote mode — probe any OpenAI-compatible guardrail/agent endpoint:
+target: http://localhost:8080
+model: default
+
+# Registered-agent alternative (instead of target):
+# registry: /data/registry.db
+# agent_id: customer-support
+
+# Probe suite:
+pack: owasp_llm_10          # or "core" — see `archon scan --help`
+
+# CI gate:
+ci:
+  enabled: true
+  min_block_rate: 0.9
+
+# Policy-CI baselines (defense regression gates):
+# baseline:
+#   update: baselines/guardrail.json   # after a good run: record it
+#   gate: baselines/guardrail.json     # on every PR: fail on regressions
+
+json_output: true
+
+# API key taken from the environment named here (never inline secrets):
+target_api_key_env: ARCHON_TARGET_API_KEY
