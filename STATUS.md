@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 603 passed / 3 skipped
+> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 620 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -29,6 +29,8 @@ vendor-neutral.
 | Live tool-execution battles: sandbox targets, real tool calls, ground-truth env-diff verification | `targets/sandbox.py` |
 | Trace-driven attack generation: mines span streams into targeted evasion/injection/exploit attacks | `attacks/trace_driven.py` |
 | ASI07 multi-agent trust-boundary attacks: coordinator trusts worker output — smuggled directives cross the boundary; closed-loop vs sanitized variant | `targets/multiagent.py` |
+| Comparison engine: A-vs-B battle diff (rates, per-category deltas, probe-level regressions, verdict) with CI gate | `archon_armor/compare.py`, `archon compare` |
+| Checkpoint/resume for long battles: crash-safe per-probe persistence, resume skips completed probes | `archon_armor/checkpoints.py`, `archon scan --checkpoint/--resume` |
 | Live memory/vector-store poisoning: real store manipulation, benign-query retrieval hijack, remediation loop | `targets/memory.py` |
 | Benchmark harness: AgentDojo v1, all 27 published injection tasks | [`RESULTS.md`](./RESULTS.md) — deterministic-tier ASR 66.7% / block 33.3% |
 | Packaging: wheel, non-root Dockerfile, docker-compose, Helm chart | `deploy/helm/archon-armor/` |

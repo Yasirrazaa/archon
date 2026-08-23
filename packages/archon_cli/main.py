@@ -95,7 +95,19 @@ def _cmd_scan(args) -> int:
 
     manager = BattleManager(registry)
     battle = manager.create(args.agent_id)
-    asyncio.run(manager.execute(battle.battle_id, probes=_pack_or_default(args)))
+    resume_state = None
+    if getattr(args, "resume", ""):
+        from archon_armor.checkpoints import load_checkpoint
+
+        resume_state = load_checkpoint(args.resume)
+        if resume_state is None:
+            print(json.dumps({"error": f"no checkpoint at {args.resume}"}))
+            return 2
+    asyncio.run(manager.execute(
+        battle.battle_id, probes=_pack_or_default(args),
+        checkpoint_path=getattr(args, "checkpoint", "") or None,
+        resume_state=resume_state,
+    ))
 
     report = {
         "battle_id": battle.battle_id,
@@ -220,6 +232,23 @@ def _cmd_scan_mcp(args) -> int:
     return 0
 
 
+def _cmd_compare(args) -> int:
+    from archon_armor.compare import compare_battles, render_compare_md
+
+    with open(args.a, encoding="utf-8") as fh:
+        report_a = json.load(fh)
+    with open(args.b, encoding="utf-8") as fh:
+        report_b = json.load(fh)
+    comparison = compare_battles(report_a, report_b)
+    if args.format == "json":
+        print(json.dumps(comparison, indent=2))
+    else:
+        print(render_compare_md(comparison, label_a=args.label_a, label_b=args.label_b))
+    if args.ci and comparison["verdict"] == "regressed":
+        return 1
+    return 0
+
+
 def _cmd_report(args) -> int:
     from archon_core.reporting.compliance import render_html_report, render_markdown_report
 
@@ -310,6 +339,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--pack", default="core", help="probe pack name (see archon_armor.probes)")
     p_scan.add_argument("--update-baseline", default="", help="store summary as the agent's baseline")
     p_scan.add_argument("--gate-baseline", default="", help="fail if scan regresses vs baseline")
+    p_scan.add_argument("--checkpoint", default="", help="persist verdicts to this file after every probe (crash-safe long scans)")
+    p_scan.add_argument("--resume", default="", help="resume an interrupted scan from a checkpoint file")
     p_scan.add_argument("--config", default="", help="YAML policy file (flags override config)")
     p_scan.set_defaults(
         func=_cmd_scan,
@@ -321,6 +352,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_rep.add_argument("--format", choices=["html", "markdown"], default="html")
     p_rep.add_argument("--out", default="")
     p_rep.set_defaults(func=_cmd_report)
+
+    p_cmp = sub.add_parser(
+        "compare", help="compare two battle/scan JSON reports (A = reference, B = candidate)"
+    )
+    p_cmp.add_argument("--a", required=True, help="reference report JSON (e.g. baseline run)")
+    p_cmp.add_argument("--b", required=True, help="candidate report JSON (e.g. new policy)")
+    p_cmp.add_argument("--label-a", default="A")
+    p_cmp.add_argument("--label-b", default="B")
+    p_cmp.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    p_cmp.add_argument("--ci", action="store_true", help="exit 1 if B regressed vs A")
+    p_cmp.set_defaults(func=_cmd_compare)
 
     p_mcp = sub.add_parser("scan-mcp", help="scan an MCP config file or a live server (--url)")
     p_mcp.add_argument("--config", required=False)

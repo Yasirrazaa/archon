@@ -3,7 +3,7 @@
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
-> Everything below reflects what is actually in `packages/` today (**603 tests passing**).
+> Everything below reflects what is actually in `packages/` today (**620 tests passing**).
 > Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 
@@ -48,10 +48,10 @@
 
 ### Phase N3 — Ecosystem & distribution (months 2–3)
 9. **Web UI dashboard** — battle results, coverage matrices, fleet view (read-only first).
-10. **Comparison engine** — `archon compare` across registries/models/policy versions.
+10. ~~**Comparison engine** — `archon compare` across registries/models/policy versions.~~ ✅ **SHIPPED (ahead of schedule)** — `archon_armor/compare.py`: A-vs-B diff of two battle/scan reports — block-rate delta, per-category deltas from coverage matrices, newly blocked/unblocked probe lists, helpfulness-control status, severity movement, single verdict (`improved|regressed|equal`), markdown/JSON rendering, `--ci` exit 1 on regression.
 11. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls.
 12. **Distribution breadth** — npm/Homebrew wrappers around the wheel; docs site.
-13. **Caching/resume for long battles** — checkpoint battle state; resume interrupted campaigns.
+13. ~~**Caching/resume for long battles** — checkpoint battle state; resume interrupted campaigns.~~ ✅ **SHIPPED (ahead of schedule)** — `archon_armor/checkpoints.py` + `BattleManager.execute(checkpoint_path=, resume_state=)`: verdicts persisted after every probe (atomic tmp-rename writes), resume skips completed probes and finalizes with merged results. CLI: `archon scan --checkpoint FILE` / `--resume FILE`.
 
 ### Phase N4 — Managed layer (month 3+)
 14. Scheduled continuous battles across agent fleets; alerting on baseline regressions.

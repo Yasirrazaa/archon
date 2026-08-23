@@ -99,20 +99,28 @@ class BattleManager:
     async def execute(self, battle_id: str, probes: list[Probe] | None = None,
                       target: TargetAdapter | None = None, mode: str = "probes",
                       goal: str = "", seeds: list[str] | None = None,
-                      provider=None, width: int = 2, max_rounds: int = 3) -> Battle:
+                      provider=None, width: int = 2, max_rounds: int = 3,
+                      checkpoint_path: str | None = None,
+                      resume_state: dict | None = None) -> Battle:
         """Run probes. Default path exercises the agent's registered policy;
         when `target` is given, probes go to that remote endpoint instead —
         this is how Archon validates THIRD-PARTY guardrails.
 
         mode="multi_turn" runs the BranchingAttacker (fan-out/pivot/prune)
-        against a remote target instead of a static probe batch."""
+        against a remote target instead of a static probe batch.
+
+        checkpoint_path persists verdicts after every probe (crash safety);
+        resume_state (a loaded checkpoint) skips already-completed probes."""
         battle = self._battles[battle_id]
         if mode == "multi_turn":
             return await self._execute_multi_turn(
                 battle, target, goal, seeds or [], provider, width, max_rounds
             )
         if target is not None:
-            return await self._execute_remote(battle, probes, target)
+            return await self._execute_remote(
+                battle, probes, target,
+                checkpoint_path=checkpoint_path, resume_state=resume_state,
+            )
         card = self._registry.get(battle.agent_id)
         policy: SecurityPolicy = card.policy
         pipeline = DefensePipeline(
@@ -131,7 +139,30 @@ class BattleManager:
 
         battle.status = "running"
         verdicts: list[ProbeVerdict] = []
-        for probe in probes or DEFAULT_PROBES:
+        done: set[str] = set()
+        if resume_state:
+            verdicts = [ProbeVerdict(**r) for r in resume_state.get("results", [])]
+            done = {r.probe_name for r in verdicts}
+        probe_list = probes or DEFAULT_PROBES
+        pending_names = [p.name for p in probe_list if p.name not in done]
+
+        def _ckpt() -> None:
+            if checkpoint_path:
+                from .checkpoints import _write_checkpoint
+
+                _write_checkpoint(
+                    checkpoint_path,
+                    battle.battle_id,
+                    battle.agent_id,
+                    [{f: getattr(v, f) for f in v.__dataclass_fields__} for v in verdicts],
+                    pending=[n for n in pending_names
+                             if n not in {v.probe_name for v in verdicts}],
+                )
+
+        _ckpt()
+        for probe in probe_list:
+            if probe.name in done:
+                continue
             ex = await pipeline.run(Exchange(content=probe.payload, metadata={"agent_id": battle.agent_id}))
             verdicts.append(
                 ProbeVerdict(
@@ -142,6 +173,7 @@ class BattleManager:
                     execution_mode=ex.metadata.get("execution_mode"),
                 )
             )
+            _ckpt()
         battle.results = verdicts
         battle.finalize()
         return battle
@@ -187,12 +219,37 @@ class BattleManager:
         return battle
 
     async def _execute_remote(self, battle: Battle, probes: list[Probe] | None,
-                              target: TargetAdapter) -> Battle:
+                              target: TargetAdapter,
+                              checkpoint_path: str | None = None,
+                              resume_state: dict | None = None) -> Battle:
         """Probe a remote endpoint; verdicts come from the target adapter's
         own blocked/allowed classification (deterministic signals)."""
         battle.status = "running"
         verdicts: list[ProbeVerdict] = []
-        for probe in probes or DEFAULT_PROBES:
+        done: set[str] = set()
+        if resume_state:
+            verdicts = [ProbeVerdict(**r) for r in resume_state.get("results", [])]
+            done = {r.probe_name for r in verdicts}
+        probe_list = probes or DEFAULT_PROBES
+        pending_names = [p.name for p in probe_list if p.name not in done]
+
+        def _ckpt() -> None:
+            if checkpoint_path:
+                from .checkpoints import _write_checkpoint
+
+                _write_checkpoint(
+                    checkpoint_path,
+                    battle.battle_id,
+                    battle.agent_id,
+                    [{f: getattr(v, f) for f in v.__dataclass_fields__} for v in verdicts],
+                    pending=[n for n in pending_names
+                             if n not in {v.probe_name for v in verdicts}],
+                )
+
+        _ckpt()
+        for probe in probe_list:
+            if probe.name in done:
+                continue
             resp = await target.send(probe.payload)
             verdicts.append(ProbeVerdict(
                 probe_name=probe.name,
@@ -200,6 +257,7 @@ class BattleManager:
                 category=probe.category,
                 block_reason=resp.block_reason if resp.blocked else None,
             ))
+            _ckpt()
         battle.results = verdicts
         battle.finalize()
         return battle
