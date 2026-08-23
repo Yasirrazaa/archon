@@ -11,7 +11,6 @@ from __future__ import annotations
 import time
 
 import pytest
-
 from archon_core.observability.base import NullTracer, Tracer
 
 

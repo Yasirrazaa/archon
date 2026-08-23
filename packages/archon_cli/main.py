@@ -15,7 +15,12 @@ import sys
 
 from archon_armor.app import create_app
 from archon_armor.battles import BattleManager
-from archon_core.registry.base import AgentCard, AgentNotFoundError, DuplicateAgentError, SecurityPolicy
+from archon_core.registry.base import (
+    AgentCard,
+    AgentNotFoundError,
+    DuplicateAgentError,
+    SecurityPolicy,
+)
 from archon_core.registry.memory import InMemoryRegistry
 from archon_core.registry.sqlite import SqliteRegistry
 from archon_core.security.authn import generate_agent_secret
@@ -66,7 +71,6 @@ def _cmd_scan(args) -> int:
     if not args.target and not (args.registry and args.agent_id):
         print(json.dumps({"error": "either --target URL or --registry + --agent-id is required"}))
         return 2
-    manager_kwargs = {}
     if getattr(args, "target", None):
         # Remote mode: probe a third-party guardrail/agent endpoint directly.
         from archon_core.targets.openai_compat import OpenAICompatTarget
@@ -281,7 +285,7 @@ def _target_transport():
 
 
 def _pack_or_default(args):
-    from archon_armor.probes import get_pack, UnknownPackError
+    from archon_armor.probes import UnknownPackError, get_pack
     pack_name = getattr(args, "pack", None) or "core"
     try:
         return get_pack(pack_name)
@@ -436,9 +440,9 @@ def _run_battle(args) -> dict:
         ARCHON_ATTACK_PROVIDER_MODEL     default: gemini-2.5-flash / claude-sonnet-4-5
     Returns the attack-tree summary dict.
     """
+    from archon_armor.battles import BattleManager
     from archon_core.providers import provider_from_env
     from archon_core.targets.openai_compat import OpenAICompatTarget
-    from archon_armor.battles import BattleManager
 
     provider = provider_from_env(transport=_target_transport())
     target = OpenAICompatTarget(
@@ -501,11 +505,11 @@ def _provider_names() -> list[str]:
 
 
 def _cmd_plugins(args) -> int:
+    from archon_armor.probes import PROBE_PACKS
     from archon_core.defenses import layers as defense_layers
     from archon_core.defenses.external import ExternalGuardrailLayer
     from archon_core.targets.mcp_live import probe_tool, scan_live_mcp
     from archon_core.targets.openai_compat import OpenAICompatTarget
-    from archon_armor.probes import PROBE_PACKS
 
     inventory = {
         "probe_packs": {name: len(probes) for name, probes in sorted(PROBE_PACKS.items())},
@@ -528,9 +532,9 @@ def _cmd_plugins(args) -> int:
 
 
 def _cmd_fleet(args) -> int:
-    from archon_core.registry.sqlite import SqliteRegistry
     from archon_armor.baselines import BaselineStore
     from archon_armor.fleet import FleetSummary
+    from archon_core.registry.sqlite import SqliteRegistry
 
     registry = SqliteRegistry(args.registry)
     try:

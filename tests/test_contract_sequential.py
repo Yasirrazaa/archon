@@ -3,10 +3,9 @@
 Based on NeuralShield's attacker: parses output_format for attack surface
 modeling and chains strategies with fallback.
 """
-import pytest
 from scenarios.security_arena.agents.attacker.contract_sequential import (
-    ContractModel,
     ContractAnalyzer,
+    ContractModel,
     SequentialAttacker,
 )
 

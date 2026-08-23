@@ -42,7 +42,6 @@ class OtelTracer(Tracer):
 
     @classmethod
     def for_exporter(cls, exporter: Any, service_name: str = "archon-armor") -> OtelTracer:
-        from opentelemetry import trace as otel_trace
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -128,7 +127,6 @@ def build_tracer_from_env(env: dict[str, str] | None = None) -> Tracer:
     if mode == "otlp":
         import contextvars as cv
 
-        from opentelemetry import trace as otel_trace
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
             OTLPSpanExporter,
         )

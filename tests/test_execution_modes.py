@@ -4,6 +4,7 @@ Based on NeuralShield's architecture: maps suspicion score to 4 execution modes
 with varying trust levels and feature availability.
 """
 import pytest
+
 from scenarios.security_arena.agents.defender.execution_modes import (
     ExecutionMode,
     ExecutionModeSelector,

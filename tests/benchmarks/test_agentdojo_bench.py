@@ -1,7 +1,6 @@
 """TDD P0-B: AgentDojo benchmark harness — reproducible ASR vs published fixtures."""
 
 import pytest
-
 from archon_benchmarks.agentdojo_corpus import AgentDojoTask, load_agentdojo_v1_tasks
 from archon_benchmarks.runner import (
     WRAPPER_NAMES,

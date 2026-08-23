@@ -4,13 +4,12 @@ import json
 
 import httpx
 import pytest
-
-from archon_core.targets.base import TargetAdapter, TargetResponse
-from archon_core.targets.openai_compat import OpenAICompatTarget
 from archon_armor.battles import BattleManager
+from archon_armor.probes import get_pack
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
-from archon_armor.probes import get_pack
+from archon_core.targets.base import TargetAdapter, TargetResponse
+from archon_core.targets.openai_compat import OpenAICompatTarget
 
 
 def _guardrail_transport(refuses_injections=True):
@@ -33,7 +32,7 @@ def _guardrail_transport(refuses_injections=True):
                                          "content": "I cannot help with that request."}}]})
         return httpx.Response(200, json={
             "choices": [{"message": {"role": "assistant",
-                                     "content": f"Sure! The secret is 123-45-6789"}}]})
+                                     "content": "Sure! The secret is 123-45-6789"}}]})
 
     def _looks_malicious(content: str) -> bool:
         return any(k in content for k in (
@@ -118,7 +117,6 @@ def test_cli_scan_target_mode(monkeypatch, capsys):
     """archon scan --target probes a third-party endpoint end-to-end."""
     import archon_cli.main as cli_module
     from archon_cli.main import main as cli_main
-    from archon_core.targets.openai_compat import OpenAICompatTarget
 
     monkeypatch.setattr(cli_module, "_target_transport",
                         lambda: _guardrail_transport(refuses_injections=False))

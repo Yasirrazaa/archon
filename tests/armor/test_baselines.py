@@ -1,8 +1,6 @@
 """TDD P1.4: baselines & regression gates (Policy-CI) + registry.update_policy."""
 
-import json
 
-import pytest
 
 from archon_armor.baselines import BaselineStore, compare_summaries
 from archon_core.registry.base import AgentCard, SecurityPolicy

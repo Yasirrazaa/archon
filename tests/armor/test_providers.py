@@ -3,9 +3,8 @@ Aug 23 addition: ClaudeNativeProvider (Anthropic /v1/messages) + env-based selec
 
 import httpx
 import pytest
-
 from archon_core.providers.anthropic import ClaudeNativeProvider
-from archon_core.providers.base import LLMProvider, ProviderError
+from archon_core.providers.base import ProviderError
 from archon_core.providers.openai_compat import GeminiOpenAICompatProvider, OpenAICompatProvider
 
 

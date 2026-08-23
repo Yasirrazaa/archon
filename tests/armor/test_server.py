@@ -1,9 +1,8 @@
 """TDD Phase 10: server factory wiring (container entry point)."""
 
 import pytest
-from fastapi.testclient import TestClient
-
 from archon_armor.server import build_app
+from fastapi.testclient import TestClient
 
 
 def test_build_app_wires_full_production_stack(tmp_path, monkeypatch):

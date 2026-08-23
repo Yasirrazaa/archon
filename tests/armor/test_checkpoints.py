@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from archon_armor.battles import BattleManager
 from archon_armor.checkpoints import load_checkpoint
 from archon_core.registry.base import AgentCard, SecurityPolicy

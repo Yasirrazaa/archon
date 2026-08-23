@@ -4,10 +4,11 @@ Based on NeuralShield's attack_classifier.py: categorizes input into
 indirect_injection, jailbreak, pii_leak, supply_chain, prompt_extraction.
 """
 import pytest
+
 from scenarios.security_arena.agents.defender.threat_classifier import (
-    ThreatClassifier,
-    ThreatCategory,
     StructuralRiskFlags,
+    ThreatCategory,
+    ThreatClassifier,
 )
 
 

@@ -3,7 +3,6 @@
 import json
 
 import pytest
-
 from archon_cli.main import main
 
 

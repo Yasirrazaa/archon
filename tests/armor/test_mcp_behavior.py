@@ -5,7 +5,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
-
 from archon_core.targets.mcp_live import (
     LiveScanResult,
     probe_tool,

@@ -1,7 +1,6 @@
 """TDD Phase 2: Registry MVP — agent cards, security policies, backends."""
 
 import pytest
-
 from archon_core.registry.base import (
     AgentCard,
     AgentNotFoundError,

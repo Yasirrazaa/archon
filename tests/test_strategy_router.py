@@ -4,15 +4,16 @@ Based on NeuralShield's attacker: routes attacks across surfaces and families
 with diversity rules to avoid repetition.
 """
 import pytest
+
+from scenarios.security_arena.agents.attacker.diagnosis import (
+    DiagnosisResult,
+    FailureMode,
+    ResponseCategory,
+)
 from scenarios.security_arena.agents.attacker.strategy_router import (
     AttackSurface,
     StrategyFamily,
     StrategyRouter,
-)
-from scenarios.security_arena.agents.attacker.diagnosis import (
-    DiagnosisResult,
-    ResponseCategory,
-    FailureMode,
 )
 
 

@@ -2,14 +2,11 @@
 
 import json
 
-import pytest
-
 from archon_core.targets.mcp_scan import (
     McpConfigScanner,
     Severity,
     scan_mcp_config,
 )
-
 
 POISONED_CONFIG = {
     "mcpServers": {

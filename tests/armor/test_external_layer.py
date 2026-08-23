@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import httpx
 import pytest
-
 from archon_core.defenses.external import ExternalGuardrailLayer
 from archon_core.models import Exchange
 
@@ -106,8 +105,11 @@ async def test_sends_bearer_auth_and_model():
 
 def test_layer_is_registered_in_plugins_inventory():
     """The new seam must show up in `archon plugins`."""
+    import contextlib
+    import io
+    import json as _json
+
     from archon_cli.main import _cmd_plugins
-    import io, contextlib, json as _json
 
     class Args:
         ci = True

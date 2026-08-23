@@ -15,8 +15,8 @@ from typing import Any
 
 import httpx
 
-from .base import DefenseLayer
 from ..models import Exchange
+from .base import DefenseLayer
 
 
 class ExternalGuardrailLayer(DefenseLayer):

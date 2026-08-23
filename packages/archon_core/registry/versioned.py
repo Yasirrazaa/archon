@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import json
 
-from ..audit import SqliteAuditTrail
 from archon_core.registry.base import (
     AgentCard,
     Registry,
     SecurityPolicy,
 )
+
+from ..audit import SqliteAuditTrail
 
 
 class VersionedRegistry(Registry):

@@ -1,11 +1,9 @@
 """TDD Phase 3: archon-armor FastAPI app — OpenAI-compatible defense proxy."""
 
-import pytest
-from fastapi.testclient import TestClient
-
 from archon_armor.app import create_app
-from archon_core.registry.memory import InMemoryRegistry
 from archon_core.registry.base import AgentCard, SecurityPolicy
+from archon_core.registry.memory import InMemoryRegistry
+from fastapi.testclient import TestClient
 
 
 class FakeUpstream:

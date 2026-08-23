@@ -15,6 +15,7 @@ dependency). Explicit CLI flags always win over config values.
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 
 import yaml

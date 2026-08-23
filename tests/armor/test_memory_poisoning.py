@@ -12,7 +12,6 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-
 from archon_core.attacks.branching import BranchingAttacker
 from archon_core.targets.memory import (
     MemoryEntry,
@@ -156,10 +155,10 @@ def test_poisoning_trigger_sails_through_request_side_pipeline() -> None:
     """The poisoning trigger query is benign text, so the request-side
     defense pipeline does NOT block it — the malicious payload lives in the
     store. This is exactly why memory poisoning needs store-side defenses."""
-    from archon_core.registry.base import AgentCard, SecurityPolicy
-    from archon_core.registry.memory import InMemoryRegistry
     from archon_armor.battles import BattleManager
     from archon_armor.probes import Probe
+    from archon_core.registry.base import AgentCard, SecurityPolicy
+    from archon_core.registry.memory import InMemoryRegistry
 
     registry = InMemoryRegistry()
     registry.register(AgentCard(

@@ -4,6 +4,7 @@ Based on NeuralShield's output guardrails: sanitizes unsafe output classes,
 detects PII leakage, rewrites unverified references, and applies risk levels.
 """
 import pytest
+
 from scenarios.security_arena.agents.defender.output_guardrails import (
     OutputGuardrailResult,
     OutputGuardrails,

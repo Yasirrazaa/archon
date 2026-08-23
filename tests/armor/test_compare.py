@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from archon_armor.compare import compare_battles, render_compare_md
 
 

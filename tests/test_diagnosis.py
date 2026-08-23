@@ -4,11 +4,11 @@ Based on NeuralShield's attacker: classifies defender responses into
 failure categories and diagnoses WHY the defender refused.
 """
 import pytest
+
 from scenarios.security_arena.agents.attacker.diagnosis import (
     DefenderDiagnosis,
-    ResponseCategory,
     FailureMode,
-    DiagnosisResult,
+    ResponseCategory,
 )
 
 

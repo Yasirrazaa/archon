@@ -27,8 +27,8 @@ from ..compat import (
 from ..compat import (
     threat_classifier as tc_mod,
 )
-from .base import DefenseLayer
 from ..models import Exchange
+from .base import DefenseLayer
 
 
 class NormalizationLayer(DefenseLayer):

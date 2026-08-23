@@ -1,15 +1,12 @@
 """TDD P1.1: structured probe packs with OWASP LLM Top-10 coverage matrix."""
 
 import pytest
-
+from archon_armor.battles import BattleManager
 from archon_armor.probes import (
-    Probe,
+    UnknownPackError,
     get_pack,
     list_packs,
-    PROBE_PACKS,
-    UnknownPackError,
 )
-from archon_armor.battles import BattleManager
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
 
@@ -163,8 +160,9 @@ class TestCoverageMatrix:
         assert battle.summary["coverage"]["LLM01_prompt_injection"]["blocked"] == len(pack)
 
     def test_app_battle_accepts_pack_selection(self):
-        from fastapi.testclient import TestClient
         from archon_armor.app import create_app
+        from fastapi.testclient import TestClient
+
         from .test_app import FakeUpstream
 
         registry = InMemoryRegistry()
@@ -201,7 +199,6 @@ class TestEncodingEvasionPack:
     def test_every_payload_decodes_to_attack_text(self):
         """Each probe must survive the normalizer as recognizable attack text —
         a probe that decodes to gibberish tests nothing."""
-        import asyncio
 
         from archon_core.compat import load_defender_module
 

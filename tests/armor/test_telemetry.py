@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 from archon_core.observability.base import LocalTracer
 from archon_core.observability.jsonl import JsonlTracer
 from archon_core.observability.scrubbing import AttributeScrubber, ScrubbingTracer
@@ -67,10 +65,10 @@ class TestJsonlTracer:
 
     def test_armor_spans_contain_no_response_content(self, tmp_path):
         """Defense-in-depth: upstream content must never reach spans."""
-        from fastapi.testclient import TestClient
         from archon_armor.app import create_app
         from archon_core.registry.base import AgentCard, SecurityPolicy
         from archon_core.registry.memory import InMemoryRegistry
+        from fastapi.testclient import TestClient
 
         class LeakyUpstream:
             async def complete(self, payload, base_url, api_key=None):

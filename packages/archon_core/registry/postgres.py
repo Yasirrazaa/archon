@@ -21,7 +21,6 @@ from .base import (
     AgentNotFoundError,
     DuplicateAgentError,
     Registry,
-    RegistryError,
     SecurityPolicy,
 )
 

@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 649 passed / 3 skipped
+> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 735 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -56,7 +56,7 @@ promptfoo wins deals despite weaker agentic attack tech.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 649
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 735
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;

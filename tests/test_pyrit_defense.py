@@ -1,16 +1,15 @@
 """Tests for the defense pipeline utilities."""
 
-import pytest
 from scenarios.security_arena.agents.defender.pyrit_defense import (
-    needs_adversarial_paraphrase,
+    build_output_skeleton,
     is_injection_scenario,
-    response_is_borderline,
     layer0_sanitize_input,
     layer1_adversarial_paraphrase_prompt,
+    layer2_spotlighting_wrap,
+    needs_adversarial_paraphrase,
+    response_is_borderline,
     spotlight_datamark,
     spotlight_encode_rot13,
-    layer2_spotlighting_wrap,
-    build_output_skeleton,
 )
 
 

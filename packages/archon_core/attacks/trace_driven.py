@@ -162,7 +162,7 @@ def generate_attacks(profile: TraceProfile) -> list[TraceAttack]:
     """
     attacks: list[TraceAttack] = []
 
-    weak_layers = [l for l in profile.layers_seen if l not in profile.blocked_by]
+    weak_layers = [x for x in profile.layers_seen if x not in profile.blocked_by]
     for layer in weak_layers:
         payload = _EVASION_PAYLOADS.get(layer, _GENERIC_EVASION.format(layer=layer))
         if isinstance(payload, tuple):  # (payload, _) documented pairs

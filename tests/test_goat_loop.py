@@ -1,22 +1,19 @@
 """Tests for the GOAT-style attack strategy engine."""
 
-import pytest
 from scenarios.security_arena.agents.attacker.goat_loop import (
-    extract_battle_signals,
     FragmentCollector,
-    build_vocabulary_exploit,
-    score_payload_legitimacy,
-    build_best_payload,
-    get_round_temperature,
-    should_retry_failed_technique,
     analyze_security_guidelines,
     build_branch_candidates,
-    choose_committed_branch,
-    select_next_strategy,
-    guess_document_type,
-    derive_deceptive_delight_anchors,
-    generate_injection_payload,
     build_reconstruction_fragments,
+    build_vocabulary_exploit,
+    derive_deceptive_delight_anchors,
+    extract_battle_signals,
+    generate_injection_payload,
+    get_round_temperature,
+    guess_document_type,
+    score_payload_legitimacy,
+    select_next_strategy,
+    should_retry_failed_technique,
 )
 
 

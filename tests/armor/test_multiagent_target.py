@@ -9,7 +9,6 @@ crosses the trust boundary via an untrusted worker.
 from __future__ import annotations
 
 import pytest
-
 from archon_core.attacks.branching import BranchingAttacker
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry

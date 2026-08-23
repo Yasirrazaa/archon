@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import pytest
-from fastapi.testclient import TestClient
-
 from archon_armor.ui import create_ui_app
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
+from fastapi.testclient import TestClient
 
 
 def _card(agent_id: str = "demo-agent", **policy_kwargs) -> AgentCard:

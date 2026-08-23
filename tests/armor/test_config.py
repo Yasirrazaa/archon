@@ -7,10 +7,7 @@ Explicit CLI flags always win over config values.
 
 from __future__ import annotations
 
-import argparse
-
 import pytest
-
 from archon_core.config import (
     CONFIG_FIELDS,
     ScanConfig,

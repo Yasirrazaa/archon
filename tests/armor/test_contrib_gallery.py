@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 
 import pytest
-
 from archon_armor.probes import Probe, load_pack_file
 
 CONTRIB_DIR = os.path.join(

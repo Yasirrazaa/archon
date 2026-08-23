@@ -2,17 +2,15 @@
 
 import json
 
-import pytest
-from fastapi.testclient import TestClient
-
 from archon_armor.app import create_app
+from archon_armor.audit import SqliteAuditTrail
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
 from archon_core.registry.versioned import VersionedRegistry
 from archon_core.security.authn import AllowAllVerifier
-from archon_armor.audit import SqliteAuditTrail
+from fastapi.testclient import TestClient
 
-from .test_app import BENIGN_BODY, FakeUpstream, INJECTION_BODY
+from .test_app import BENIGN_BODY, INJECTION_BODY, FakeUpstream
 
 
 def make_card(policy=None):

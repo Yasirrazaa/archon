@@ -8,8 +8,8 @@ at scale, ship rows to WORM storage / Cloud Audit Logs via the JSONL sink.
 from __future__ import annotations
 
 import json
-import threading
 import sqlite3
+import threading
 from datetime import datetime, timezone
 
 _SCHEMA = """

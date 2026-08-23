@@ -2,14 +2,11 @@
 
 import json
 
-import pytest
-
 from archon_core.reporting.compliance import (
     OWASP_LLM_CONTROLS,
     render_html_report,
     render_markdown_report,
 )
-
 
 SAMPLE_SUMMARY = {
     "agent_id": "support-agent",

@@ -1,12 +1,11 @@
 """Tests for the obfuscation converters."""
 
-import pytest
 from scenarios.security_arena.agents.attacker.pyrit_converters import (
-    to_base64,
-    to_rot13,
+    apply_converter,
     apply_persuasion_wrapper,
     apply_unicode_confusables,
-    apply_converter,
+    to_base64,
+    to_rot13,
 )
 
 

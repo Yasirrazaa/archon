@@ -6,7 +6,6 @@ Severity must be DERIVED from battle evidence:
 - evasion multiplier (encoded/latent delivery bypassed normalization tier).
 """
 
-import pytest
 
 from archon_core.reporting.severity import (
     Finding,

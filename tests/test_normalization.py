@@ -4,6 +4,7 @@ Based on NeuralShield's architecture: 12+ normalization transforms that catch
 30%+ of obfuscation attacks before any LLM processing.
 """
 import pytest
+
 from scenarios.security_arena.agents.defender.normalization import DeterministicNormalizer
 
 

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import pytest
-
+from archon_armor.battles import BattleManager
 from archon_core.attacks.branching import BranchingAttacker  # noqa: F401
 from archon_core.providers.base import Completion
-from archon_core.registry.memory import InMemoryRegistry
 from archon_core.registry.base import AgentCard, SecurityPolicy
+from archon_core.registry.memory import InMemoryRegistry
 from archon_core.targets.base import TargetResponse
-from archon_armor.battles import BattleManager
 
 
 def _manager() -> BattleManager:

@@ -1,23 +1,20 @@
-import sys
-import json
 import asyncio
-from pathlib import Path
-from typing import Any, Dict
-
+import json
+import sys
 import tomllib
+from pathlib import Path
+
+from a2a.types import (
+    AgentCard,
+    DataPart,
+    Message,
+    TaskArtifactUpdateEvent,
+    TaskStatusUpdateEvent,
+    TextPart,
+)
 
 from agentbeats.client import send_message
 from agentbeats.models import EvalRequest
-from a2a.types import (
-    AgentCard,
-    Message,
-    TaskStatusUpdateEvent,
-    TaskArtifactUpdateEvent,
-    TaskState,
-    Part,
-    TextPart,
-    DataPart,
-)
 
 
 def parse_toml(d: dict[str, object]) -> tuple[EvalRequest, str]:

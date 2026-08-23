@@ -6,8 +6,7 @@ import json
 from types import SimpleNamespace
 
 import pytest
-
-from archon_core.targets.mcp_live import LiveScanResult, scan_live_mcp, scan_live_tools
+from archon_core.targets.mcp_live import LiveScanResult, scan_live_mcp
 
 
 def _tool(name: str, description: str):
@@ -123,7 +122,6 @@ def test_cli_scan_mcp_url_gate_fails_on_high(monkeypatch, capsys):
     from archon_cli import main as cli
 
     poisoned = LiveScanResult(url="http://x/mcp")
-    import re
 
     from archon_core.targets.mcp_scan import Finding, Severity
 

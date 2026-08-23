@@ -118,8 +118,8 @@ def render_results_md(report: dict, out_path: Path) -> None:
         f"= **{report['total_attacks']} attacks**, run fully offline against "
         "Archon's deterministic reference pipeline.",
         "",
-        f"| Metric | Value |",
-        f"|---|---|",
+        "| Metric | Value |",
+        "|---|---|",
         f"| Attack Success Rate (ASR) | **{report['asr']:.1%}** |",
         f"| Block rate | **{report['block_rate']:.1%}** |",
         "",

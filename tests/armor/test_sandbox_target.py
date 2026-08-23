@@ -9,14 +9,12 @@ from __future__ import annotations
 
 import asyncio
 
-import pytest
-
 from archon_core.attacks.branching import BranchingAttacker
+from archon_core.defenses.base import DefensePipeline
 from archon_core.defenses.layers import (
     NormalizationLayer,
     ThreatClassificationLayer,
 )
-from archon_core.defenses.base import DefensePipeline
 from archon_core.models import Exchange
 from archon_core.targets.base import TargetResponse
 from archon_core.targets.sandbox import (

@@ -53,11 +53,11 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-649 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+735 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
-1. **CI pipeline** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
+1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 649 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 735 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** — `archon-core` installable without the competition stack
@@ -65,7 +65,7 @@
    rename LICENSE holder ("Copyright 2025 AgentBeats" → Archon); v1.0.0 tag + CHANGELOG.
    - *Why:* Identity confusion + legacy baggage block enterprise procurement review.
    - *Effort:* 2–3 days
-3. **Threat-model archon-armor itself** — fuzz the request parser, document the HMAC auth
+3. **Threat-model archon-armor itself** ✅ SHIPPED (Aug 23 — SECURITY.md + 200-iteration seeded fuzz suite never-5xx invariant + auth-boundary tests incl. replay-window honesty) — fuzz the request parser, document the HMAC auth
    boundary, rate-limit persistence story, TLS deployment guidance, SECURITY.md + CVE process.
    - *Why:* A security tool with no threat model of itself is a contradiction buyers notice.
    - *Effort:* 1 week
@@ -98,11 +98,11 @@ These items close the gap between "impressive hackathon project" and "enterprise
 
 *Each of these was verified absent-or-weak across all 9 competitor repos (see `COMPETITIVE_ANALYSIS.md` §5):*
 
-5. **Live MCP tool-execution battles** — spawn/connect an MCP server, enumerate tools, run poisoning + confused-deputy battles against real tool calls. Extend `MCPTarget` beyond static scanning.
+5. **Live MCP tool-execution battles** ✅ SHIPPED (Aug 23 — targets/mcp_battles.py: description-hijack routing proof, leak-token ground truth, rug-pull mutation hook, mcp-scan-style scan_defenses) — spawn/connect an MCP server, enumerate tools, run poisoning + confused-deputy battles against real tool calls. Extend `MCPTarget` beyond static scanning.
    - *Why:* OWASP ASI02 (Tool Misuse & Exploitation) is the hottest agentic threat; Snyk is static-only; nobody does behavioral MCP battles.
    - *Effort:* 2–3 weeks
 
-6. **ASI04 Agentic Supply Chain attacks** — schema manipulation, description deception, permission misrepresentation, registry poisoning.
+6. **ASI04 Agentic Supply Chain attacks** ✅ SHIPPED (Aug 23 — targets/supplychain.py: SHA-256 pinning, rug-pull-after-N-calls simulation, diff_registry, PinningDefense closed-loop) — schema manipulation, description deception, permission misrepresentation, registry poisoning.
    - *Why:* OWASP ASI04 is untested by anyone; supply chain attacks against MCP tools and agent registries are emerging threats.
    - *Effort:* 1–2 weeks
 
@@ -110,11 +110,11 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* OWASP ASI08 is untested; complex agent interactions produce unexpected cascading failures.
    - *Effort:* 1–2 weeks
 
-8. **ASI09 Human-Agent Trust Exploitation** — social engineering attacks that exploit human trust in agent outputs.
+8. **ASI09 Human-Agent Trust Exploitation** ✅ SHIPPED (Aug 23 — targets/trust.py: consent-fatigue approver simulator, compound-action decomposition, hardened composite re-risking defense) — social engineering attacks that exploit human trust in agent outputs.
    - *Why:* OWASP ASI09 is untested; agents that humans trust can be weaponized.
    - *Effort:* 1–2 weeks
 
-9. **ASI10 Rogue Agents** — detect and test for agents that deviate from their intended behavior.
+9. **ASI10 Rogue Agents** ✅ SHIPPED (Aug 23 — targets/rogue.py: three rotating steganographic exfil channels w/ CovertChannelDetector decode suite, loyal control twin) — detect and test for agents that deviate from their intended behavior.
    - *Why:* OWASP ASI10 is untested; rogue agents are the ultimate failure mode.
    - *Effort:* 1–2 weeks
 
@@ -212,7 +212,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 649 passing tests are local-only | Phase E0 item 1 |
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 735 passing tests are local-only | Phase E0 item 1 |
 | No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
 | Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
 | Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |

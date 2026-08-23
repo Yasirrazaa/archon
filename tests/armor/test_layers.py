@@ -1,7 +1,6 @@
 """TDD Phase 1: concrete defense layer tests wrapping existing defender modules."""
 
 import pytest
-
 from archon_core.defenses.layers import (
     ExecutionModeLayer,
     NormalizationLayer,

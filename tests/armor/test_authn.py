@@ -1,11 +1,7 @@
 """TDD Phase 6: signed agent identity (HMAC) + rate limiting."""
 
 import json
-import hashlib
-import hmac as hmac_mod
 import time
-
-import pytest
 
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
@@ -127,8 +123,8 @@ class TestArmorIntegration:
     """End-to-end: signed requests through the armor app."""
 
     def _make_signed_client(self, capacity=100):
-        from fastapi.testclient import TestClient
         from archon_armor.app import create_app
+        from fastapi.testclient import TestClient
 
         registry, secret = make_registry_with_agent()
         verifier = HmacVerifier(registry)

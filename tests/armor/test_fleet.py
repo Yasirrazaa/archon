@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
-
-from archon_core.registry.base import AgentCard, SecurityPolicy
-from archon_core.registry.memory import InMemoryRegistry
 from archon_armor.baselines import BaselineStore
 from archon_armor.fleet import FleetSummary
+from archon_core.registry.base import AgentCard, SecurityPolicy
+from archon_core.registry.memory import InMemoryRegistry
 
 
 def _registry(**agents) -> InMemoryRegistry:

@@ -17,10 +17,9 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from archon_core.registry.base import Registry
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
-
-from archon_core.registry.base import Registry
 
 _DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">

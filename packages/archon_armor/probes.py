@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import base64
 import codecs
-import html as _html
 import urllib.parse as _urlparse
 from dataclasses import dataclass
 

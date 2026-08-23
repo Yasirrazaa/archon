@@ -1,7 +1,6 @@
 """TDD Phase 1: DefenseLayer contract tests (RED -> GREEN)."""
 
 import pytest
-
 from archon_core.defenses.base import DefenseLayer, DefensePipeline
 from archon_core.models import Exchange
 

@@ -11,7 +11,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from archon_core.attacks.trace_driven import (
     TraceAttack,
     TraceProfile,
@@ -143,16 +142,16 @@ class TestGenerateAttacks:
 class TestIntegration:
     def test_generated_probes_run_through_battle_manager(self, tmp_path):
         """End-to-end: mine a real JsonlTracer file, generate attacks, battle them."""
-        from archon_core.models import Exchange
+        from archon_armor.battles import BattleManager
         from archon_core.defenses.base import DefensePipeline
         from archon_core.defenses.layers import (
             NormalizationLayer,
             ThreatClassificationLayer,
         )
+        from archon_core.models import Exchange
         from archon_core.observability.jsonl import JsonlTracer
-        from archon_core.registry.memory import InMemoryRegistry
         from archon_core.registry.base import AgentCard, SecurityPolicy
-        from archon_armor.battles import BattleManager
+        from archon_core.registry.memory import InMemoryRegistry
 
         # produce a genuine span file via a traced pipeline
         tracer = JsonlTracer(tmp_path / "spans.jsonl")

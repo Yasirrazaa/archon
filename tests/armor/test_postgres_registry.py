@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from archon_core.registry.base import (
     AgentCard,
     AgentNotFoundError,
@@ -106,7 +105,6 @@ def test_register_inserts_all_columns_with_json_policy():
 
 def test_register_duplicate_raises_duplicate_error():
     from psycopg.errors import UniqueViolation
-    from archon_core.registry.postgres import PostgresRegistry
 
     cursor = FakeCursor(errors={"INSERT INTO agents": UniqueViolation("dup")})
     reg = _reg(cursor)
@@ -134,7 +132,6 @@ def test_get_missing_raises_not_found():
 
 
 def test_update_policy_runs_update_and_maps_no_row():
-    from archon_core.registry.postgres import PostgresRegistry
 
     cursor = FakeCursor(rowcount=0)
     with pytest.raises(AgentNotFoundError):
@@ -153,7 +150,6 @@ def test_list_agents_returns_all():
 
 
 def test_delete_reports_affinity():
-    from archon_core.registry.postgres import PostgresRegistry
 
     assert _reg(FakeCursor(rowcount=1)).delete("a1") is True
     assert _reg(FakeCursor(rowcount=0)).delete("nope") is False
@@ -208,5 +204,5 @@ def test_server_uses_postgres_when_database_url_set(monkeypatch, tmp_path):
             return self._fake.get(agent_id)
 
     monkeypatch.setattr(pg_mod, "PostgresRegistry", FakePg)
-    app = server.build_app()
+    server.build_app()
     assert seen["dsn"] == "postgresql://armor:pass@pg:5432/armor"

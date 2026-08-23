@@ -12,9 +12,8 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI, Request
-from fastapi.responses import JSONResponse
-
+from archon_core.audit import SqliteAuditTrail
+from archon_core.defenses.base import DefensePipeline
 from archon_core.defenses.layers import (
     ExecutionModeLayer,
     NormalizationLayer,
@@ -23,16 +22,16 @@ from archon_core.defenses.layers import (
     SpotlightingLayer,
     ThreatClassificationLayer,
 )
-from archon_core.defenses.base import DefensePipeline
 from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
-from archon_core.audit import SqliteAuditTrail
 from archon_core.security.authn import AllowAllVerifier, IdentityVerifier
 from archon_core.security.ratelimit import TokenBucketRateLimiter
+from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from .battles import BattleManager
-from .probes import get_pack, UnknownPackError
+from .probes import UnknownPackError, get_pack
 from .upstream import LLMUpstream, UpstreamError
 
 _REFUSAL_CONTENT = (
@@ -62,6 +61,10 @@ def _last_user_content(messages: list[dict]) -> str:
     for message in reversed(messages):
         if message.get("role") == "user":
             content = message.get("content", "")
+            # Fuzz hardening (Sprint E0.3): explicit null content must not
+            # reach the defense pipeline as None.
+            if content is None:
+                return ""
             return content if isinstance(content, str) else str(content)
     return ""
 
@@ -156,6 +159,10 @@ def create_app(
             messages = payload["messages"]
             if not isinstance(messages, list) or not messages:
                 raise ValueError("messages must be a non-empty list")
+            # Fuzz hardening (Sprint E0.3): non-dict items (e.g. [null], [[]])
+            # previously crashed _last_user_content with AttributeError -> 500.
+            if not all(isinstance(m, dict) for m in messages):
+                raise ValueError("each message must be a JSON object")
         except Exception:
             if request_span is not None:
                 tracer.end_span(request_span, attributes={"status": 400})

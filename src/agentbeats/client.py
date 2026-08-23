@@ -1,4 +1,3 @@
-import asyncio
 from uuid import uuid4
 
 import httpx
@@ -9,13 +8,12 @@ from a2a.client import (
     Consumer,
 )
 from a2a.types import (
+    DataPart,
     Message,
     Part,
     Role,
     TextPart,
-    DataPart,
 )
-
 
 # Overall HTTP timeout for the entire battle/evaluation
 # This must be long enough to accommodate all rounds (e.g., 20 rounds × 300s per agent × 2 agents)
@@ -77,7 +75,7 @@ async def send_message(message: str, base_url: str, context_id: str | None = Non
                 outputs["context_id"] = msg.context_id
                 outputs["response"] += merge_parts(msg.parts)
 
-            case (task, update):
+            case (task, _update):
                 outputs["context_id"] = task.context_id
                 outputs["status"] = task.status.state.value
                 msg = task.status.message

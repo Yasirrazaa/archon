@@ -4,8 +4,8 @@ Based on NeuralShield's architecture: splits multi-document inputs, assigns
 trust scores per segment, identifies external vs internal sources.
 """
 import pytest
+
 from scenarios.security_arena.agents.defender.segmenter import (
-    Segment,
     InputSegmenter,
 )
 
