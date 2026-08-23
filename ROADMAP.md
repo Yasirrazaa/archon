@@ -53,11 +53,11 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-775 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+849 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 775 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 849 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
@@ -134,21 +134,21 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
       **81% for novel adaptive attacks**, and aggregate ASR climbs 57%→80% at 25 attempts.
       Single-shot numbers are now recognized as false assurance — reporting discipline is a moat.
     - *Effort:* 1 week
-12. **Metrics productization** — Unsafe Action Rate for CI gates, Privilege Escalation
+12. **Metrics productization** ✅ SHIPPED (Aug 23 — reporting/metrics.py: unsafe_action_rate, privilege_escalation_distance BFS, guarded_joint_score quadrants, dual_asr w/ gap, metrics_summary w/ measurement block declaring attempt_budget/adaptivity/judge) — Unsafe Action Rate for CI gates, Privilege Escalation
     Distance per customer tool graph, GUARDEDJOINT-style safety-utility KPI, dual
     ASR-intermediate/ASR-end-to-end reporting.
     - *Why (LANDSCAPE §4.3):* SoK 2603.22928 defines UAR/PED but **no incumbent publishes
       them**; WASP showed end-to-end-only ASR hides 17–86% intermediate compromise
       ("security through incompetence").
     - *Effort:* 2–3 weeks
-13. **Protocol-layer security** — MCP traffic inspection (tool-definition drift detection,
+13. **Protocol-layer security** ✅ SHIPPED (Aug 23 — security/protocol.py: ToolFingerprint sha256 pinning, DriftMonitor rug-pull detection w/ changed/added/removed report, verify_agent_card A2A §8.4 validation incl unsigned-card finding, scan_registry_entries provenance+injection+length findings) — MCP traffic inspection (tool-definition drift detection,
     rug-pull hashing), A2A AgentCard signature validation + trust-tier policy engine.
     - *Why (LANDSCAPE §3):* MCPTox measured up to **72.8% ASR with <3% refusal** across 45
       live servers; A2A v1.0 ships unsigned-by-default cards ("wire format, not a security
       model"). Cloudflare validated demand at the edge only — vendor-neutral inspection incl.
       stdio is an open lane.
     - *Effort:* 3–4 weeks
-14. **Compliance evidence automation** — map every blocked action to ISO 42001 / EU AI Act
+14. **Compliance evidence automation** ✅ SHIPPED (Aug 23 — reporting/evidence.py: EvidenceArtifact tamper-evident content_hash, build_evidence_pack mapping battles to EU-AI-ACT Art9/Art15 + NIST MEASURE-2/MANAGE-2 + ISO 42001 A.6.1.6 controls, render_evidence_md with retention/covenant notes incl GSA 90-day + insurance ≥24mo, chain_of_custody rolling hash) — map every blocked action to ISO 42001 / EU AI Act
     Art. 9/12/14 / NIST MEASURE-2 control artifacts; pre-built auditor evidence packs;
     tamper-evident signed export (≥24-month retention covenant format).
     - *Why (LANDSCAPE §6–7):* "Continuous compliance evidence wired to runtime decisions" is
@@ -212,7 +212,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 775 passing tests are local-only | Phase E0 item 1 |
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 849 passing tests are local-only | Phase E0 item 1 |
 | No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
 | Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
 | Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |
