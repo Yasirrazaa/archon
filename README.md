@@ -207,6 +207,16 @@ archon scan --registry ./registry.db --agent-id my-agent --pack finance_pack --c
 
 See [contrib/README.md](contrib/README.md) for the index and contribution rules.
 
+## Distribution
+
+| Channel | Install |
+|---|---|
+| uv (recommended) | `uv tool run --from git+https://github.com/Yasirrazaa/archon archon plugins --ci` |
+| Homebrew | `brew install --build-from-source packaging/homebrew/archon.rb` (formula in-repo) |
+| npm | `npx archon-security plugins --ci` — Node shim routing to the Python CLI via uv/pipx ([packaging/npm/archon-security](packaging/npm/archon-security)) |
+
+Packaging artifacts are CI-guarded by `tests/distribution/test_packaging.py`.
+
 ## Research Foundation
 
 This implementation draws on published research in AI security:

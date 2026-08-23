@@ -1,0 +1,27 @@
+{
+  "name": "archon-security",
+  "version": "0.1.0",
+  "description": "npm wrapper for the Archon closed-loop agent security CLI (Python). Red team and blue team in one MIT tool.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yasirrazaa/archon"
+  },
+  "bin": {
+    "archon": "bin/archon.js"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "keywords": [
+    "llm",
+    "security",
+    "red-team",
+    "agents",
+    "owasp"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
