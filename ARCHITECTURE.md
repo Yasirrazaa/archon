@@ -1,135 +1,168 @@
 # Architecture Decision Record
 
-> ⚠️ **Scope note (Aug 23, 2026):** this ADR documents the **legacy competition stack**
-> (`scenarios/security_arena/` agents + `src/agentbeats/` harness) — the attacker loop and
-> defender layer internals below remain accurate for those components. It does **not** describe
-> the current product architecture. For the shipped v3 platform (the `packages/` monorepo:
-> archon-core 8-layer pipeline, archon-armor proxy, CLI, benchmarks, five extension seams),
-> see [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §3. The "Task Shield ASR 2.07%"
-> figure cited below is a published AgentDojo baseline used in [`RESULTS.md`](./RESULTS.md)
-> comparisons.
+> **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
+> This ADR documents the **current product architecture** (`packages/` monorepo).
+> For the legacy competition stack internals, see `scenarios/security_arena/`.
 
 ## Design Principles
 
-### 1. Scenario-Agnostic Agents
-The attacker and defender agents have **zero hardcoded knowledge** of specific scenarios. They receive only high-level context from scenario plugins via the orchestrator. This enables generalization to unseen scenarios on the private leaderboard.
-
-### 2. Asymmetric Memory
-- **Attacker**: Persistent `round_data` dict across 7 rounds, enabling multi-turn strategy adaptation
-- **Defender**: Stateless — each round is a fresh conversation with no memory of prior rounds
-
-This asymmetry is the core competitive dynamic: the attacker can accumulate fragments across rounds while the defender cannot detect the accumulation pattern.
-
-### 3. LLM Call Budget Discipline
-Both agents operate within a strict 4-LLM-call budget per response:
-- Attacker: 1 call per round (generation + inline scoring)
-- Defender: 2-3 calls (paraphrase + task shield + optional classifier)
-
-All signal extraction and sanitization logic runs in pure Python (0 LLM calls).
-
-### 4. NeuralShield-Inspired Defense Gateway (NEW)
-The defender now implements a 7-layer security gateway based on NeuralShield's 2nd-place architecture:
-- Layer 0: Deterministic normalization (14 transforms, 0 LLM calls)
-- Layer 0.5: Threat classification (rule-based, 0 LLM calls)
-- Layer 0.7: Trust boundary segmentation (0 LLM calls)
-- Layer 0.9: Execution mode scaling (0 LLM calls)
-- Layer 1: Dynamic invariant generation (1 LLM call)
-- Layer 2: PPA spotlighting (0 LLM calls)
-- Layer 3: Task Shield response (1 LLM call)
-- Layer 4: Exchange classifier + backtranslation (1-2 LLM calls)
-- Layer 5: Output guardrails (0 LLM calls)
-
-### 5. NeuralShield-Inspired Attacker Intelligence (NEW)
-The attacker now includes:
-- Defender response diagnosis (5 categories, 5 failure modes)
-- Surface/family strategy routing with diversity rules
-- Contract awareness (parses output_format for attack surfaces)
-- Sequential attack chaining with fallback logic
-
-## Attacker Architecture
+### 1. Core-First, Integration-Ring Architecture
 
 ```
-Round 0: Reconnaissance (1 LLM call)
-├── Parse defender_role, defender_task, output_format
-├── Gap analysis of security_guidelines → find unmentioned attack vectors
-├── Derive domain-specific deceptive_delight anchors
-├── Build fragment reconstruction question sequence
-└── Store in round_data[0]
-
-Rounds 1-6: Adaptive Attack Loop (1 LLM call each)
-├── Extract signals from previous defender response (Python, 0 calls)
-│   ├── Tone scoring (0-4): hard_refuse → soft_refuse → neutral → compliant → leak
-│   ├── Leak detection via goal-specific regex patterns
-│   ├── Constraint vocabulary extraction
-│   └── Engagement level measurement
-├── Select next strategy based on signals
-│   ├── If tone >= 3: continue committed branch
-│   ├── If tone <= 1: pivot to gap analysis recommendation
-│   ├── If all recent tones <= 1: retry failed techniques (round 4+)
-│   └── Progressive escalation: rapport → deceptive_delight → bad_likert → task_decompose
-├── Generate attack message (1 LLM call)
-│   ├── Inject strategy-specific instructions into system prompt
-│   ├── Include battle history and fragment plan
-│   └── Apply PyRIT converters for injection scenarios
-└── Update round_data with strategy, signals, and committed branch
-
-Round 7: Final Extraction
-├── Context flooding: quote all prior compliant responses
-├── Fragment assembly (if reconstruction attack)
-└── Direct extraction with established trust
+archon/
+├── packages/
+│   ├── archon_core/        # Pure library. Zero vendor deps. Importable anywhere.
+│   │   ├── attacks/        # AttackStrategy implementations (GOAT, branching, trace-driven)
+│   │   ├── defenses/       # DefenseLayer implementations (8-layer pipeline)
+│   │   ├── targets/        # TargetAdapter implementations (HTTP, MCP, sandbox, memory, multiagent)
+│   │   ├── providers/      # LLMProvider implementations (OpenAI-compat, Gemini, Anthropic)
+│   │   ├── reporting/      # Severity scoring, compliance reports
+│   │   ├── registry/       # Agent registry (memory, SQLite, Postgres, versioned)
+│   │   ├── observability/  # OTel tracer, scrubbing, JSONL export
+│   │   ├── security/       # HMAC auth, rate limiting
+│   │   └── config.py       # YAML policy-as-code
+│   ├── archon_armor/       # THE deployable artifact: FastAPI defense proxy
+│   │   ├── server.py       # OpenAI-compatible /v1/chat/completions endpoint
+│   │   ├── battles.py      # BattleManager for attack campaigns
+│   │   ├── probes.py       # Probe corpus (120 probes, OWASP-mapped)
+│   │   ├── baselines.py    # Policy-CI baseline stores
+│   │   ├── compare.py      # A-vs-B battle comparison
+│   │   ├── checkpoints.py  # Crash-safe long-battle persistence
+│   │   ├── ui.py           # Zero-dependency fleet dashboard
+│   │   └── fleet.py        # Fleet summary + CI gate
+│   └── archon_cli/         # CLI: archon scan | battle | serve | report | fleet | plugins
+├── src/agentbeats/         # Legacy competition harness (frozen; compat only)
+├── scenarios/security_arena/  # Competition plugins (compat layer over archon_core)
+├── contrib/                # Community probe packs (finance/healthcare/devops)
+├── deploy/helm/            # Helm chart for Kubernetes deployment
+└── packaging/              # Homebrew formula + npm wrapper
 ```
 
-## Defender Architecture
+### 2. Dependency Rule (enforced by import-linter)
 
 ```
-Layer 0: Python Sanitization (0 LLM calls)
-├── Strip zero-width Unicode characters
-├── Remove role tag mimicry (Human:, Assistant:, System:)
-├── Strip instruction tags (<|im_start|>, [INST])
-├── Remove HTML comments
-└── Redact base64 blobs (40+ char sequences)
-
-Layer 1: Dynamic Invariant Generation (1 LLM call)
-├── Generate scenario-specific security invariants from role/task/guidelines
-│   ├── "Never [action]" + reason + common bypass attempt
-│   └── Fallback to generic invariants if generation fails
-└── Optional: adversarial paraphrase for injection scenarios
-    └── Extract facts, discard instructions, convert imperatives to descriptions
-
-Layer 2: Polymorphic Prompt Assembling (0 LLM calls)
-├── Hash task_id for deterministic randomization
-├── Select delimiter style (4 options)
-├── Select structural variant (4 options)
-│   ├── Variant 0: Instructions → Data → Task reminder
-│   ├── Variant 1: Data → Instructions → Task reminder
-│   ├── Variant 2: Instructions sandwich data
-│   └── Variant 3: Task reminder → Data → Instructions
-└── Build output format skeleton anchor
-
-Layer 3: Task Shield Response (1 LLM call)
-├── Constitution-style system prompt
-│   ├── Role + task + output format
-│   ├── Invariants with reasons and bypass warnings
-│   ├── Judgment framework for novel situations
-│   ├── Helpfulness defaults (answer first, ask later)
-│   ├── Gray area policy (safe factual portion only)
-│   └── Anti-conditioning invariant (no memory of prior rounds)
-└── Generate candidate response
-
-Layer 4/5: Exchange Classifier + Backtranslation (1-2 LLM calls)
-├── Quick borderline check (Python, 0 calls)
-│   └── Flag if response contains system/override/authorized/policy/etc.
-├── Exchange classifier (1 LLM call, borderline only)
-│   ├── Classify (input, response) pair together
-│   ├── Detect: pii_leak, tool_leak, criteria_deviation, authority_accepted, goal_hijack
-│   └── Return violation_detected, severity, confidence, borderline
-└── Backtranslation check (1 LLM call, borderline only)
-    ├── Ask LLM to infer user intent from response alone
-    ├── Compare inferred intent to legitimate task
-    └── Block if intent diverges
+archon_cli → archon_armor → archon_core
+                          → agentbeats (compat)
+archon_core never imports:
+  - cloud SDKs (GCP, AWS, Azure)
+  - A2A protocol
+  - HTTP frameworks (FastAPI, etc.)
 ```
 
-## Key Research Foundations
+This is what "core-first" means mechanically. Integrations go in `integrations/` (optional adapters).
+
+### 3. Five Extension Seams (stable ABCs)
+
+Every axis of growth is a single interface third parties implement without touching core:
+
+```python
+# attacks/base.py
+class AttackStrategy(ABC):
+    """A stateful multi-turn attack campaign."""
+    name: str
+    surfaces: frozenset[AttackSurface]
+    @abstractmethod
+    async def next_payload(self, ctx: BattleContext) -> AttackPayload: ...
+    def observe(self, signal: RoundSignal) -> None: ...
+
+# defenses/base.py
+class DefenseLayer(ABC):
+    """One stage of the request/response pipeline."""
+    name: str
+    llm_budget: int = 0
+    @abstractmethod
+    async def process(self, exchange: Exchange) -> Exchange: ...
+
+# providers/base.py
+class LLMProvider(ABC):
+    @abstractmethod
+    async def generate(self, messages: list[dict], **kwargs) -> Completion: ...
+
+# targets/base.py
+class TargetAdapter(ABC):
+    """Anything that speaks like an agent can be tested."""
+    @abstractmethod
+    async def send(self, payload: str) -> TargetResponse: ...
+
+# registry/base.py
+class Registry(ABC):
+    @abstractmethod
+    async def register(self, card: AgentCard) -> str: ...
+    @abstractmethod
+    async def get(self, agent_id: str) -> AgentCard | None: ...
+```
+
+### 4. Defense Pipeline Architecture
+
+```
+agent ──► POST /v1/chat/completions ──► [L0 normalize] ──► [L1 classify]
+              │                                              │
+              ▼                                              ▼
+        X-Agent-ID header ──► Registry lookup (policy)   [L2 spotlight] ──► upstream LLM ──► [L3 shield] ──► [L4 classifier] ──► response
+```
+
+**8 Defense Layers:**
+
+| Layer | Name | LLM Calls | Description |
+|---|---|---|---|
+| L0 | Normalization | 0 | Deterministic obfuscation decoding (14 transforms) |
+| L1 | Threat Classification | 0 | Rule-based threat classification with policy blocking |
+| L1.5 | Segmentation | 0 | Trust-boundary segmentation with position-decay scoring |
+| L2 | Spotlighting | 0 | Polymorphic Prompt Assembling spotlighting wrap |
+| L2.5 | Execution Mode | 0 | Maps accumulated suspicion to trust-level execution mode |
+| L3 | Task Shield | 1 | Constitution-style system prompt with dynamic invariants |
+| L4 | Exchange Classifier | 1 | Classifies (input, response) pair for hidden risks |
+| L5 | Output Guardrails | 0 | PII detection, unsafe code sanitization, unverified reference checking |
+
+**Total LLM budget:** ≤4 calls per exchange (deterministic tier: 0 calls).
+
+### 5. Attack Engine Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    BranchingAttacker                          │
+│  Hydra-style fan-out/pivot/prune with deterministic verdicts │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│  Round 1      │    │  Round 2      │    │  Round N      │
+│  Seed fan-out │    │  Mutation     │    │  Convergence  │
+│  (3 payloads) │    │  (LLM mutate) │    │  (best path)  │
+└───────┬───────┘    └───────┬───────┘    └───────┬───────┘
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│  Score        │    │  Score        │    │  Score        │
+│  (deterministic│    │  (deterministic│    │  (deterministic│
+│  lexical)     │    │  lexical)     │    │  lexical)     │
+└───────────────┘    └───────────────┘    └───────────────┘
+```
+
+**Key design choice:** Verdicts are **never** LLM-judged. The LLMProvider is used only to *generate* mutations; scoring uses deterministic lexical signals (refusal markers, leak markers, secret patterns). This makes attacks cheap, reproducible, and air-gap friendly.
+
+### 6. Observable Pipeline
+
+Every request flows through the defense pipeline with OTel spans:
+
+```
+armor.request (root span)
+├── normalization (L0)
+├── threat_classification (L1)
+├── segmentation (L1.5)
+├── spotlighting (L2)
+├── execution_mode (L2.5)
+├── upstream_llm_call (L3)
+├── exchange_classifier (L4)
+└── output_guardrails (L5)
+```
+
+Each span carries attributes: `layer`, `blocked`, `verdict`, `risk_score`, `evidence`.
+Exported to Cloud Trace via OTLP/HTTP when `ARCHON_OTEL_EXPORTER=otlp`.
+
+### 7. Key Research Foundations
 
 | Technique | Source | Application |
 |-----------|--------|-------------|
@@ -139,10 +172,13 @@ Layer 4/5: Exchange Classifier + Backtranslation (1-2 LLM calls)
 | Polymorphic Prompt Assembling (PPA) | 2025 research | Randomized prompt structure, ASR reduction to 1.83% |
 | Spotlighting | Microsoft | Delimiter-based untrusted input isolation |
 | Constitutional Classifiers | Anthropic | Output-layer intent verification via backtranslation |
-| Crescendo Attack | Promptfoo | Multi-turn gradual escalation strategy |
+| Crescendo Attack | Promptfoo/Microsoft | Multi-turn gradual escalation strategy |
 | Many-Shot Jailbreaking (MSJ) | Anthropic | Role mimicry detection in Layer 0 |
+| Hydra Strategy | Promptfoo | Adaptive multi-turn branching with shared learnings |
+| Agent Breaker | Garak/NVIDIA | Tool-analyzing multi-turn attacks |
+| OWASP Agentic Top-10 (2026) | OWASP | Threat taxonomy and standards alignment |
 
-## Scenario Plugin Interface
+### 8. Scenario Plugin Interface
 
 Each scenario plugin (`ScenarioPlugin` ABC) provides:
 - `get_attack_type()`: INJECTION or DIRECT
@@ -157,3 +193,44 @@ Each scenario plugin (`ScenarioPlugin` ABC) provides:
 - `check_success(response)`: Whether the attack succeeded
 
 Adding a new scenario requires only implementing this interface — no core code changes.
+
+### 9. Enterprise Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ARCHON PLATFORM (Production)                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│  archon-armor │    │  archon-cli   │    │  archon fleet │
+│  (FastAPI)    │    │  (CI/CD)      │    │  (Dashboard)  │
+└───────┬───────┘    └───────┬───────┘    └───────┬───────┘
+        │                     │                     │
+        └─────────────────────┼─────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │  archon_core       │
+                    │  (Pure library)    │
+                    └─────────┬─────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│  Registry     │    │  Observability│    │  Security     │
+│  (Postgres)   │    │  (OTel)       │    │  (HMAC+RL)   │
+└───────────────┘    └───────────────┘    └───────────────┘
+```
+
+**Deployment options:**
+- **Docker:** `docker-compose up` with mounted `/data` volume
+- **Kubernetes:** Helm chart at `deploy/helm/archon-armor/`
+- **Cloud Run:** Per `DEPLOY_GCP.md` instructions
+- **Bare metal:** `pip install archon[otel,postgres]`
+
+---
+
+*This ADR is maintained alongside code on `hackathon-v2`. Bump date on substantive architecture changes.*

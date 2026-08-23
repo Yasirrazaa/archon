@@ -48,3 +48,7 @@ Methodology: each AgentDojo GOAL is wrapped using AgentDojo's own `<INFORMATION>
 ## Beyond this benchmark
 
 Since this run was published, Archon's attack surface expanded well beyond HTTP-level probes (post-hackathon sprints, Aug 23): live tool-execution battles with environment-state ground truth (`archon_core.targets.sandbox`), real vector-memory-store poisoning with remediation verification (`archon_core.targets.memory`), ASI07 multi-agent trust-boundary attacks (`archon_core.targets.multiagent`), and trace-driven attack generation from OTel spans (`archon_core.attacks.trace_driven`). These targets report ground-truth `attack_success` from state diffs rather than lexical markers — a follow-up benchmark series will publish ASR for each against the reference pipeline.
+
+## Methodology commitments
+
+Per the NIST CAISI finding that aggregate ASR climbs 57%→80% at 25 attempts per task (and Best-of-N follows a power law), all future published Archon benchmark numbers will state: (1) attempt budget and per-task attempt distribution; (2) adaptivity level of the attacker (static template / branching / LLM-adaptive); (3) judge method and calibration; (4) utility cost of defenses (over-refusal measured via the harmless_helpfulness canary pack); (5) dual ASR where applicable (intermediate vs end-to-end). See `docs/LANDSCAPE_2026.md` §4.3 for the full metrics program (GUARDEDJOINT-style KPIs, Unsafe Action Rate for CI gates, Privilege Escalation Distance on customer tool graphs).

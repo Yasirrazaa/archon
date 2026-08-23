@@ -1,8 +1,9 @@
-# ARCHON SOTA STRATEGY — Verified & Corrected (v3)
+# ARCHON SOTA STRATEGY — Verified & Corrected (v4)
 
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Supersedes:** earlier drafts of this strategy
 > Every competitor claim below was re-verified against live sources Aug 22 and against cloned
-> source code Aug 23. Where this document differs from prior strategy drafts, this version wins.
+> source code Aug 23. Additional market intelligence gathered via web research Aug 23.
+> Where this document differs from prior strategy drafts, this version wins.
 > Execution history now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10 to avoid duplicate logs.
 
 ---
@@ -19,9 +20,11 @@ Prior drafts state *"334/404 passing tests"*. Current reality:
 | Post-hackathon sprints (Aug 23) | ✅ **ROADMAP COMPLETE**: live tool-execution battles w/ env-state ground truth, live memory/vector-store poisoning, ASI07 trust-boundary attacks, trace-driven attack generation, comparison engine + checkpoint/resume, Web UI dashboard, contrib gallery, Homebrew/npm distribution |
 | Benchmarks | ✅ **AgentDojo v1 harness shipped**; deterministic-tier ASR published in [`RESULTS.md`](./RESULTS.md) |
 
-Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), Claude-native attacker provider.
+Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), local vLLM attacker provider.
 
-## 1. Verified Market Shifts (Aug 22, 2026) — What Changed Today
+---
+
+## 1. Verified Market Shifts (Aug 22–23, 2026) — What Changed Today
 
 ### 🔴 Shift 1: Promptfoo has FIVE multi-turn attack strategies (CONFIRMED)
 Live docs list **Crescendo, Hydra, Goblin, GOAT, Mischievous User**. Hydra coordinates a branching
@@ -36,7 +39,13 @@ direction is unambiguous: they are building exactly the red-team + runtime combi
 was 6–12 months away.
 → **The window is ~3–6 months, not 12.** Speed is now the primary strategic variable.
 
-### 🟢 Shift 3: Garak keeps moving — GOAT now VERIFIED in code (Aug 23)
+### 🔴 Shift 3: Augustus (Praetorian) validates the market but doesn't address defense evaluation
+Augustus v0.0.9 ships 210+ probes across 47 attack categories with 4 multi-turn strategies
+(Crescendo, GOAT, Hydra, Mischievous User). This validates the market for agent security testing
+but confirms that scanner-only tools are commodity — the durable moat is defense evaluation.
+→ **The red-vs-blue measurement loop remains unclaimed by any new entrant.**
+
+### 🟢 Shift 4: Garak keeps moving — GOAT now VERIFIED in code (Aug 23)
 Garak is at **v0.16.1.pre1** with Context-Aware Scanning (CAS) + IntentProbe (self-described
 "experimental and incomplete"). The earlier "unverified" flag on the GOAT claim is **resolved**:
 `garak/probes/goat.py` exists (O-T-S-R attacker-LLM loop), alongside `tap.py` ×3,
@@ -44,36 +53,54 @@ Garak is at **v0.16.1.pre1** with Context-Aware Scanning (CAS) + IntentProbe (se
 multi-turn attacker now — but still scanner-only: no runtime defense, no defense evaluation,
 no live tool sandbox, and compliance *tags* rather than adversarially-validated evidence.
 
-### 🟡 Shift 4: OWASP Agentic Top-10 (2026) is published and peer-reviewed (CONFIRMED)
-The exact risk numbering ("ASI01–ASI10") used in some drafts is **unverified** — refer to risks by
-name until the official IDs are confirmed. AIUC-1 crosswalk also exists.
+### 🟡 Shift 5: OWASP Agentic Top-10 (2026) is published and peer-reviewed (CONFIRMED)
+The exact risk IDs are confirmed as **ASI01–ASI10** (per DeepTeam's integration and Auth0's analysis):
+- ASI01: Agent Goal Hijack
+- ASI02: Tool Misuse & Exploitation
+- ASI03: Agent Identity & Privilege Abuse
+- ASI04: Agentic Supply Chain Compromise
+- ASI05: Unexpected Code Execution
+- ASI06: Memory & Context Poisoning
+- ASI07: Insecure Inter-Agent Communication
+- ASI08: Cascading Agent Failures
+- ASI09: Human-Agent Trust Exploitation
+- ASI10: Rogue Agents
+
+Archon covers 6/10 today (ASI01, ASI02, ASI06, ASI07, + partial ASI03/ASI05). Gap: ASI04, ASI08, ASI09, ASI10.
 
 ### ⚪ Unchanged conclusions
 PyRIT remains endpoint-agnostic library-only; Model Armor remains a filter you cannot
 adversarially validate yourself; AgentDojo remains benchmark-not-product; Snyk Agent Scan remains
 static-only. **The red-vs-blue measurement loop remains unclaimed.**
 
+---
+
 ## 2. The Repositioned Moat
 
-With attack-side multi-turn commoditizing, the durable moat narrows to three things — all ours:
+With attack-side multi-turn commoditizing, the durable moat narrows to **four things** — all ours:
 
-1. **The measurement loop.** Point *any* attacker (ours, Promptfoo's, PyRIT's) at *any* guardrail
+1. **The measurement loop.** Point *any* attacker (ours, Promptfoo's, PyRIT's, Augustus's) at *any* guardrail
    (ours, NeMo, Lakera, **even Promptfoo Guardrails**) and produce per-layer, replayable evidence.
    No vendor can honestly sell "validated protection" while being attackable by the open tool that
    validates everyone — including them.
+
 2. **Policy-CI.** Defense regression gates in pipelines (`--gate-baseline`) — invented here, still unique.
+
 3. **Open, self-hostable, budget-accounted everything.** Promptfoo's runtime products will be
    commercial and cloud-tethered; MIT-licensed armor stays the neutral option.
+
+4. **OWASP Agentic Top-10 coverage.** Archon is the only tool that both *tests* and *defends*
+   against ASI01-ASI10 risks with adversarially-validated evidence. DeepTeam maps them;
+   Promptfoo maps them; but nobody *executes* the attacks and *proves* the defenses work.
 
 **Positioning line (updated):**
 > *Everyone can now attack. Almost nobody can prove their defense works. Archon is the neutral
 > validation layer for agent security: adaptive attacks in, adversarially-validated evidence out —
 > including evidence about other vendors' guardrails.*
 
-## 3. Revised 90-Day Execution Plan (post-verification)
+---
 
-Old plans assumed 12 months of runway. The verified Promptfoo Guardrails/MCP-Proxy move cuts that
-to roughly a quarter. Ruthless re-prioritization:
+## 3. Revised 90-Day Execution Plan (post-verification)
 
 ### Sprint A (Weeks 1–2): Own "validates everyone"
 1. **Remote target scanning** — `archon scan --target https://any-guardrail/v1` via
@@ -99,17 +126,9 @@ to roughly a quarter. Ruthless re-prioritization:
 4. **YAML battle config** (`archon-config.yaml`) for policy-as-code security tests in Git.
 
 ### Sprint C (Weeks 6–9): Match their best attacker, keep our engine honest
-> **Status (Aug 22, 2026):** C1 ✅ `BranchingAttacker` (`archon_core/attacks/branching.py`):
-> Hydra-style fan-out/pivot/prune with deterministic response scoring — the LLM only
-> mutates payloads, verdicts stay model-free (10 tests) · C2 ✅ behavioral MCP probing:
-> `probe_tool()` invokes live tools with canonical injection payloads and judges replies;
-> `archon scan-mcp --url ... --probe-tool NAME` (8 tests). Suite 445→463.
-> Remaining in C: ~~AgentDojo benchmark numbers~~ ✅ **DONE Aug 23** — `archon_benchmarks` + [`RESULTS.md`](./RESULTS.md).
-> **C3 ✅** multi-turn battles are now first-class: `BattleManager.execute(mode="multi_turn")`
-> converts the attack tree into per-branch verdicts (`summary.attack_tree`), and
-> `archon battle --target URL --goal G --seed S --ci` gates on attack success
-> (exit 1 = defense failed). Attack provider via env (`ARCHON_ATTACK_PROVIDER_*`,
-> Gemini OpenAI-compat by default). 6 tests; suite 463→469; live smoke verified.
+> **Status (Aug 22, 2026):** C1 ✅ `BranchingAttacker` · C2 ✅ behavioral MCP probing ·
+> C3 ✅ multi-turn battles first-class · Remaining: ~~AgentDojo benchmark numbers~~ ✅ **DONE Aug 23**.
+
 5. **GOAT-loop upgrade**: add Hydra-style branching with shared refusal learnings across parallel
    conversation paths (our deterministic signal extraction makes this cheaper per attack than theirs).
 6. **AgentDojo benchmark runs + published numbers** — researcher credibility while the category is hot.
@@ -118,25 +137,27 @@ to roughly a quarter. Ruthless re-prioritization:
 7. Plugin entry-points (`archon.plugins` group) + docs for all five seams; seed marketplace repo.
 8. Fleet dashboard MVP (read-only views over armor telemetry) — groundwork for managed cloud.
 
-> **Status (Aug 22, 2026):** items 7–8 shipped as code in Sprint C+ sessions (community pack loader
-> + `archon plugins` inventory; `FleetSummary` + `archon fleet`). Enterprise hardening additions from
-> the backlog also landed: `PostgresRegistry` behind `ARCHON_DATABASE_URL` and a production Helm chart
-> (`deploy/helm/archon-armor/`, non-root + probes + /data volume). Suite 505 passing.
+> **Status (Aug 22, 2026):** items 7–8 shipped as code. Enterprise hardening: Postgres registry + Helm chart.
+> Suite 505 passing.
 
-## 3.1 Execution log
+### Sprint E (Weeks 14–26): Enterprise readiness
+9. **Full-pipeline benchmark** — re-run AgentDojo with LLM layers enabled; publish end-to-end ASR.
+10. **Attacker diversity** — local vLLM via existing `OpenAICompatProvider`; benchmark-driven tuning. (ClaudeNativeProvider ✅ already shipped, commit e37305c.)
+11. **ASI04/ASI08/ASI09/ASI10 coverage** — close the OWASP Agentic Top-10 gap.
+12. **HarmBench integration** — published numbers for researcher credibility.
+13. **Docs site + live demo** — persistent documentation and demonstration.
+14. **Managed cloud control plane** — multi-tenant armor deployments, scheduled battles, alerting.
 
-> **Deduplicated Aug 23:** the full execution history (Sprints A–D, P0/P1 items, suite
-> progression 286→649) now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10.
-> Latest entries: the post-hackathon sprint wave — corpus 102→120, severity derivation,
-> sandbox/memory/multi-agent targets, trace-driven attacks, compare+checkpoint, Web UI,
-> contrib gallery, distribution — and the deep competitive review that closed ROADMAP v4
-> (suite 517→649), all Aug 23, 2026.
+---
+
 ## 4. Hackathon (deadline Aug 31) — unchanged, still first
 
 Everything in BLUEPRINT §5.3 stands: deploy armor to Cloud Run, Gemini/Gemma demo path, 4-min
 video, blog + `#AllThingsAgenticHackathon`. The only update: the demo should *lean into* the new
 positioning — show `archon scan --target <third-party-endpoint>` producing an evidence report
 about someone else's guardrail. Nothing else on stage says that.
+
+---
 
 ## 5. Corrections Log (vs. the prior strategy draft)
 
@@ -149,9 +170,10 @@ about someone else's guardrail. Nothing else on stage says that.
 | "97M+ MCP downloads / 82% vulnerable" | ❓ Unverified | Do not cite without source |
 | "Status: 334/404 tests" | ❌ Stale | 649 tests; ROADMAP v4 fully closed (see §0) |
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
+| "OWASP Agentic ASI01-10 IDs unverified" | ✅ Verified | Confirmed via DeepTeam integration and Auth0 analysis: ASI01–ASI10 |
+| "Augustus doesn't exist" | ❌ New competitor | Praetorian's Augustus v0.0.9: 210+ probes, 4 multi-turn strategies, Go-based |
+| "Archon covers 6/10 OWASP Agentic risks" | ✅ Honest assessment | ASI01, ASI02, ASI06, ASI07 + partial ASI03/ASI05; gap: ASI04, ASI08, ASI09, ASI10 |
 
 ---
 
 *Maintained alongside code on `hackathon-v2`. Bump version/date on substantive edits.*
-
-

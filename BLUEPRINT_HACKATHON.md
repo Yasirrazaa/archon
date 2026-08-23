@@ -14,6 +14,7 @@
 | `COMPETITIVE_ANALYSIS.md` | Verified competitor & market intelligence | ✅ Rewritten v3.1 (code-verified vs 9 repos) |
 | `BLUEPRINT_HACKATHON.md` | This file — product architecture + competition strategy | ✅ Rewritten v3.1 |
 | `RESULTS.md` | Published AgentDojo v1 benchmark numbers (ASR/block-rate) | ✅ New Aug 23 |
+| `docs/LANDSCAPE_2026.md` | Master synthesis: market, protocols, research frontier, regulation, strategic bets | ✅ New Aug 23 |
 | `REPORT_COMPARATIVE.md` | Current-state capability report vs competitors | ✅ Updated v3.1 |
 | `ROADMAP.md` | Post-hackathon product roadmap (core-first) | ✅ Rewritten against shipped reality |
 | `ARCHITECTURE.md` | Legacy competition-stack ADR (attacker/defender internals) | ⚠️ Historical annex — see §3 here for the v3 package architecture |

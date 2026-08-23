@@ -17,7 +17,7 @@ vendor-neutral.
 | 8-layer defense pipeline (deterministic tier → LLM layers) | `packages/archon_core/defenses/layers.py` |
 | Adaptive multi-turn attacker (Hydra-style fan-out/pivot/prune, deterministic verdicts) | `archon battle --target URL --goal G --ci` |
 | Runtime defense proxy (OpenAI-compatible; drop-in via `OPENAI_BASE_URL`) | `packages/archon_armor/` · HMAC identity, rate limiting, per-agent policy, output redaction |
-| Probe corpus: 102 probes (encoding-evasion + latent-injection packs added), all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `archon plugins --ci` |
+| Probe corpus: 120 probes (encoding-evasion + latent-injection packs added), all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `archon plugins --ci` |
 | MCP security: static tool-poisoning scan + live behavioral probing | `archon scan-mcp --url ... --probe-tool NAME` |
 | Third-party guardrail validation ("we validate them") | `archon scan --target <guardrail-url>` |
 | Pluggable external defenses (NeMo / Model Armor / Promptfoo Guardrails as DefenseLayers) | `ExternalGuardrailLayer` |
@@ -32,7 +32,7 @@ vendor-neutral.
 | Comparison engine: A-vs-B battle diff (rates, per-category deltas, probe-level regressions, verdict) with CI gate | `archon_armor/compare.py`, `archon compare` |
 | Checkpoint/resume for long battles: crash-safe per-probe persistence, resume skips completed probes | `archon_armor/checkpoints.py`, `archon scan --checkpoint/--resume` |
 | Web UI fleet dashboard: zero-dependency dark-theme UI at `/ui`, agents + policies + recent battles, 10s auto-refresh | `archon_armor/ui.py`, `archon ui` |
-| Contrib pack gallery: finance/healthcare/devops probe packs, namespaced, auto-discovered via `ARCHON_CONTRIB_DIR` | [`contrib/`](./contrib/) |
+| Contrib pack gallery: finance/healthcare/devops probe packs, namespaced, auto-discovered via `ARCHON_CONTRIB_DIR` | `contrib/` |
 | Distribution: Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed CLI | `packaging/homebrew/`, `packaging/npm/` |
 | Live memory/vector-store poisoning: real store manipulation, benign-query retrieval hijack, remediation loop | `targets/memory.py` |
 | Benchmark harness: AgentDojo v1, all 27 published injection tasks | [`RESULTS.md`](./RESULTS.md) — deterministic-tier ASR 66.7% / block 33.3% |
@@ -46,11 +46,26 @@ Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
 NeMo defends but cannot self-validate; Snyk agent-scan never executes attacks and
 analyzes behind a closed API. On the seven agentic attack-surface dimensions
-(COMPETITIVE_ANALYSIS §7.1 — live tool-state attacks, memory poisoning, ASI07 trust
+(COMPETITIVE_ANALYSIS §5.1 — live tool-state attacks, memory poisoning, ASI07 trust
 boundaries, derived severity, trace-driven attack generation, policy comparison,
 fleet UI), Archon is the only project best-in-class on all of them; no competitor
 holds more than one partial. Nobody else combines adaptive offense + shippable
 defense + adversarial proof.
+
+## OWASP Agentic Top-10 Coverage
+
+| OWASP Risk | ID | Coverage | Status |
+|---|---|---|---|
+| Agent Goal Hijack | ASI01 | ✅ Full | Core attack surfaces + L0–L4 defenses |
+| Tool Misuse & Exploitation | ASI02 | ✅ Full | MCP static scan + live behavioral probing + sandbox targets |
+| Agent Identity & Privilege Abuse | ASI03 | ⚠️ Partial | HMAC identity, but no privilege escalation testing |
+| Agentic Supply Chain Compromise | ASI04 | ❌ Gap | Schema manipulation, description deception untested |
+| Unexpected Code Execution | ASI05 | ⚠️ Partial | Sandbox targets, but no code-execution battle suite |
+| Memory & Context Poisoning | ASI06 | ✅ Full | Live memory/vector-store poisoning + remediation |
+| Insecure Inter-Agent Communication | ASI07 | ✅ Full | Trust-boundary attacks, closed-loop vs sanitized |
+| Cascading Agent Failures | ASI08 | ❌ Gap | Cascade-recovery behavior untested |
+| Human-Agent Trust Exploitation | ASI09 | ❌ Gap | Social engineering attacks untested |
+| Rogue Agents | ASI10 | ❌ Gap | Rogue agent detection untested |
 
 ## Remaining before hackathon submission (deadline Aug 31, 5pm PDT)
 
@@ -59,6 +74,16 @@ defense + adversarial proof.
 - [ ] Architecture diagram for Devpost
 - [ ] Blog post + social post (`#AllThingsAgenticHackathon`)
 - [ ] Devpost submission package
+
+## Remaining for enterprise readiness (post-hackathon)
+
+- [ ] Full-pipeline benchmark (LLM layers enabled)
+- [x] ClaudeNativeProvider (shipped, commit e37305c)
+- [ ] Local vLLM attacker provider (zero-code: OpenAI-compat endpoint)
+- [ ] ASI04/ASI08/ASI09/ASI10 coverage
+- [ ] HarmBench benchmark integration
+- [ ] Persistent docs site + live demo
+- [ ] Managed cloud control plane
 
 ## Document map
 
