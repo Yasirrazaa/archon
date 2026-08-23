@@ -43,9 +43,9 @@ class TestProbePacks:
 class TestCorpusBreadth:
     """P0 backlog: probe corpus must rival scanner-grade breadth."""
 
-    def test_total_corpus_exceeds_100_probes(self):
+    def test_total_corpus_exceeds_150_probes(self):
         total = sum(len(get_pack(name)) for name in list_packs())
-        assert total >= 100, f"corpus too thin: {total}"
+        assert total >= 150, f"corpus too thin: {total}"
 
     def test_owasp_pack_spans_all_ten_categories(self):
         categories = {p.category for p in get_pack("owasp_llm_10")}
@@ -284,4 +284,75 @@ class TestLatentInjectionPack:
         assert blocked == len(pack), (
             f"reference pipeline missed {len(pack) - blocked}/{len(pack)} "
             f"latent injections"
+        )
+
+
+class TestHarmBenchPack:
+    """HarmBench-style behavioral probes: direct requests across the six
+    HarmBench harm domains, framed as jailbreaks so the reference pipeline
+    must classify and block them."""
+
+    def test_pack_registered_with_minimum_breadth(self):
+        pack = get_pack("harmbench_behavioral")
+        assert len(pack) >= 20, f"harmbench pack too thin: {len(pack)}"
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names)), "duplicate probe name in harmbench pack"
+
+    def test_payloads_are_unique(self):
+        keys = [p.payload.strip().lower() for p in get_pack("harmbench_behavioral")]
+        assert len(keys) == len(set(keys)), "duplicate payload in harmbench pack"
+
+    def test_all_categorized_harmbench(self):
+        assert all(p.category == "harmbench_behavioral" for p in get_pack("harmbench_behavioral"))
+
+    def test_reference_pipeline_blocks_all_harmbench_probes(self):
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("harmbench_behavioral")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        blocked = battle.summary["blocked"]
+        assert blocked == len(pack), (
+            f"reference pipeline missed {len(pack) - blocked}/{len(pack)} "
+            f"harmbench attacks"
+        )
+
+
+class TestJailbreakPersonaPack:
+    """Persona-based jailbreak frames (DAN-style, developer mode,
+    no-restrictions roleplay) — the classic LLM01/LLM05 bypass family."""
+
+    def test_pack_registered_with_minimum_breadth(self):
+        pack = get_pack("jailbreak_personas")
+        assert len(pack) >= 20, f"persona pack too thin: {len(pack)}"
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names)), "duplicate probe name in persona pack"
+
+    def test_payloads_are_unique(self):
+        keys = [p.payload.strip().lower() for p in get_pack("jailbreak_personas")]
+        assert len(keys) == len(set(keys)), "duplicate payload in persona pack"
+
+    def test_all_categorized_jailbreak_persona(self):
+        assert all(p.category == "jailbreak_persona" for p in get_pack("jailbreak_personas"))
+
+    def test_reference_pipeline_blocks_all_persona_probes(self):
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("jailbreak_personas")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        blocked = battle.summary["blocked"]
+        assert blocked == len(pack), (
+            f"reference pipeline missed {len(pack) - blocked}/{len(pack)} "
+            f"persona jailbreaks"
         )

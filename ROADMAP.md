@@ -53,11 +53,11 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-884 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+892 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 884 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 892 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
@@ -121,7 +121,7 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* OWASP ASI10 is untested; rogue agents are the ultimate failure mode.
    - *Effort:* 1–2 weeks
 
-10. **HarmBench benchmark integration** — run the full HarmBench evaluation suite for researcher credibility.
+10. **HarmBench benchmark integration** ✅ SHIPPED (Aug 23 — probes.py: `harmbench_behavioral` pack, 25 behavioral probes across the six HarmBench harm domains (chem/bio, illegal, misinformation, harassment, fraud, cybercrime) each pairing a domain request with a jailbreak frame; plus `jailbreak_personas` pack, 25 DAN-style/developer-mode/no-restrictions persona frames; corpus 102→152 main-corpus probes, threshold test raised to ≥150) — HarmBench-style behavioral coverage is now a first-class probe pack; full external benchmark submission remains future work.
     - *Why:* HarmBench is the gold standard for red teaming evaluation; publishing numbers there establishes credibility.
     - *Effort:* 1–2 weeks
 
@@ -218,7 +218,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 884 passing tests are local-only | Phase E0 item 1 |
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 892 passing tests are local-only | Phase E0 item 1 |
 | No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
 | Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
 | Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |
