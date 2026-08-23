@@ -33,20 +33,25 @@ wheels = [
 
 [[package]]
 name = "agentbeats-security-arena"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
-    { name = "a2a-sdk" },
-    { name = "google-adk" },
-    { name = "google-genai" },
+    { name = "fastapi" },
+    { name = "httpx" },
     { name = "jinja2" },
-    { name = "openai" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "pyyaml" },
     { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
+competition = [
+    { name = "a2a-sdk" },
+    { name = "google-adk" },
+    { name = "google-genai" },
+    { name = "openai" },
+]
 otel = [
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
@@ -61,7 +66,13 @@ bench = [
     { name = "email-validator" },
 ]
 dev = [
+    { name = "deepdiff" },
+    { name = "docstring-parser" },
+    { name = "email-validator" },
+    { name = "mcp" },
     { name = "mypy" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-sdk" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -71,19 +82,22 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "a2a-sdk", specifier = ">=0.3.5" },
-    { name = "google-adk", specifier = ">=1.14.1" },
-    { name = "google-genai", specifier = ">=1.36.0" },
+    { name = "a2a-sdk", marker = "extra == 'competition'", specifier = ">=0.3.5" },
+    { name = "fastapi", specifier = ">=0.116.1" },
+    { name = "google-adk", marker = "extra == 'competition'", specifier = ">=1.14.1" },
+    { name = "google-genai", marker = "extra == 'competition'", specifier = ">=1.36.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "jinja2", specifier = ">=3.1.0" },
-    { name = "openai", specifier = ">=2.8.1" },
+    { name = "openai", marker = "extra == 'competition'", specifier = ">=2.8.1" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'otel'", specifier = ">=1.37.0" },
     { name = "opentelemetry-sdk", marker = "extra == 'otel'", specifier = ">=1.37.0" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.3" },
     { name = "pydantic", specifier = ">=2.11.9" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "uvicorn", specifier = ">=0.35.0" },
 ]
-provides-extras = ["otel", "postgres"]
+provides-extras = ["competition", "otel", "postgres"]
 
 [package.metadata.requires-dev]
 bench = [
@@ -91,7 +105,13 @@ bench = [
     { name = "email-validator", specifier = ">=2.3.0" },
 ]
 dev = [
+    { name = "deepdiff", specifier = ">=9.1.0" },
+    { name = "docstring-parser", specifier = ">=0.17.0" },
+    { name = "email-validator", specifier = ">=2.3.0" },
+    { name = "mcp", specifier = ">=1.14.0" },
     { name = "mypy", specifier = ">=1.18.1" },
+    { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.37.0" },
+    { name = "opentelemetry-sdk", specifier = ">=1.37.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.23.0" },

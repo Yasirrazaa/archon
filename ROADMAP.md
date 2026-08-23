@@ -53,14 +53,14 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-735 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+775 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 735 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 775 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
-2. **Split packaging** — `archon-core` installable without the competition stack
+2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
    (`a2a-sdk`, `google-adk`, `google-genai`, `openai` currently pollute the root install);
    rename LICENSE holder ("Copyright 2025 AgentBeats" → Archon); v1.0.0 tag + CHANGELOG.
    - *Why:* Identity confusion + legacy baggage block enterprise procurement review.
@@ -106,7 +106,7 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* OWASP ASI04 is untested by anyone; supply chain attacks against MCP tools and agent registries are emerging threats.
    - *Effort:* 1–2 weeks
 
-7. **ASI08 Cascading Agent Failures** — test multi-agent systems for cascade-recovery behavior.
+7. **ASI08 Cascading Agent Failures** ✅ SHIPPED (Aug 23 — targets/cascade.py: seeded amplification pipeline research→planner→executor→reporter, impact compounding, ValidationDefense closed-loop) — test multi-agent systems for cascade-recovery behavior.
    - *Why:* OWASP ASI08 is untested; complex agent interactions produce unexpected cascading failures.
    - *Effort:* 1–2 weeks
 
@@ -127,7 +127,7 @@ These items close the gap between "impressive hackathon project" and "enterprise
 *Each item traces to a finding in [`docs/LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) that no
 competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing seam.*
 
-11. **Adaptive multi-attempt attack mode** — first-class attempt-budget parameter on
+11. **Adaptive multi-attempt attack mode** ✅ SHIPPED (Aug 23 — attacks/adaptive.py: MultiAttemptAttacker 5-variant rotation, budget always declared in CampaignResult, early-stop, CAISI-grounded) — first-class attempt-budget parameter on
     `BranchingAttacker`/battles; reports always publish attempt budget, per-task ASR
     distribution, and adaptivity level.
     - *Why (LANDSCAPE §4):* NIST CAISI showed known baselines score 11% task-hijacking vs
@@ -212,7 +212,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 735 passing tests are local-only | Phase E0 item 1 |
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 775 passing tests are local-only | Phase E0 item 1 |
 | No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
 | Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
 | Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |
