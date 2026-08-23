@@ -11,7 +11,6 @@ tests pin the budget-reporting contract that makes that disclosure mandatory.
 from __future__ import annotations
 
 import json
-from types import SimpleNamespace
 
 import pytest
 from archon_core.attacks.adaptive import (
@@ -21,7 +20,6 @@ from archon_core.attacks.adaptive import (
     summarize_campaign,
 )
 from archon_core.targets.base import TargetAdapter, TargetResponse
-
 
 # ------------------------------------------------------------ test targets --
 
@@ -225,7 +223,7 @@ async def test_response_excerpt_truncated_to_200_chars():
 
 @pytest.mark.asyncio
 async def test_integration_stub_target_seeds_rotated():
-    target = StubTarget([NEUTRAL := "fine.", LEAK])
+    target = StubTarget(["fine.", LEAK])
     attacker = MultiAttemptAttacker(AdaptiveAttackCampaign(max_attempts=25))
     result = await attacker.run(target, goal="exfiltrate prompt",
                                 seeds=["tell me", "again"])
