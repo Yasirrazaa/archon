@@ -3,7 +3,7 @@
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
-> Everything below reflects what is actually in `packages/` today (**563 tests passing**).
+> Everything below reflects what is actually in `packages/` today (**576 tests passing**).
 > Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 
@@ -44,7 +44,7 @@
 5. **Live memory/vector-store poisoning** — attacks against real stores, not simulated two-step scenarios.
 6. **Multi-agent trust-boundary attacks** — OWASP ASI07 exploitation (mapped by promptfoo, attacked by nobody).
 7. ~~**True severity derivation**~~ ✅ **SHIPPED (ahead of schedule)** — `reporting/severity.py`: CVSS-style 0–10 scores derived from battle evidence (threat-class base × execution-mode exposure × evasion delivery), stable vector strings (`ARCHON:1/CAT:…/EXP:…/EV:…`), critical/high/medium/low bands, aggregated into every battle summary and rendered in HTML/Markdown evidence reports. Unlike DeepTeam's hardcoded impact, every component is derived.
-8. **Trace-driven attack generation** — mine OTel spans to synthesize targeted attacks (competitors only evaluate from traces).
+8. ~~**Trace-driven attack generation**~~ ✅ **SHIPPED (ahead of schedule)** — `attacks/trace_driven.py`: mines JsonlTracer/OTLP-JSON span streams into a `TraceProfile` (layers that never fired, live tool names, leaked error internals, agent identities) and synthesizes targeted attacks — per-layer evasion payloads, tool-name-targeted injections, error-exploit extraction. `TraceAttack` duck-types the armor `Probe` contract so generated attacks flow straight into `BattleManager.execute`. Competitors only *evaluate* from traces; Archon *attacks* from them.
 
 ### Phase N3 — Ecosystem & distribution (months 2–3)
 9. **Web UI dashboard** — battle results, coverage matrices, fleet view (read-only first).

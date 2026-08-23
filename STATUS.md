@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 563 passed / 3 skipped
+> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 576 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -27,6 +27,7 @@ vendor-neutral.
 | Compliance evidence reports (OWASP-mapped HTML/MD) | `archon report` |
 | Evidence-derived severity scoring (CVSS-style 0–10, vector strings, bands) in every battle summary + report | `reporting/severity.py` |
 | Live tool-execution battles: sandbox targets, real tool calls, ground-truth env-diff verification | `targets/sandbox.py` |
+| Trace-driven attack generation: mines span streams into targeted evasion/injection/exploit attacks | `attacks/trace_driven.py` |
 | Benchmark harness: AgentDojo v1, all 27 published injection tasks | [`RESULTS.md`](./RESULTS.md) — deterministic-tier ASR 66.7% / block 33.3% |
 | Packaging: wheel, non-root Dockerfile, docker-compose, Helm chart | `deploy/helm/archon-armor/` |
 

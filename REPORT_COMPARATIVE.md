@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 563 passed / 3 skipped
+**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 576 passed / 3 skipped
 
 ---
 
@@ -41,8 +41,9 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Benchmarks | AgentDojo v1 harness: all 27 published injection tasks × 3 wrappers = 81 attacks; published ASR/block numbers | [`RESULTS.md`](./RESULTS.md) |
 | Severity scoring | Evidence-derived CVSS-style 0–10 scores (threat class × execution-mode exposure × evasion delivery), vector strings, bands — rendered in evidence reports | DeepTeam's impact is hardcoded MEDIUM |
 | Live tool-execution battles | Sandbox targets with real tool calls + ground-truth env-diff verification (`attack_success`); closed-loop defended/undefended proof | AgentDojo has envs but static templates; DeepTeam/promptfoo simulate via text callbacks |
+| Trace-driven attack generation | Mines span streams (layers that never fired, live tools, leaked error internals) into targeted evasion/injection/exploit attacks | promptfoo/DeepEval only *evaluate* from traces; nobody *attacks* from them |
 
-System health: **563 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **576 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---
@@ -131,5 +132,5 @@ closes a gap the incumbents still hold.
 ---
 
 *Sources: live vendor docs/repos verified Aug 22, 2026; competitor source code
-(cloned repos) verified Aug 23, 2026; project internals verified by the 563-test
+(cloned repos) verified Aug 23, 2026; project internals verified by the 576-test
 suite and `archon plugins` output on `hackathon-v2`.*
