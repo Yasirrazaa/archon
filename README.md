@@ -179,7 +179,26 @@ export OPENAI_BASE_URL="http://localhost:8080/v1"   # per-request: sign with the
 
 # 4. Security-scan the agent's policy (CI gate: exit 1 below threshold)
 uv run archon scan --registry ./registry.db --agent-id my-agent --ci --min-block-rate 0.5
+
+# 5. Long scans survive interruptions: checkpoint after every probe, resume later
+uv run archon scan --registry ./registry.db --agent-id my-agent --checkpoint scan.ckpt
+uv run archon scan --registry ./registry.db --agent-id my-agent --resume scan.ckpt
+
+# 6. Compare two policy versions (Policy-CI regression gate: exit 1 on regression)
+uv run archon compare --a baseline.json --b candidate.json --ci
+
+# 7. Fleet dashboard (read-only web UI over agents, policies, recent battles)
+uv run archon ui --registry ./registry.db --port 8081   # → http://localhost:8081/ui
 ```
+
+Every battle summary carries **evidence-derived severity scores** (CVSS-style 0–10 with
+stable vector strings like `ARCHON:1/CAT:owasp_llm_02/EXP:standard/EV:none`), rendered as a
+severity section in `archon report` HTML/Markdown output. Beyond the HTTP proxy surface,
+Archon ships live attack targets for closed-loop testing: a tool-execution sandbox with
+environment-state ground truth (`archon_core.targets.sandbox`), a vector-memory store you
+can actually poison (`archon_core.targets.memory`), and a multi-agent swarm with trust
+boundaries (`archon_core.targets.multiagent`) — plus trace-driven attack generation that
+mines OTel span streams into targeted evasion probes (`archon_core.attacks.trace_driven`).
 
 Requests are authenticated with HMAC signatures (replay-protected, body-bound):
 `X-Signature = HMAC_SHA256(secret, "METHOD:path:timestamp:sha256(body)")` — see

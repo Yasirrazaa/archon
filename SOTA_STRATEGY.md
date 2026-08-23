@@ -13,9 +13,10 @@ Prior drafts state *"334/404 passing tests"*. Current reality:
 
 | Area | Status |
 |---|---|
-| Tests | **517 passing / 3 skipped** |
+| Tests | **649 passing / 3 skipped** |
 | P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity, `archon` CLI + CI gates, scrubbed OTel→Cloud Trace telemetry, policy versioning + audit trail, Postgres registry, Dockerfile/compose/wheel/Helm |
-| P1 differentiators | ✅ **All shipped**: 72-probe OWASP-mapped corpus + false-positive canaries, MCP static + live behavioral scanning, compliance evidence reports, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer |
+| P1 differentiators | ✅ **All shipped + expanded**: 120-probe OWASP-mapped corpus (encoding-evasion + latent-injection packs, false-positive canaries), MCP static + live behavioral scanning, compliance evidence reports with evidence-derived severity, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer |
+| Post-hackathon sprints (Aug 23) | ✅ **ROADMAP COMPLETE**: live tool-execution battles w/ env-state ground truth, live memory/vector-store poisoning, ASI07 trust-boundary attacks, trace-driven attack generation, comparison engine + checkpoint/resume, Web UI dashboard, contrib gallery, Homebrew/npm distribution |
 | Benchmarks | ✅ **AgentDojo v1 harness shipped**; deterministic-tier ASR published in [`RESULTS.md`](./RESULTS.md) |
 
 Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), Claude-native attacker provider.
@@ -125,9 +126,11 @@ to roughly a quarter. Ruthless re-prioritization:
 ## 3.1 Execution log
 
 > **Deduplicated Aug 23:** the full execution history (Sprints A–D, P0/P1 items, suite
-> progression 286→517) now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10.
-> Latest entries: probe corpus 53→72 with false-positive canaries (suite 505→509) and the
-> AgentDojo benchmark harness + published ASR (suite 509→517) — both Aug 23, 2026.
+> progression 286→649) now lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §10.
+> Latest entries: the post-hackathon sprint wave — corpus 102→120, severity derivation,
+> sandbox/memory/multi-agent targets, trace-driven attacks, compare+checkpoint, Web UI,
+> contrib gallery, distribution — and the deep competitive review that closed ROADMAP v4
+> (suite 517→649), all Aug 23, 2026.
 ## 4. Hackathon (deadline Aug 31) — unchanged, still first
 
 Everything in BLUEPRINT §5.3 stands: deploy armor to Cloud Run, Gemini/Gemma demo path, 4-min
@@ -144,7 +147,7 @@ about someone else's guardrail. Nothing else on stage says that.
 | "Garak v0.15.0 GOAT probe + agent-breaker" | ✅ Verified in code Aug 23 | `probes/goat.py` + `probes/agent_breaker.py` exist in v0.16.1.pre1 |
 | "PyRIT v0.13 AttackTechnique abstraction" | ✅ Superseded by v1.1 rewrite | Now scenario/registry architecture with `pyrit_scan` CLI + CoPyRIT GUI; still zero compliance mapping (grep-verified) |
 | "97M+ MCP downloads / 82% vulnerable" | ❓ Unverified | Do not cite without source |
-| "Status: 334/404 tests" | ❌ Stale | 517 tests; P0 + P1 complete, benchmarks shipped (see §0) |
+| "Status: 334/404 tests" | ❌ Stale | 649 tests; ROADMAP v4 fully closed (see §0) |
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
 
 ---

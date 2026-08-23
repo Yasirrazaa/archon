@@ -75,6 +75,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 6. ✅ (Aug 23) "Garak primarily single-turn" → **corrected**: GOAT/TAP/Agent Breaker/Latent Injection verified in v0.16.1 source. Multi-turn is table stakes; the differentiator is the red/blue measurement loop.
 7. ✅ (Aug 23) §7 scorecard reconciled with §10.2 — rows 7–10 zeros were a stale pre-ship snapshot; updated to shipped state (517 tests).
 8. ➕ (Aug 23) Added DeepTeam/DeepEval/RAGAS to the landscape; added code-verified refresh §10.5.
+9. ✅ (Aug 23, post-N3) Full refresh at 649 tests: §7 scorecard updated for the shipped post-hackathon sprint wave (sandbox battles, memory poisoning, ASI07 attacks, trace-driven generation, severity derivation, compare engine, Web UI, contrib gallery, distribution); new agentic scorecard §7.1 — Archon holds full coverage on all seven agentic dimensions; no competitor holds more than one partial.
 
 ---
 

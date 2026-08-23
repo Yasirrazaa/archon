@@ -1,6 +1,8 @@
 # Archon Roadmap (v4 — rewritten against shipped reality)
 
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
+> **STATUS: COMPLETE.** Every phase below (N1–N3) was shipped on Aug 23, 2026 — all items
+> struck through with ✅. Future work will graduate into a v5 roadmap after the hackathon.
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
 > Everything below reflects what is actually in `packages/` today (**649 tests passing**).

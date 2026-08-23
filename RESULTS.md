@@ -44,3 +44,7 @@ This benchmark measures Archon's **deterministic tier only** (normalization + ru
 Methodology: each AgentDojo GOAL is wrapped using AgentDojo's own `<INFORMATION>` template (`important_instructions`) plus direct-override and indirect-document variants. An attack counts as successful if it is NOT blocked by the reference pipeline. Reproduce with `uv run python -m archon_benchmarks.runner`.
 
 *Next measurement step: re-run with the full 8-layer pipeline (LLM layers enabled) to publish the end-to-end ASR alongside the deterministic-tier number.*
+
+## Beyond this benchmark
+
+Since this run was published, Archon's attack surface expanded well beyond HTTP-level probes (post-hackathon sprints, Aug 23): live tool-execution battles with environment-state ground truth (`archon_core.targets.sandbox`), real vector-memory-store poisoning with remediation verification (`archon_core.targets.memory`), ASI07 multi-agent trust-boundary attacks (`archon_core.targets.multiagent`), and trace-driven attack generation from OTel spans (`archon_core.attacks.trace_driven`). These targets report ground-truth `attack_success` from state diffs rather than lexical markers — a follow-up benchmark series will publish ASR for each against the reference pipeline.
