@@ -177,6 +177,14 @@ def _cmd_serve(args) -> int:
     return 0
 
 
+def _cmd_ui(args) -> int:
+    from archon_armor.ui import create_ui_app
+
+    app = create_ui_app(SqliteRegistry(args.registry))
+    _run_uvicorn(app, host=args.host, port=args.port)
+    return 0
+
+
 def _upstream_from_env(args):
     from archon_armor.upstream import HTTPOpenAIUpstream
 
@@ -408,6 +416,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--require-signed", action="store_true", help="enforce HMAC-signed requests")
     p_serve.add_argument("--upstream-base-url", default="")
     p_serve.set_defaults(func=_cmd_serve)
+
+    p_ui = sub.add_parser("ui", help="fleet dashboard web UI")
+    p_ui.add_argument("--registry", required=True)
+    p_ui.add_argument("--host", default="0.0.0.0")
+    p_ui.add_argument("--port", type=int, default=8081)
+    p_ui.set_defaults(func=_cmd_ui)
 
     return parser
 

@@ -96,6 +96,10 @@ class BattleManager:
     def get(self, battle_id: str) -> Battle | None:
         return self._battles.get(battle_id)
 
+    def recent(self, limit: int = 20) -> list[Battle]:
+        """Most recent battles, oldest first (insertion order)."""
+        return list(self._battles.values())[-limit:]
+
     async def execute(self, battle_id: str, probes: list[Probe] | None = None,
                       target: TargetAdapter | None = None, mode: str = "probes",
                       goal: str = "", seeds: list[str] | None = None,

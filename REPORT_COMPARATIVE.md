@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 620 passed / 3 skipped
+**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 649 passed / 3 skipped
 
 ---
 
@@ -45,9 +45,12 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | ASI07 multi-agent trust-boundary attacks | Swarm target where the coordinator sanitizes direct input but trusts worker output — smuggled directives cross the boundary and leak secrets; closed-loop vs `sanitize_boundary` variant | promptfoo maps ASI07, DeepTeam scores it as a metric; nobody executes the attack |
 | Comparison engine (`archon compare`) | A-vs-B diff of battle reports: block-rate delta, per-category coverage deltas, newly blocked/unblocked probes, severity movement, `improved/regressed/equal` verdict, `--ci` gate | Baselines elsewhere are store-only; no competitor ships policy-version diffing with a CI verdict |
 | Checkpoint/resume battles | Verdicts persisted after every probe (atomic writes); interrupted campaigns resume skipping completed probes (`archon scan --checkpoint/--resume`) | Long adaptive campaigns elsewhere lose all state on crash |
+| Web UI fleet dashboard | Zero-dependency dark-theme UI at `/ui`: fleet agents + policies (secrets never serialized) + recent battles, 10s auto-refresh (`archon ui`) | garak/promptfoo/PyRIT reports are post-hoc files; NeMo has no fleet view; Snyk's is cloud-side |
+| Contrib pack gallery | Curated finance/healthcare/devops probe packs (18 namespaced probes), README-indexed, auto-discovered via `ARCHON_CONTRIB_DIR` | garak plugins are in-tree only; promptfoo verticals are remote-generation cloud plugins |
+| Distribution breadth | Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed MIT CLI | PyRIT/garak are pip-only; DeepTeam requires Confident cloud account for full flow |
 | Live memory/vector-store poisoning | Plants real poison entries in a live store; benign user queries retrieve them and the RAG target obeys; remediation scrubbing verified closed-loop | promptfoo's `agentic:memory-poisoning` is a simulated two-step scenario; nobody else touches real stores |
 
-System health: **620 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **649 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---
@@ -136,5 +139,5 @@ closes a gap the incumbents still hold.
 ---
 
 *Sources: live vendor docs/repos verified Aug 22, 2026; competitor source code
-(cloned repos) verified Aug 23, 2026; project internals verified by the 620-test
+(cloned repos) verified Aug 23, 2026; project internals verified by the 649-test
 suite and `archon plugins` output on `hackathon-v2`.*

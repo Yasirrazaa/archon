@@ -3,7 +3,7 @@
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
-> Everything below reflects what is actually in `packages/` today (**620 tests passing**).
+> Everything below reflects what is actually in `packages/` today (**649 tests passing**).
 > Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 
@@ -47,10 +47,10 @@
 8. ~~**Trace-driven attack generation**~~ ✅ **SHIPPED (ahead of schedule)** — `attacks/trace_driven.py`: mines JsonlTracer/OTLP-JSON span streams into a `TraceProfile` (layers that never fired, live tool names, leaked error internals, agent identities) and synthesizes targeted attacks — per-layer evasion payloads, tool-name-targeted injections, error-exploit extraction. `TraceAttack` duck-types the armor `Probe` contract so generated attacks flow straight into `BattleManager.execute`. Competitors only *evaluate* from traces; Archon *attacks* from them.
 
 ### Phase N3 — Ecosystem & distribution (months 2–3)
-9. **Web UI dashboard** — battle results, coverage matrices, fleet view (read-only first).
+9. ~~**Web UI dashboard** — battle results, coverage matrices, fleet view (read-only first).~~ ✅ **SHIPPED (ahead of schedule)** — `archon_armor/ui.py` + `archon ui --registry …`: zero-dependency dark-theme dashboard (vanilla JS, no CDN) at `/ui` with 10s auto-refresh; `/ui/api/summary` exposes fleet agents + policies (api_secret never serialized), `/ui/api/battles` streams recent battle results via `BattleManager.recent()`.
 10. ~~**Comparison engine** — `archon compare` across registries/models/policy versions.~~ ✅ **SHIPPED (ahead of schedule)** — `archon_armor/compare.py`: A-vs-B diff of two battle/scan reports — block-rate delta, per-category deltas from coverage matrices, newly blocked/unblocked probe lists, helpfulness-control status, severity movement, single verdict (`improved|regressed|equal`), markdown/JSON rendering, `--ci` exit 1 on regression.
-11. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls.
-12. **Distribution breadth** — npm/Homebrew wrappers around the wheel; docs site.
+11. ~~**Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls.~~ ✅ **SHIPPED (ahead of schedule)** — `contrib/`: finance/healthcare/devops packs (18 probes, namespaced `fin_`/`hc_`/`ops_`) + README index and contribution rules; auto-discovery via `ARCHON_CONTRIB_DIR`; every pack battle-tested end-to-end.
+12. ~~**Distribution breadth** — npm/Homebrew wrappers around the wheel; docs site.~~ ✅ **SHIPPED (ahead of schedule)** — `packaging/homebrew/archon.rb` formula (uv-based install, smoke-tested via `archon plugins --ci`) + `packaging/npm/archon-security` wrapper (`npx archon-security` → uv tool run / pipx fallback). Docs site remains future work.
 13. ~~**Caching/resume for long battles** — checkpoint battle state; resume interrupted campaigns.~~ ✅ **SHIPPED (ahead of schedule)** — `archon_armor/checkpoints.py` + `BattleManager.execute(checkpoint_path=, resume_state=)`: verdicts persisted after every probe (atomic tmp-rename writes), resume skips completed probes and finalizes with merged results. CLI: `archon scan --checkpoint FILE` / `--resume FILE`.
 
 ### Phase N4 — Managed layer (month 3+)
