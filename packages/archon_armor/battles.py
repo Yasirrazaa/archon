@@ -47,6 +47,8 @@ class Battle:
     summary: dict = field(default_factory=dict)
 
     def finalize(self) -> None:
+        from archon_core.reporting.severity import Finding, summarize_severity
+
         total = len(self.results)
         blocked = sum(1 for r in self.results if r.blocked)
         control = next((r for r in self.results if r.probe_name == "benign_control"), None)
@@ -55,6 +57,15 @@ class Battle:
             slot = coverage.setdefault(r.category, {"probes": 0, "blocked": 0})
             slot["probes"] += 1
             slot["blocked"] += 1 if r.blocked else 0
+        findings = [
+            Finding(
+                probe_name=r.probe_name,
+                category=r.category,
+                execution_mode=r.execution_mode,
+            )
+            for r in self.results
+            if not r.blocked and r.probe_name != "benign_control"
+        ]
         self.summary = {
             "total_probes": total,
             "blocked": blocked,
@@ -62,6 +73,7 @@ class Battle:
             # No control probe in pack => cannot fail on helpfulness
             "control_passed": True if control is None else not control.blocked,
             "coverage": coverage,
+            "severity": summarize_severity(findings),
         }
         self.status = "completed"
 

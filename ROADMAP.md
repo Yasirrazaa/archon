@@ -3,7 +3,7 @@
 > **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
 > This roadmap was rewritten on Aug 23 because the previous version still presented
 > shipped capabilities as future work under `src/agentbeats/` paths that no longer exist.
-> Everything below reflects what is actually in `packages/` today (**538 tests passing**).
+> Everything below reflects what is actually in `packages/` today (**553 tests passing**).
 > Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 
@@ -43,7 +43,7 @@
 4. **Live tool-execution battles** — instrumented sandbox target (AgentDojo-style FunctionsRuntime) so BranchingAttacker attacks real tool loops with env-state verification.
 5. **Live memory/vector-store poisoning** — attacks against real stores, not simulated two-step scenarios.
 6. **Multi-agent trust-boundary attacks** — OWASP ASI07 exploitation (mapped by promptfoo, attacked by nobody).
-7. **True severity derivation** — CVSS-style scoring derived from per-layer verdict traces (DeepTeam's impact score is hardcoded).
+7. ~~**True severity derivation**~~ ✅ **SHIPPED (ahead of schedule)** — `reporting/severity.py`: CVSS-style 0–10 scores derived from battle evidence (threat-class base × execution-mode exposure × evasion delivery), stable vector strings (`ARCHON:1/CAT:…/EXP:…/EV:…`), critical/high/medium/low bands, aggregated into every battle summary and rendered in HTML/Markdown evidence reports. Unlike DeepTeam's hardcoded impact, every component is derived.
 8. **Trace-driven attack generation** — mine OTel spans to synthesize targeted attacks (competitors only evaluate from traces).
 
 ### Phase N3 — Ecosystem & distribution (months 2–3)

@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 538 passed / 3 skipped
+**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 553 passed / 3 skipped
 
 ---
 
@@ -39,8 +39,9 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Registries | In-memory, sqlite, **Postgres**, versioned | Enterprise durability |
 | Compliance evidence | OWASP-mapped HTML/Markdown evidence reports | CISO-facing |
 | Benchmarks | AgentDojo v1 harness: all 27 published injection tasks × 3 wrappers = 81 attacks; published ASR/block numbers | [`RESULTS.md`](./RESULTS.md) |
+| Severity scoring | Evidence-derived CVSS-style 0–10 scores (threat class × execution-mode exposure × evasion delivery), vector strings, bands — rendered in evidence reports | DeepTeam's impact is hardcoded MEDIUM |
 
-System health: **538 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **553 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---
@@ -129,5 +130,5 @@ closes a gap the incumbents still hold.
 ---
 
 *Sources: live vendor docs/repos verified Aug 22, 2026; competitor source code
-(cloned repos) verified Aug 23, 2026; project internals verified by the 538-test
+(cloned repos) verified Aug 23, 2026; project internals verified by the 553-test
 suite and `archon plugins` output on `hackathon-v2`.*

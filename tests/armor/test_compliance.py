@@ -26,6 +26,24 @@ SAMPLE_SUMMARY = {
     },
 }
 
+SEVERITY_SUMMARY = {
+    **SAMPLE_SUMMARY,
+    "severity": {
+        "findings": [
+            {
+                "probe_name": "llm07_first_message_recall",
+                "category": "owasp_llm_07",
+                "execution_mode": "standard",
+                "score": 8.5,
+                "band": "high",
+                "vector": "ARCHON:1/CAT:owasp_llm_07/EXP:standard/EV:none",
+            }
+        ],
+        "max_score": 8.5,
+        "bands": {"high": 1},
+    },
+}
+
 
 class TestHtmlReport:
     def test_contains_summary_and_coverage(self):
@@ -63,6 +81,27 @@ class TestMarkdownReport:
                     "LLM07_system_prompt_leakage"):
             assert cat in OWASP_LLM_CONTROLS
             assert OWASP_LLM_CONTROLS[cat]["control"]
+
+
+class TestSeveritySection:
+    def test_markdown_includes_severity_when_present(self):
+        md = render_markdown_report(SEVERITY_SUMMARY)
+        assert "Severity" in md
+        assert "8.5" in md
+        assert "ARCHON:1/CAT:owasp_llm_07/EXP:standard/EV:none" in md
+
+    def test_html_includes_severity_when_present(self):
+        html = render_html_report(SEVERITY_SUMMARY)
+        assert "Severity" in html
+        assert "high" in html.lower()
+        assert "ARCHON:1/CAT:owasp_llm_07" in html
+
+    def test_renders_gracefully_without_severity(self):
+        # Older battle summaries predate the severity block.
+        md = render_markdown_report(SAMPLE_SUMMARY)
+        html = render_html_report(SAMPLE_SUMMARY)
+        assert "Severity" not in md
+        assert "Severity" not in html
 
 
 def test_cli_report_writes_html_file(tmp_path):
