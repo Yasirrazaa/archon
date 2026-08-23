@@ -196,6 +196,17 @@ API surface:
 
 Core packages (zero vendor deps): `packages/archon_core` (defense layers, registry, providers, observability), `packages/archon_armor` (FastAPI proxy, battle manager). Gemini is supported via `GeminiOpenAICompatProvider` (OpenAI-compat endpoint).
 
+## Contrib Pack Gallery
+
+Community probe packs ship in [`contrib/`](contrib/README.md) — finance, healthcare, and devops verticals, each loadable at runtime:
+
+```bash
+export ARCHON_CONTRIB_DIR=/path/to/repo/contrib
+archon scan --registry ./registry.db --agent-id my-agent --pack finance_pack --ci
+```
+
+See [contrib/README.md](contrib/README.md) for the index and contribution rules.
+
 ## Research Foundation
 
 This implementation draws on published research in AI security:
