@@ -168,7 +168,14 @@ class BranchingAttacker:
     async def _probe(self, target: TargetAdapter, payload: str,
                      parent: Branch | None, depth: int) -> Branch:
         resp = await target.send(payload)
-        score, success = score_response(resp.content)
+        raw = getattr(resp, "raw", None)
+        if isinstance(raw, dict) and "attack_success" in raw:
+            # Sandbox/instrumented targets report ground-truth env-state
+            # outcomes; trust them over lexical response markers.
+            success = bool(raw["attack_success"])
+            score = 1.0 if success else 0.0
+        else:
+            score, success = score_response(resp.content)
         if getattr(resp, "blocked", False):
             score, success = 0.0, False
         return Branch(
