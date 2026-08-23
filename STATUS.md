@@ -38,6 +38,22 @@ vendor-neutral.
 | Benchmark harness: AgentDojo v1, all 27 published injection tasks | [`RESULTS.md`](./RESULTS.md) — deterministic-tier ASR 66.7% / block 33.3% |
 | Packaging: wheel, non-root Dockerfile, docker-compose, Helm chart | `deploy/helm/archon-armor/` |
 
+## Engineering maturity (honest audit, Aug 23)
+
+**Verdict: B+ hackathon, C+ enterprise.** 6,204 src / 7,466 test LOC (1.2:1 ratio), clean
+5-seam architecture, zero vendor deps in `archon_core`. What blocks enterprise adoption:
+
+- 🔴 **No CI pipeline** — tests pass locally only; nothing enforces them on PR
+- 🟠 No lint/type enforcement (no ruff config, no pre-commit, no coverage gate)
+- 🟠 Root install pulls competition deps (`a2a-sdk`, `google-adk`, `google-genai`, `openai`)
+- 🟠 Identity: LICENSE says "AgentBeats", v0.1.0, no tags/CHANGELOG/release process
+- 🟠 SQLite-first persistence; Postgres path unhardened, no migrations
+- 🟠 No threat model of archon-armor itself (no fuzzing, no SECURITY.md/CVE process)
+
+All closure work is scoped as **Phase E0** in [`ROADMAP.md`](./ROADMAP.md). Market context:
+[`docs/LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) — enterprises buy operational maturity;
+promptfoo wins deals despite weaker agentic attack tech.
+
 ## Verified competitive position
 
 Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 649

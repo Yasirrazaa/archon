@@ -22,6 +22,24 @@ Prior drafts state *"334/404 passing tests"*. Current reality:
 
 Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), local vLLM attacker provider.
 
+## 0.1 The Maturity Thesis (Aug 23 audit + landscape research)
+
+Internal code-quality audit verdict: **B+ hackathon, C+ enterprise** — 649 tests at a 1.2:1
+test:source ratio and clean 5-seam architecture, but no CI pipeline, no lint/type gates,
+legacy packaging, no release process, SQLite-first persistence, and no self threat model.
+Combined with the [`LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) research:
+
+> **The hard part is done. What's missing is the boring 80%: CI, packaging hygiene, docs,
+> persistence, and community. That is exactly why promptfoo wins deals despite weaker agentic
+> attack technology than Archon now has. Enterprises buy operational maturity; researchers
+> buy capability.**
+
+Strategic consequence: **Phase E0 (engineering maturity) executes before any new capability
+work**, then E2.5 converts the landscape research into differentiators competitors can't
+copy quickly (adaptive multi-attempt methodology per CAISI's 11%→81% finding, UAR/PED
+metrics productization, MCP/A2A protocol-layer inspection, compliance evidence automation
+against AIUC-1/CSA STAR certification schemes). Full detail in ROADMAP.md v5.1.
+
 ---
 
 ## 1. Verified Market Shifts (Aug 22–23, 2026) — What Changed Today

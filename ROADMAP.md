@@ -1,10 +1,17 @@
 # Archon Roadmap (v5 — Enterprise-Ready Path)
 
-> **Date:** August 23, 2026 · **Branch:** `hackathon-v2`
+> **Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **v5.1**
 > **STATUS: v4 COMPLETE.** Every phase below (N1–N3) was shipped on Aug 23, 2026.
 > This roadmap extends v4 with the enterprise-ready path to becoming the world's best
 > agent security platform. Strategy rationale lives in [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md);
 > competitor context in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
+>
+> **v5.1 additions:** Phase E0 (engineering maturity) and Phase E2.5 (research-derived
+> differentiators) are grounded in the Aug-23 landscape research
+> ([`docs/LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md)) and an internal code-quality audit
+> (see gap analysis at the bottom). The core thesis: *the differentiated capabilities are
+> built and tested — what stands between Archon and enterprise adoption is the "boring 80%":
+> CI, packaging hygiene, docs, persistence, and community.*
 
 ---
 
@@ -42,6 +49,30 @@
 ---
 
 ## 🔜 Next (post-hackathon, priority order)
+
+### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
+
+*Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
+649 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+
+1. **CI pipeline** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
+   `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
+   - *Why:* All 649 tests pass locally — nothing enforces that on PRs. This is the single
+     biggest credibility gap; promptfoo runs thousands of CI checks per commit.
+   - *Effort:* 3–5 days
+2. **Split packaging** — `archon-core` installable without the competition stack
+   (`a2a-sdk`, `google-adk`, `google-genai`, `openai` currently pollute the root install);
+   rename LICENSE holder ("Copyright 2025 AgentBeats" → Archon); v1.0.0 tag + CHANGELOG.
+   - *Why:* Identity confusion + legacy baggage block enterprise procurement review.
+   - *Effort:* 2–3 days
+3. **Threat-model archon-armor itself** — fuzz the request parser, document the HMAC auth
+   boundary, rate-limit persistence story, TLS deployment guidance, SECURITY.md + CVE process.
+   - *Why:* A security tool with no threat model of itself is a contradiction buyers notice.
+   - *Effort:* 1 week
+4. **Persistence hardening** — battle-test the Postgres registry path; add alembic-style
+   schema migrations; persistent results store with shareable report URLs.
+   - *Why:* SQLite-first is demo-grade; enterprises need migrations and durable results.
+   - *Effort:* 1–2 weeks
 
 ### Phase E1 — Enterprise Credibility (weeks 1–4)
 
@@ -91,36 +122,77 @@ These items close the gap between "impressive hackathon project" and "enterprise
     - *Why:* HarmBench is the gold standard for red teaming evaluation; publishing numbers there establishes credibility.
     - *Effort:* 1–2 weeks
 
+### Phase E2.5 — Research-Derived Differentiators (weeks 8–16)
+
+*Each item traces to a finding in [`docs/LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) that no
+competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing seam.*
+
+11. **Adaptive multi-attempt attack mode** — first-class attempt-budget parameter on
+    `BranchingAttacker`/battles; reports always publish attempt budget, per-task ASR
+    distribution, and adaptivity level.
+    - *Why (LANDSCAPE §4):* NIST CAISI showed known baselines score 11% task-hijacking vs
+      **81% for novel adaptive attacks**, and aggregate ASR climbs 57%→80% at 25 attempts.
+      Single-shot numbers are now recognized as false assurance — reporting discipline is a moat.
+    - *Effort:* 1 week
+12. **Metrics productization** — Unsafe Action Rate for CI gates, Privilege Escalation
+    Distance per customer tool graph, GUARDEDJOINT-style safety-utility KPI, dual
+    ASR-intermediate/ASR-end-to-end reporting.
+    - *Why (LANDSCAPE §4.3):* SoK 2603.22928 defines UAR/PED but **no incumbent publishes
+      them**; WASP showed end-to-end-only ASR hides 17–86% intermediate compromise
+      ("security through incompetence").
+    - *Effort:* 2–3 weeks
+13. **Protocol-layer security** — MCP traffic inspection (tool-definition drift detection,
+    rug-pull hashing), A2A AgentCard signature validation + trust-tier policy engine.
+    - *Why (LANDSCAPE §3):* MCPTox measured up to **72.8% ASR with <3% refusal** across 45
+      live servers; A2A v1.0 ships unsigned-by-default cards ("wire format, not a security
+      model"). Cloudflare validated demand at the edge only — vendor-neutral inspection incl.
+      stdio is an open lane.
+    - *Effort:* 3–4 weeks
+14. **Compliance evidence automation** — map every blocked action to ISO 42001 / EU AI Act
+    Art. 9/12/14 / NIST MEASURE-2 control artifacts; pre-built auditor evidence packs;
+    tamper-evident signed export (≥24-month retention covenant format).
+    - *Why (LANDSCAPE §6–7):* "Continuous compliance evidence wired to runtime decisions" is
+      a named commercial white space; cyber-insurance questionnaires now demand per-event
+      audit logs and agent identity answers; GSA GSAR 552.239-7001 requires 90-day forensic
+      preservation. Archon's audit trail already produces the raw material.
+    - *Effort:* 2–3 weeks
+15. **Certification alignment** — target **AIUC-1** and **CSA STAR for Agentic** (the two
+    live agent-security schemes) as evidence sources; publish an Archon conformance profile.
+    - *Why (LANDSCAPE §5):* First certs issued Apr 2026 (UiPath, Cursor, Harvey); both
+      schemes explicitly generate EU-AI-Act-conformity-supporting evidence. Positioning
+      Archon battles as certification prep is recurring-revenue adjacency.
+    - *Effort:* 1–2 weeks (profile) + ongoing
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
-11. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
+16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
     - *Why:* Garak and Promptfoo have thriving plugin ecosystems; Archon's five seams need equivalent community engagement.
     - *Effort:* 1–2 weeks
 
-12. **Docs site** — dedicated documentation site (MkDocs or Docusaurus) with tutorials, API reference, and contribution guides.
+17. **Docs site** — dedicated documentation site (MkDocs or Docusaurus) with tutorials, API reference, and contribution guides.
     - *Why:* Enterprise adoption requires excellent documentation; Garak and Promptfoo have this.
     - *Effort:* 1–2 weeks
 
-13. **Managed cloud control plane** — multi-tenant armor deployments, scheduled continuous battles, alerting on baseline regressions.
+18. **Managed cloud control plane** — multi-tenant armor deployments, scheduled continuous battles, alerting on baseline regressions.
     - *Why:* This is the revenue layer over the MIT open core; enterprises want managed security, not self-hosted.
     - *Effort:* 2–3 months
 
-14. **Commercial partnerships** — integrate with NeMo Guardrails, Model Armor, Lakera as validated defense targets; co-marketing opportunities.
+19. **Commercial partnerships** — integrate with NeMo Guardrails, Model Armor, Lakera as validated defense targets; co-marketing opportunities.
     - *Why:* "We validate NeMo" is marketing they can't refuse; partnerships accelerate adoption.
     - *Effort:* ongoing
 
 ### Phase E4 — Market Leadership (months 6–12)
 
-15. **Published research** — submit Archon as a research contribution to a top security conference (USENIX Security, IEEE S&P, CCS).
+20. **Published research** — submit Archon as a research contribution to a top security conference (USENIX Security, IEEE S&P, CCS).
     - *Why:* Academic credibility is the ultimate enterprise signal; Garak and AgentDojo have this.
     - *Effort:* 2–3 months (research paper)
 
-16. **Enterprise features** — RBAC, SSO integration, multi-tenant isolation, SLA guarantees.
+21. **Enterprise features** — RBAC, SSO integration, multi-tenant isolation, SLA guarantees.
     - *Why:* Enterprise procurement requires these features; currently only commercial tools offer them.
     - *Effort:* 2–3 months
 
-17. **AI agent security certification** — partner with OWASP or NIST to create an agent security certification program using Archon as the testing backend.
-    - *Why:* Certification programs create recurring revenue and market lock-in; OWASP Agentic Top-10 provides the vocabulary.
+22. **Certification program partnership** — extend the E2.5 certification-alignment profile into a formal program with a scheme body, using Archon as the testing backend.
+    - *Why:* Certification programs create recurring revenue and market lock-in; AIUC-1 and CSA STAR for Agentic are the live entry points (see item 15).
     - *Effort:* 3–6 months (partnership)
 
 ---
@@ -135,6 +207,26 @@ These items close the gap between "impressive hackathon project" and "enterprise
 ---
 
 ## Enterprise Readiness Gap Analysis
+
+### Engineering maturity (code-quality audit, Aug 23)
+
+| Gap | Severity | Evidence | Closure path |
+|---|---|---|---|
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 649 passing tests are local-only | Phase E0 item 1 |
+| No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
+| Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
+| Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |
+| SQLite-first persistence | 🟠 Medium | Postgres registry exists but thin production mileage; no schema migrations | Phase E0 item 4 |
+| Security tool has no self threat model | 🟠 Medium | HMAC auth shipped, but no fuzzing of the proxy parser, no documented auth boundary, no SECURITY.md/CVE process | Phase E0 item 3 |
+
+**What promptfoo has that Archon lacks** (the honest list): monorepo CI matrix + ~3,000 tests
+per commit, signed releases with SBOMs, npm distribution with telemetry, DB-backed shareable
+results, versioned docs site, YAML config with JSON-schema editor autocomplete, community
+(24k stars, Discord), CVE process. *Enterprises buy operational maturity; researchers buy
+capability. Archon currently has only the latter — E0 closes the maturity gap while E1–E4
+compound the capability lead.*
+
+### Capability gaps
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|

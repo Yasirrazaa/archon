@@ -169,6 +169,13 @@ agent ──► POST /v1/chat/completions ──► [L0 normalize] ──► [L1
 | 7 | **No registry/identity** | 🟡 Low (product) / 🔴 High (hackathon track) | absent | Registry ABC w/ SQLite core impl + Firestore integration impl |
 | 8 | **Packaging/docs/community** — not pip-installable as a tool, repo named `arcon` | 🟠 Medium | pyproject targets only `agentbeats-run` | rename repo, restructure packages, docs site |
 | 9 | **No benchmark credibility** — AgentDojo/HarmBench numbers are how researchers compare tools | 🟡 Low | absent | run Archon attacker against AgentDojo suites post-hackathon |
+| 10 | **Engineering maturity** — no CI pipeline, no lint/type gates, legacy packaging (root install pulls competition deps), LICENSE says "AgentBeats", no release process, SQLite-first persistence, no self threat model of archon-armor | 🔴 High (post-hackathon) | Aug-23 code audit: 649 tests pass locally only; B+ hackathon / C+ enterprise verdict in [STATUS.md](./STATUS.md) | **Phase E0** in [ROADMAP.md](./ROADMAP.md) v5.1: CI matrix + coverage gate, packaging split + v1.0.0 tag, armor threat model + SECURITY.md, Postgres hardening + migrations |
+
+> **Post-hackathon strategy note (Aug 23):** the [`LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md)
+> research adds a maturity thesis — *enterprises buy operational maturity; researchers buy
+> capability* — plus five research-derived differentiators (adaptive multi-attempt methodology,
+> UAR/PED metrics, MCP/A2A protocol-layer inspection, compliance evidence automation,
+> AIUC-1/CSA STAR certification alignment) scoped as Phase E2.5 in ROADMAP v5.1.
 
 ## 5. The Hackathon Layer (All Things Agentic — deadline Aug 31, 5:00pm PDT)
 
