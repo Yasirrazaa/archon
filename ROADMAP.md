@@ -53,11 +53,11 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-849 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+884 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 849 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 884 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
@@ -69,10 +69,13 @@
    boundary, rate-limit persistence story, TLS deployment guidance, SECURITY.md + CVE process.
    - *Why:* A security tool with no threat model of itself is a contradiction buyers notice.
    - *Effort:* 1 week
-4. **Persistence hardening** — battle-test the Postgres registry path; add alembic-style
-   schema migrations; persistent results store with shareable report URLs.
-   - *Why:* SQLite-first is demo-grade; enterprises need migrations and durable results.
-   - *Effort:* 1–2 weeks
+ 4. **Persistence hardening** — ✅ SHIPPED (Aug 23, wave 4): `archon_core.registry.migrations`
+    (Migration/MIGRATIONS v1-v3/SchemaMigrator idempotent apply_all), `archon_armor.results_store.ResultsStore`
+    (durable battle results, upsert, newest-first listing, deterministic sha256 share tokens + resolve_share),
+    CLI `archon results --db [--agent-id] [--limit] [--share]`; 17 TDD tests. Postgres battle-testing remains
+    an operational task (CI postgres job now runs the integration suite on every push).
+    - *Why:* SQLite-first is demo-grade; enterprises need migrations and durable results.
+    - *Effort:* 1–2 weeks
 
 ### Phase E1 — Enterprise Credibility (weeks 1–4)
 
@@ -156,8 +159,11 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
       audit logs and agent identity answers; GSA GSAR 552.239-7001 requires 90-day forensic
       preservation. Archon's audit trail already produces the raw material.
     - *Effort:* 2–3 weeks
-15. **Certification alignment** — target **AIUC-1** and **CSA STAR for Agentic** (the two
-    live agent-security schemes) as evidence sources; publish an Archon conformance profile.
+15. **Certification alignment** — ✅ SHIPPED (Aug 23, wave 4): `archon_core.reporting.certification`
+    — CONTROL_MAP for AIUC-1 (6 categories) + CSA STAR Agentic L2 (5 AICM requirements);
+    ConformanceProfile.assess() (satisfied/partial/unmet from evidence-pack controls),
+    render_profile_md (readiness % + honest third-party-audit disclaimer),
+    certification_readiness aggregate; 18 TDD tests. Formal scheme-body partnership remains item 22.
     - *Why (LANDSCAPE §5):* First certs issued Apr 2026 (UiPath, Cursor, Harvey); both
       schemes explicitly generate EU-AI-Act-conformity-supporting evidence. Positioning
       Archon battles as certification prep is recurring-revenue adjacency.
@@ -212,7 +218,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 849 passing tests are local-only | Phase E0 item 1 |
+| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 884 passing tests are local-only | Phase E0 item 1 |
 | No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
 | Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
 | Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |

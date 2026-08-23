@@ -404,6 +404,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_plugins.add_argument("--ci", action="store_true")
     p_plugins.set_defaults(func=_cmd_plugins)
 
+    p_results = sub.add_parser("results", help="list stored battle results from the results DB")
+    p_results.add_argument("--db", required=True, help="path to the results SQLite database")
+    p_results.add_argument("--agent-id", default=None, help="filter by agent id")
+    p_results.add_argument("--limit", type=int, default=50)
+    p_results.add_argument("--share", default="", help="battle id: print its share URL fragment")
+    p_results.set_defaults(func=_cmd_results)
+
     p_fleet = sub.add_parser("fleet", help="fleet overview from baselines (dashboard primitive)")
     p_fleet.add_argument("--registry", required=True)
     p_fleet.add_argument("--baselines", required=True, help="JSON baseline store path")
@@ -528,6 +535,27 @@ def _cmd_plugins(args) -> int:
     inventory["mcp"].append(scan_live_mcp.__name__)
     inventory["mcp"].append(probe_tool.__name__)
     print(json.dumps(inventory, indent=None if args.ci else 2))
+    return 0
+
+
+def _cmd_results(args) -> int:
+    from archon_armor.results_store import ResultsStore
+
+    store = ResultsStore(args.db)
+    if args.share:
+        battle = store.get_battle(args.share)
+        if battle is None:
+            print(json.dumps({"error": f"unknown battle: {args.share}"}))
+            return 2
+        token = store.share_token(args.share)
+        print(json.dumps({
+            "battle_id": args.share,
+            "share_token": token,
+            "url_fragment": f"?share={token}",
+        }, indent=None if getattr(args, "json", False) else 2))
+        return 0
+    rows = store.list_battles(agent_id=args.agent_id, limit=args.limit)
+    print(json.dumps(rows, indent=None if getattr(args, "json", False) else 2))
     return 0
 
 
