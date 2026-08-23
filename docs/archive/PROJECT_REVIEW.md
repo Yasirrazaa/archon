@@ -1,6 +1,6 @@
 # Archon — Deep Project Review
 
-> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Architecture facts here remain accurate; strategy sections are superseded by [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §3–§5 (core-first architecture, verified gaps, competition layer).
+> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Architecture facts here remain accurate; strategy sections are superseded by [`BLUEPRINT_HACKATHON.md`](../../BLUEPRINT_HACKATHON.md) §3–§5 (core-first architecture, verified gaps, competition layer).
 
 
 # Archon — Deep Project Review
@@ -392,4 +392,4 @@ The path to becoming a promptfoo-class tool is clear:
 
 The core IP (attack algorithms, defense pipeline, reporting) is already world-class. What's needed is **packaging and presentation** — turning a competition codebase into a polished developer tool.
 
-See [ROADMAP.md](./ROADMAP.md) for the detailed transformation plan.
+See [ROADMAP.md](../../ROADMAP.md) for the detailed transformation plan.

@@ -1,6 +1,6 @@
 # SOTA Attack & Defense Agent: Deep Research Report & Implementation Plan
 
-> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Competition-era research; the implemented plan below shipped as v2.0 (286 tests). Star counts cited are stale (Promptfoo ~24.5k, Garak ~8.9k, PyRIT ~4.3k at `microsoft/PyRIT`); current market analysis lives in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
+> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Competition-era research; the implemented plan below shipped as v2.0 (286 tests). Star counts cited are stale (Promptfoo ~24.5k, Garak ~8.9k, PyRIT ~4.3k at `microsoft/PyRIT`); current market analysis lives in [`COMPETITIVE_ANALYSIS.md`](../../COMPETITIVE_ANALYSIS.md).
 
 
 # SOTA Attack & Defense Agent: Deep Research Report & Implementation Plan

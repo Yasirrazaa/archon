@@ -1,6 +1,6 @@
 # LLM Security Testing & Evaluation Tools: Complete Landscape Analysis
 
-> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Superseded by [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md) (live-verified). Known corrections vs. this document: Promptfoo is now **part of OpenAI** (confirmed via its README; still MIT); PyRIT moved from `Azure/PyRIT` to **`microsoft/PyRIT`** and is endpoint-agnostic (not Azure-locked); missing tools added there include AgentDojo, NeMo Guardrails, Snyk Agent Scan (ex mcp-scan), and Google Cloud Model Armor.
+> ⚠️ **ARCHIVE NOTICE (Aug 22, 2026):** Superseded by [`COMPETITIVE_ANALYSIS.md`](../../COMPETITIVE_ANALYSIS.md) (live-verified). Known corrections vs. this document: Promptfoo is now **part of OpenAI** (confirmed via its README; still MIT); PyRIT moved from `Azure/PyRIT` to **`microsoft/PyRIT`** and is endpoint-agnostic (not Azure-locked); missing tools added there include AgentDojo, NeMo Guardrails, Snyk Agent Scan (ex mcp-scan), and Google Cloud Model Armor.
 
 
 # LLM Security Testing & Evaluation Tools: Complete Landscape Analysis
@@ -526,4 +526,4 @@ To become a promptfoo-class tool, we need to:
 | Distribution | pip package | pip + npm + Docker |
 | Community | Competition participants | Open-source contributors |
 
-See [ROADMAP.md](./ROADMAP.md) for the detailed transformation plan.
+See [ROADMAP.md](../../ROADMAP.md) for the detailed transformation plan.

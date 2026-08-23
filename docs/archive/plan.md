@@ -1,3 +1,7 @@
+> ⚠️ **ARCHIVE NOTICE (Aug 23, 2026):** Competition-era battle plan (June 2026). Its designs were implemented and later superseded by the 8-layer defense pipeline in `packages/archon_core/defenses/`. Current strategy: [`BLUEPRINT_HACKATHON.md`](../../BLUEPRINT_HACKATHON.md); current state: [`STATUS.md`](../../STATUS.md).
+
+---
+
 ## What the files tell us that changes everything
 
 From `architecture.md`: the defender **never sees the attack goal, never sees history**. It only gets `domain_description`, `defender_role`, `defender_task`, `output_format`, and `formatted_input`. This means every defense must be baked into the system prompt and pre-LLM code — there's zero runtime context. The attacker, by contrast, gets the full JSON including `input_format_template` with `PLACE_ATTACK_HERE` — meaning for injection scenarios, the attacker literally controls what gets embedded.
