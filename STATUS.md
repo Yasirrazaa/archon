@@ -40,12 +40,17 @@ vendor-neutral.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 — full analysis in
-[`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md). Headline: promptfoo's adaptive
-multi-turn brains run cloud-side; garak is multi-turn now but scanner-only with no defense
-evaluation; PyRIT has zero compliance mapping; NeMo defends but cannot self-validate; Snyk
-agent-scan never executes attacks and analyzes behind a closed API. Nobody else combines
-adaptive offense + shippable defense + adversarial proof.
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 649
+tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
+Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
+now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
+NeMo defends but cannot self-validate; Snyk agent-scan never executes attacks and
+analyzes behind a closed API. On the seven agentic attack-surface dimensions
+(COMPETITIVE_ANALYSIS §7.1 — live tool-state attacks, memory poisoning, ASI07 trust
+boundaries, derived severity, trace-driven attack generation, policy comparison,
+fleet UI), Archon is the only project best-in-class on all of them; no competitor
+holds more than one partial. Nobody else combines adaptive offense + shippable
+defense + adversarial proof.
 
 ## Remaining before hackathon submission (deadline Aug 31, 5pm PDT)
 

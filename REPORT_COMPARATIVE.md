@@ -24,7 +24,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Capability | Implementation | Notes |
 |---|---|---|
 | Defense pipeline | 8 layers (Normalization → ThreatClassification → Segmentation → Spotlighting → ExecutionMode → OutputGuardrails → ExternalGuardrail + exchange/backtranslation logic) wrapping the proven AgentBeats defender | layer-0 deterministic; LLM-budget-aware; fail-closed |
-| Probe corpus | 102 probes: all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries (test-enforced unblocked) + Garak-lineage `encoding_evasion` (15) and `latent_injection` (15) packs — every encoded/latent probe deterministically decoded and blocked by the reference pipeline (test-enforced) | `owasp_llm_10` (56) + `encoding_evasion` (15) + `latent_injection` (15) + `harmless_helpfulness` (12) + `core` (4); per-category coverage matrix in every battle summary |
+| Probe corpus | 120 probes: all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries (test-enforced unblocked) + Garak-lineage `encoding_evasion` (15) and `latent_injection` (15) packs + community gallery (`contrib/`: finance/healthcare/devops ×18) — every encoded/latent probe deterministically decoded and blocked by the reference pipeline (test-enforced) | `owasp_llm_10` (56) + `encoding_evasion` (15) + `latent_injection` (15) + `harmless_helpfulness` (12) + `core` (4) + contrib (18); per-category coverage matrix in every battle summary |
 | Adaptive attacker | `BranchingAttacker` — Hydra-style fan-out/pivot/prune; **deterministic** refusal-vs-leak scoring (no LLM judge); provider-failure degradation | First-class in battle API + `archon battle --ci` |
 | Runtime product | `archon-armor` — FastAPI OpenAI-compatible proxy, HMAC signed identity, per-agent policy, rate limiting, output redaction | Drop-in: change `OPENAI_BASE_URL` |
 | Identity & governance | HMAC replay-protection, per-agent secrets, immutable append-only audit trail, versioned policies | Enterprise-grade |
@@ -47,6 +47,8 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Checkpoint/resume battles | Verdicts persisted after every probe (atomic writes); interrupted campaigns resume skipping completed probes (`archon scan --checkpoint/--resume`) | Long adaptive campaigns elsewhere lose all state on crash |
 | Web UI fleet dashboard | Zero-dependency dark-theme UI at `/ui`: fleet agents + policies (secrets never serialized) + recent battles, 10s auto-refresh (`archon ui`) | garak/promptfoo/PyRIT reports are post-hoc files; NeMo has no fleet view; Snyk's is cloud-side |
 | Contrib pack gallery | Curated finance/healthcare/devops probe packs (18 namespaced probes), README-indexed, auto-discovered via `ARCHON_CONTRIB_DIR` | garak plugins are in-tree only; promptfoo verticals are remote-generation cloud plugins |
+| Distribution | Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed MIT CLI | PyRIT/garak are pip-only; DeepTeam requires a Confident cloud account for full flow |
+| Contrib pack gallery | Curated finance/healthcare/devops probe packs (18 namespaced probes), README-indexed, auto-discovered via `ARCHON_CONTRIB_DIR` | garak plugins are in-tree only; promptfoo verticals are remote-generation cloud plugins |
 | Distribution breadth | Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed MIT CLI | PyRIT/garak are pip-only; DeepTeam requires Confident cloud account for full flow |
 | Live memory/vector-store poisoning | Plants real poison entries in a live store; benign user queries retrieve them and the RAG target obeys; remediation scrubbing verified closed-loop | promptfoo's `agentic:memory-poisoning` is a simulated two-step scenario; nobody else touches real stores |
 
@@ -55,14 +57,14 @@ System health: **649 passed / 3 skipped** (skips: live-Postgres integration behi
 
 ---
 
-## 3. Competitor scorecard (verified Aug 22, 2026)
+## 3. Competitor scorecard (verified Aug 22, refreshed Aug 23 post-N3 — 649 tests)
 
 Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 
 | Dimension | **Archon** | Promptfoo | Garak | PyRIT | NeMo Guardrails | Snyk Agent Scan | Model Armor |
 |---|---|---|---|---|---|---|---|
 | Multi-turn adaptive attacks | ● | ◐ (brains cloud-side) | ● (GOAT/TAP/Agent Breaker) | ● | — | — | — |
-| Attack corpus breadth | ◐ 102 + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
+| Attack corpus breadth | ● 120 probes + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
 | Defense evaluation (red/blue) | ● | — | — | — | — | — | — |
 | Runtime guardrail product | ● proxy | ◐ guardrails (cloud client) | — | — | ● | ◐ hooks (cloud-enforced) | ● |
 | Layer per-request telemetry | ● | ◐ | — | — | ◐ | — | ◐ |
@@ -74,10 +76,23 @@ Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 | Open self-hosted | ● MIT | ◐ | ● Apache-2.0 | ● MIT | ● Apache-2.0 | ○ | ○ |
 | Compliance evidence | ● | ◐ mapping only | ◐ tags only | — | — | — | — |
 
-**Reading the table:** Promptfoo and Garak/PyRIT attack well but cannot measure a
+### 3.1 Agentic attack surface (post-N3 — the rows that decide the category)
+
+| Dimension | **Archon** | Promptfoo | Garak | PyRIT | DeepTeam | AgentDojo | NeMo |
+|---|---|---|---|---|---|---|---|
+| Live tool-execution attacks w/ env-state ground truth | ● sandbox targets, `attack_success` from state diff | ◐ simulated via text callbacks | ◐ chats about tools, no sandbox | — | ◐ text callbacks only | ● envs but static templates | — |
+| Live memory/vector-store poisoning | ● real store manipulation + remediation loop | ◐ simulated two-step scenario | — | — | ◐ metric-only | — | — |
+| ASI07 multi-agent trust-boundary attacks | ● smuggled directives cross worker→coordinator boundary; closed-loop vs sanitized variant | ◐ maps ASI07, doesn't attack it | — | — | ◐ metric-only | — | — |
+| Evidence-derived severity scoring | ● CVSS-style, every component derived from battle evidence | ◐ severity tiers | ◐ taxonomy tags | — | ◐ impact hardcoded MEDIUM | — | — |
+| Trace-driven attack generation | ● mines spans into targeted evasion/tool/error exploits | ◐ trace-driven *evaluation* only | — | — | ◐ TraceScanner evaluates only | — | — |
+| Policy-version comparison engine | ● `archon compare` with regression verdict + CI gate | — | — | — | — | — | — |
+| Fleet dashboard UI | ● zero-dependency `/ui`, agents+policies+battles | ● web viewer (local evals) | ◐ HTML report file | ◐ CoPyRIT GUI | — | — | — |
+
+**Reading the tables:** Promptfoo and Garak/PyRIT attack well but cannot measure a
 defense. NeMo/Model Armor defend but cannot prove it. Snyk static-scans, closed.
-AgentDojo is a benchmark, not a tool. Nothing else issues per-layer defense
-evidence inside a red-team loop — and as of Aug 23, Archon is also the only one of
+AgentDojo is a benchmark, not a tool. On the §3.1 agentic rows — the dimensions
+that define agent security in 2026 — Archon holds ● on all seven while no
+competitor holds more than one ◐. As of Aug 23 Archon is also the only one of
 these projects publishing reproducible AgentDojo numbers from its own harness.
 
 ## 4. Honest gaps (where competitors still lead)

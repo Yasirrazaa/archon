@@ -84,7 +84,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 
 ## 7. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**517 tests**, Aug 23). *Reconciled Aug 23: rows 7–10 previously showed hard zeros from a pre-ship snapshot (334-test era); §10.2's verified deltas were correct — the zeros below are now updated to match shipped reality.*
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**649 tests**, Aug 23, post-N3). *Reconciled Aug 23: rows 7–10 previously showed hard zeros from a pre-ship snapshot (334-test era); §10.2's verified deltas were correct — the zeros below are now updated to match shipped reality.*
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
@@ -94,14 +94,28 @@ Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflect
 | 4 | Per-layer defense telemetry (measurable defense) | **2** 🆕 unique | 1 | 0 | 0 | 1 | 1 (filter verdicts only) | 0 |
 | 5 | Agent identity/registry/policy governance | **2** ✅ HMAC identity, versioned policies, audit trail | 0 | 0 | 0 | 0 | **2** (GCP IAM) | 0 |
 | 6 | Observability & audit evidence | **2** ✅ OTel→Cloud Trace, scrubbed, immutable audit | 1 | 1 | 0 | 1 | **2** | 1 |
-| 7 | CI/CD developer experience (CLI, exit codes) | **2** ✅ scan/battle/fleet/report all `--ci` | **2** | 1 | 1 (`pyrit_scan`) | 1 | n/a | **2** |
-| 8 | Threat/probe corpus breadth | **1** ⚠️ (72 probes; benchmark-backed via AgentDojo) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
+| 7 | CI/CD developer experience (CLI, exit codes) | **2** ✅ scan/battle/fleet/report/compare all `--ci` | **2** | 1 | 1 (`pyrit_scan`) | 1 | n/a | **2** |
+| 8 | Threat/probe corpus breadth | **2** ✅ (120 probes: OWASP×10 + encoding + latent + benign canaries + contrib verticals; benchmark-backed via published AgentDojo numbers; live-execution attack classes nobody else has) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
 | 9 | MCP/tool-surface testing | **2** ✅ static scan + live behavioral probing | 1 (real MCP target) | 0 | 0 | 1 (schema rails) | 1 (integration) | **2** (static, closed analysis) |
 | 10 | Production hardening (authN/Z, HA, multi-tenant) | **2** ✅ HMAC+rate-limit, Postgres, Helm non-root | 1 | 0 | 0 | 1 | **2** | 1 |
 | 11 | Open source + self-hostable | **2** | **2** | **2** | **2** | **2** | 0 | 2 (no contribs) |
 | 12 | Cost efficiency (LLM-budget accounting built-in) | **2** ✅ | 0 | 0 | 0 | 0 | token-priced | n/a |
 
-**Reading the table:** nobody scores ≥2 on rows 1+3+4 simultaneously except Archon. That triple — *adaptive attacks, a shippable defense, and proof that the defense works* — is the company-making position. The remaining soft row is corpus breadth (row 8): we close it with community packs and benchmark credibility rather than raw plugin count.
+### 7.1 Agentic attack-surface scorecard (post-N3 — Aug 23, 2026)
+
+The dimensions that define *agent* security in 2026. Scale as above; DeepTeam and AgentDojo added as columns because they compete specifically here.
+
+| # | Agentic dimension | **Archon** | Promptfoo | Garak | PyRIT | DeepTeam | AgentDojo | NeMo Guard |
+|---|---|---|---|---|---|---|---|---|
+| A1 | Live tool-execution attacks w/ env-state ground truth | **2** ✅ sandbox targets, `attack_success` from state diff | 1 (text-callback simulation) | 1 (chats about tools, no sandbox) | 0 | 1 (text callbacks only) | **2** (envs, but static templates) | 0 |
+| A2 | Live memory/vector-store poisoning | **2** ✅ real store manipulation + remediation loop | 1 (simulated two-step scenario) | 0 | 0 | 1 (metric-only) | 0 | 0 |
+| A3 | ASI07 multi-agent trust-boundary attacks | **2** ✅ boundary-crossing exploit, closed-loop vs sanitized variant | 1 (maps ASI07, doesn't attack it) | 0 | 0 | 1 (metric-only) | 0 | 0 |
+| A4 | Evidence-derived severity scoring | **2** ✅ every component derived from battle evidence | 1 (severity tiers) | 1 (taxonomy tags) | 0 | 1 (impact hardcoded MEDIUM) | 0 | 0 |
+| A5 | Trace-driven attack generation | **2** ✅ mines spans into targeted attacks | 1 (trace-driven evaluation only) | 0 | 0 | 1 (TraceScanner evaluates only) | 0 | 0 |
+| A6 | Policy-version comparison engine | **2** ✅ `archon compare` + regression CI gate | 0 | 0 | 0 | 0 | 0 | 0 |
+| A7 | Fleet dashboard UI | **2** ✅ zero-dependency `/ui` | **2** (local web viewer) | 1 (HTML report file) | 1 (CoPyRIT GUI) | 0 | 0 | 0 |
+
+**Reading the tables:** nobody scores ≥2 on rows 1+3+4 simultaneously except Archon. That triple — *adaptive attacks, a shippable defense, and proof that the defense works* — is the company-making position. On the agentic rows (§7.1), Archon is the only project at **2** on A1–A6; no competitor holds more than one partial. Corpus breadth (row 8) closed Aug 23: raw count still trails garak's 195, but Archon's corpus now includes attack classes (live tool-state, store poisoning, trust boundaries) that exist in no other corpus, plus the only self-published benchmark numbers in the set.
 
 ## 8. The Enterprise Gap List (prioritized by deal-blocking severity)
 
