@@ -133,6 +133,19 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Multi-tenancy v1 (shipped, wave 6) (tenant-scoped results/registry)
 - [ ] FinBot CTF adapter (deferred — needs external repo clone)
 
+## Evidence & hardening sprint (Phase E2.8 / Wave 7 — see ROADMAP items 45–54)
+
+- [ ] Per-target ground-truth benchmark series (adaptive attacker vs all 9+ live targets; state-diff ASR, zero LLM calls → RESULTS.md)
+- [ ] False-positive-rate publication (12 benign canaries over-refusal rate; methodology commitment #4)
+- [ ] Applied-metrics exemplar (UAR/PED/GUARDEDJOINT on sandbox banking scenario → RESULTS.md)
+- [ ] Identity v2: ed25519-signed agent credentials (per-agent identities verified by armor)
+- [ ] Purple --baseline Policy-CI gate (`archon purple --ci --baseline FILE` merge-blocking regression gate)
+- [ ] FinBot CTF adapter (attempt pre-deadline if clone feasible)
+- [ ] Community scaffolding (CONTRIBUTING/CODE_OF_CONDUCT/feature template + tag v1.0.0)
+- [ ] Architecture diagram (Mermaid in docs-site; Devpost image slot)
+- [ ] Docs-site expansion (tutorial per attack target)
+- [ ] GitHub Pages enablement (user-side 2-click; docs.yml shipped)
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.

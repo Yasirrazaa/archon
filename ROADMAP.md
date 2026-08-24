@@ -219,6 +219,21 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 43. ~~**Multi-tenancy v1**~~ ✅ **SHIPPED** (wave 6) — tenant-scoped results store and registry scoping (`tenant_id` on battles/results/agents); first step toward the biggest enterprise RFP gap.
 44. **FinBot CTF adapter** ⏸️ *remains deferred* (needs external repo clone + research).
 
+### Phase E2.8 — Evidence & Hardening Sprint (Wave 7, pre-deadline)
+
+*Sources: RESULTS.md "follow-up benchmark series" promise; methodology commitment #4 (utility cost); competitor gap-closure plan (garak breadth / LLM-brain attackers / promptfoo DX); Devpost architecture-diagram requirement.*
+
+45. **Per-target ground-truth benchmark series** — run the adaptive attacker against every live attack target (sandbox banking transfer, memory poisoning, multi-agent trust boundary, MCP rug-pull, supply-chain rug-pull, cascade, trust exploitation, rogue stego, recon/config-tamper/staged-payload gaps); `attack_success` comes from state diffs, so these are real ASR numbers with zero LLM calls. Publish in `RESULTS.md` (fulfills the existing promise there).
+46. **False-positive-rate publication** — measure the deterministic tier's over-refusal rate on the 12 benign canaries (`harmless_helpfulness` pack); completes methodology commitment #4.
+47. **Applied-metrics exemplar** — compute UAR / Privilege Escalation Distance / GUARDEDJOINT quadrants on the sandbox banking scenario and publish as a worked example in `RESULTS.md`.
+48. **Identity v2: signed agent credentials** — ed25519-signed per-agent identities issued and verified by armor (replacing shared HMAC secrets); pairs with the wave-6 attenuating-token caveats module.
+49. **Purple --baseline Policy-CI gate** — commit a baseline verdict file; `archon purple --ci --baseline FILE` fails when any probe regresses vs baseline (merge-blocking defense regression gate).
+50. **FinBot CTF adapter** — clone the OWASP-referenced repo, wrap it as a battle target for third-party-validated numbers (closes deferred item 44 if feasible pre-deadline).
+51. **Community scaffolding** — CONTRIBUTING.md, CODE_OF_CONDUCT.md, feature-issue template; tag v1.0.0 to exercise release.yml + cosign end-to-end.
+52. **Architecture diagram** — Mermaid diagram in docs-site (renders on GitHub); fills the Devpost image slot.
+53. **Docs-site expansion** — tutorial pages per attack target ("run your first memory-poisoning battle").
+54. **GitHub Pages enablement** — user-side 2-click repo setting (docs.yml already shipped, item 42).
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
