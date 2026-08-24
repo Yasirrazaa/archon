@@ -96,10 +96,23 @@ defense + adversarial proof.
 - [ ] Full-pipeline benchmark (LLM layers enabled)
 - [x] ClaudeNativeProvider (shipped, commit e37305c)
 - [ ] Local vLLM attacker provider (zero-code: OpenAI-compat endpoint)
-- [ ] ASI04/ASI08/ASI09/ASI10 coverage
-- [ ] HarmBench benchmark integration
+- [x] ASI04/ASI08/ASI09/ASI10 coverage (shipped, waves 1–2: supplychain/cascade/trust/rogue targets)
+- [x] HarmBench probe pack (shipped, commit 2841b7f — corpus 152; benchmark *run* still pending LLM key)
 - [ ] Persistent docs site + live demo
 - [ ] Managed cloud control plane
+
+## OWASP-aligned hardening (Phase E2.6 — see ROADMAP items 23–30)
+
+Derived from the Aug 23 OWASP deep review (Red-Teaming Taxonomy v1.0 + State of Agentic AI v2.01):
+
+- [ ] One-click purple runs — `archon purple` fusing battles + compare into a single delta verdict
+- [ ] Scheduled fuzzing + autonomous red bots in CI (nightly fuzz workflow + `archon bot`)
+- [ ] Kill-switch drill — atomic agent revocation with MTTC measurement
+- [ ] Beyond-ASI attack patterns — recon/discovery, config-tampering persistence, staged payload delivery
+- [ ] Plan-divergence detection — trajectory-level intent-vs-executed monitoring
+- [ ] FinBot CTF as external validation target
+- [ ] Nonce store closing the HMAC replay-within-window limitation
+- [ ] Docs site (mkdocs) + security advisory program
 
 ## Document map
 

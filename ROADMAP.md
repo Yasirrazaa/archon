@@ -169,6 +169,37 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
       Archon battles as certification prep is recurring-revenue adjacency.
     - *Effort:* 1–2 weeks (profile) + ongoing
 
+### Phase E2.6 — OWASP-Aligned Hardening (weeks 4–8)
+
+> Derived from the Aug 2026 OWASP *Red-Teaming Solutions Taxonomy v1.0* and
+> *State of Agentic AI Security & Governance v2.01* deep review (see
+> `docs/LANDSCAPE_2026.md`). Each item closes a gap the OWASP criteria name
+> that Archon's Aug-23 honest self-assessment confirmed.
+
+23. **One-click purple runs** — `archon purple --policy-a A --policy-b B` attacks two policy versions with the same probe set and emits the compare verdict in one command (fuses `battles` + `compare`; taxonomy Purple/"one-click purple runs" + "map red scenarios to blue controls").
+    - *Effort:* ≤2 days
+
+24. **Scheduled fuzzing + autonomous red bots** — nightly CI workflow running the seeded fuzz corpus against armor plus an `archon bot` continuous-probe loop against a live target (taxonomy Red/Operate: "autonomous red bots", "continuous prompt fuzzing").
+    - *Effort:* ≤2 days
+
+25. **Kill-switch drill** — `archon kill-switch --agent X` revokes identity, drops subscriptions and denies egress in one atomic action; measures MTTC (State of Agentic survival capability #5: "a kill switch that works at agent speed rather than committee speed").
+    - *Effort:* ≤2 days
+
+26. **Beyond-ASI attack patterns** — targets for reconnaissance/discovery, config-tampering persistence, and staged payload delivery — the three patterns OWASP itself flags as uncovered by ASI01–10.
+    - *Effort:* 3–5 days
+
+27. **Plan-divergence detection** — trajectory-level monitoring comparing declared intent vs executed actions from trace spans (State of Agentic runtime-governance capability #1; natural extension of `trace_driven`).
+    - *Effort:* ~1 week
+
+28. **External validation target** — integrate the OWASP-referenced FinBot CTF (Apache-2.0, self-hostable) as an adapter target so published numbers gain third-party validation.
+    - *Effort:* ~1 week
+
+29. **Nonce store for HMAC replay window** — closes the documented SECURITY.md limitation (same-signature replay succeeds within ±300s); update auth-boundary tests to the new behavior.
+    - *Effort:* ≤2 days
+
+30. **Docs site + advisory program** — MkDocs site generated from existing markdown; `security@` contact + coordinated advisory publishing (enterprise rating gap).
+    - *Effort:* 1 week
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
