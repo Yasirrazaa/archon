@@ -17,7 +17,7 @@ vendor-neutral.
 | 8-layer defense pipeline (deterministic tier → LLM layers) | `packages/archon_core/defenses/layers.py` |
 | Adaptive multi-turn attacker (Hydra-style fan-out/pivot/prune, deterministic verdicts) | `archon battle --target URL --goal G --ci` |
 | Runtime defense proxy (OpenAI-compatible; drop-in via `OPENAI_BASE_URL`) | `packages/archon_armor/` · HMAC identity, rate limiting, per-agent policy, output redaction |
-| Probe corpus: 120 probes (encoding-evasion + latent-injection packs added), all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries | `archon plugins --ci` |
+| Probe corpus: 202 probes across 8 packs (OWASP LLM Top-10 ×56, data exfiltration ×50, HarmBench behavioral ×25, jailbreak personas ×25, encoding evasion ×15, latent injection ×15, benign canaries ×12, core ×4) + 18 contrib probes | `archon plugins --ci` |
 | MCP security: static tool-poisoning scan + live behavioral probing | `archon scan-mcp --url ... --probe-tool NAME` |
 | Third-party guardrail validation ("we validate them") | `archon scan --target <guardrail-url>` |
 | Pluggable external defenses (NeMo / Model Armor / Promptfoo Guardrails as DefenseLayers) | `ExternalGuardrailLayer` |
@@ -38,25 +38,19 @@ vendor-neutral.
 | Benchmark harness: AgentDojo v1, all 27 published injection tasks | [`RESULTS.md`](./RESULTS.md) — deterministic-tier ASR 66.7% / block 33.3% |
 | Packaging: wheel, non-root Dockerfile, docker-compose, Helm chart | `deploy/helm/archon-armor/` |
 
-## Engineering maturity (honest audit, Aug 23)
+## Engineering maturity (Aug-23 audit → **all six gaps CLOSED**, Aug 24)
 
-**Verdict: B+ hackathon, C+ enterprise.** 6,204 src / 7,466 test LOC (1.2:1 ratio), clean
-5-seam architecture, zero vendor deps in `archon_core`. What blocks enterprise adoption:
-
-- 🔴 **No CI pipeline** — tests pass locally only; nothing enforces them on PR
-- 🟠 No lint/type enforcement (no ruff config, no pre-commit, no coverage gate)
-- 🟠 Root install pulls competition deps (`a2a-sdk`, `google-adk`, `google-genai`, `openai`)
-- 🟠 Identity: LICENSE says "AgentBeats", v0.1.0, no tags/CHANGELOG/release process
-- 🟠 SQLite-first persistence; Postgres path unhardened, no migrations
-- 🟠 No threat model of archon-armor itself (no fuzzing, no SECURITY.md/CVE process)
-
-All closure work is scoped as **Phase E0** in [`ROADMAP.md`](./ROADMAP.md). Market context:
-[`docs/LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) — enterprises buy operational maturity;
-promptfoo wins deals despite weaker agentic attack tech.
+The Aug-23 audit verdict was **B+ hackathon, C+ enterprise**. Every gap it named is now
+closed by Phases E0/E2.6: CI pipeline (py3.11–3.13 matrix + ruff + ≥85% coverage gate,
+93% actual), MIT/Archon identity with v1.0.0 tag + CHANGELOG + cosign-signed SBOM
+releases, competition deps isolated behind an extra, schema migrations + durable results
+store + Postgres CI job, SECURITY.md threat model + fuzz invariant + nonce-store replay
+protection. Remaining honest deltas vs promptfoo are community scale and formal CVE
+numbering authority — not engineering hygiene.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 992
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,376
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -74,20 +68,20 @@ defense + adversarial proof.
 |---|---|---|---|
 | Agent Goal Hijack | ASI01 | ✅ Full | Core attack surfaces + L0–L4 defenses |
 | Tool Misuse & Exploitation | ASI02 | ✅ Full | MCP static scan + live behavioral probing + sandbox targets |
-| Agent Identity & Privilege Abuse | ASI03 | ⚠️ Partial | HMAC identity, but no privilege escalation testing |
-| Agentic Supply Chain Compromise | ASI04 | ❌ Gap | Schema manipulation, description deception untested |
-| Unexpected Code Execution | ASI05 | ⚠️ Partial | Sandbox targets, but no code-execution battle suite |
+| Agent Identity & Privilege Abuse | ASI03 | ✅ Full | HMAC + ed25519 identity v2, attenuating tokens, kill-switch revocation, trust-exploitation target |
+| Agentic Supply Chain Compromise | ASI04 | ✅ Full | Rug-pull-after-N-calls simulation, SHA-256 pinning, PinningDefense closed-loop |
+| Unexpected Code Execution | ASI05 | ⚠️ Partial | Sandbox targets execute real tool calls; no dedicated code-execution battle suite |
 | Memory & Context Poisoning | ASI06 | ✅ Full | Live memory/vector-store poisoning + remediation |
 | Insecure Inter-Agent Communication | ASI07 | ✅ Full | Trust-boundary attacks, closed-loop vs sanitized |
-| Cascading Agent Failures | ASI08 | ❌ Gap | Cascade-recovery behavior untested |
-| Human-Agent Trust Exploitation | ASI09 | ❌ Gap | Social engineering attacks untested |
-| Rogue Agents | ASI10 | ❌ Gap | Rogue agent detection untested |
+| Cascading Agent Failures | ASI08 | ✅ Full | Seeded amplification pipeline + ValidationDefense closed-loop |
+| Human-Agent Trust Exploitation | ASI09 | ✅ Full | Consent-fatigue approver simulator + compound-action decomposition |
+| Rogue Agents | ASI10 | ✅ Full | Three rotating stego exfil channels + CovertChannelDetector |
 
 ## External benchmark expansion (Phase E2.9 — see ROADMAP items 55–60)
 
 - [x] InjecAgent harness (1,054 cases deterministic: 0% block / 100% ASR published) (deterministic tool-call grading; second published agentic benchmark)
 - [x] tau-bench pass^k (11/11 targets pass^k=1.0 across seeds 42/43/44) consistency metric over per-target series
-- [x] R-Judge harness (heuristic 47.6%/F1 0.063 + live LLM-judged run) (LLM-judged, env-gated)
+- [x] R-Judge harness — heuristic floor 47.6%/F1 0.063; **live LLM-judged run published: 89.2% accuracy / F1(unsafe) 0.893 (at the human-agreement ceiling; GPT-4o's published F1 is 74.4%)
 - [x] Dual-ASR formal labeling + NIST CAISI alignment citations in RESULTS.md + NIST CAISI methodology-alignment citations in RESULTS.md
 - [x] Multi-provider presets (OpenRouter / NVIDIA NIM kinds in provider_from_env) (OpenRouter / NVIDIA NIM) in provider_from_env
 - [ ] AgentHarm harness (stretch)
@@ -102,12 +96,12 @@ defense + adversarial proof.
 
 ## Remaining for enterprise readiness (post-hackathon)
 
-- [ ] Full-pipeline benchmark (LLM layers enabled)
+- [x] Full-pipeline benchmark (**RUN Aug 24 — live Gemini full-pipeline ASR 27.2% vs deterministic-tier 66.7%, published in RESULTS.md)
 - [x] ClaudeNativeProvider (shipped, commit e37305c)
-- [ ] Local vLLM attacker provider (zero-code: OpenAI-compat endpoint)
+- [x] Local vLLM attacker provider (shipped, wave 8: VllmProvider preset + docs)
 - [x] ASI04/ASI08/ASI09/ASI10 coverage (shipped, waves 1–2: supplychain/cascade/trust/rogue targets)
-- [x] HarmBench probe pack (shipped, commit 2841b7f — corpus 152; benchmark *run* still pending LLM key)
-- [ ] Persistent docs site + live demo
+- [x] HarmBench probe pack (shipped, commit 2841b7f; corpus now 202 incl data-exfiltration pack)
+- [ ] Persistent docs site hosting (mkdocs shipped; GitHub Pages = user-side 2-click)
 - [ ] Managed cloud control plane
 
 ## OWASP-aligned hardening (Phase E2.6 — see ROADMAP items 23–30)

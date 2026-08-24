@@ -24,7 +24,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Capability | Implementation | Notes |
 |---|---|---|
 | Defense pipeline | 8 layers (Normalization → ThreatClassification → Segmentation → Spotlighting → ExecutionMode → OutputGuardrails → ExternalGuardrail + exchange/backtranslation logic) wrapping the proven AgentBeats defender | layer-0 deterministic; LLM-budget-aware; fail-closed |
-| Probe corpus | 120 probes: all 10 OWASP LLM Top-10 categories + 12 benign false-positive canaries (test-enforced unblocked) + Garak-lineage `encoding_evasion` (15) and `latent_injection` (15) packs + community gallery (`contrib/`: finance/healthcare/devops ×18) — every encoded/latent probe deterministically decoded and blocked by the reference pipeline (test-enforced) | `owasp_llm_10` (56) + `encoding_evasion` (15) + `latent_injection` (15) + `harmless_helpfulness` (12) + `core` (4) + contrib (18); per-category coverage matrix in every battle summary |
+| Probe corpus | 202 probes: all 10 OWASP LLM Top-10 categories + benign false-positive canaries (test-enforced unblocked) + `encoding_evasion` (15) + `latent_injection` (15) + `data_exfiltration` (50) + `harmbench_behavioral` (25) + `jailbreak_personas` (25) packs + community gallery (`contrib/`: finance/healthcare/devops ×18) — every encoded/latent probe deterministically decoded and blocked by the reference pipeline (test-enforced); largest open agentic-security corpus, ahead of Garak's 195 | 8 main packs + contrib; per-category coverage matrix in every battle summary |
 | Adaptive attacker | `BranchingAttacker` — Hydra-style fan-out/pivot/prune; **deterministic** refusal-vs-leak scoring (no LLM judge); provider-failure degradation | First-class in battle API + `archon battle --ci` |
 | Runtime product | `archon-armor` — FastAPI OpenAI-compatible proxy, HMAC signed identity, per-agent policy, rate limiting, output redaction | Drop-in: change `OPENAI_BASE_URL` |
 | Identity & governance | HMAC replay-protection, per-agent secrets, immutable append-only audit trail, versioned policies | Enterprise-grade |
@@ -57,14 +57,15 @@ System health: **1376 passed / 3 skipped** (skips: live-Postgres integration beh
 
 ---
 
-## 3. Competitor scorecard (verified Aug 22, refreshed Aug 23 post-N3 — 992 tests)
+## 3. Competitor scorecard (verified Aug 22, refreshed Aug 24 post-wave-9 — 1,376 tests)
 
 Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 
 | Dimension | **Archon** | Promptfoo | Garak | PyRIT | NeMo Guardrails | Snyk Agent Scan | Model Armor |
 |---|---|---|---|---|---|---|---|
 | Multi-turn adaptive attacks | ● | ◐ (brains cloud-side) | ● (GOAT/TAP/Agent Breaker) | ● | — | — | — |
-| Attack corpus breadth | ● 120 probes + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
+| Attack corpus breadth | ● 202 probes (largest open agentic corpus) + AgentDojo harness | ● ~150 plugins | ● 195 probes | ● 94 templates + 59 datasets | — | ◐ | — |
+| Published benchmark ladder | ● AgentDojo det. 66.7% / Tier-3 27.2% / InjecAgent / strict-ASR 18.5% / per-target 81.8% / pass^k / R-Judge 89.2% judge-agreement — all attempt-budget-disclosed | ◐ | ◐ | ◐ | — | — | — |
 | Defense evaluation (red/blue) | ● | — | — | — | — | — | — |
 | Runtime guardrail product | ● proxy | ◐ guardrails (cloud client) | — | — | ● | ◐ hooks (cloud-enforced) | ● |
 | Layer per-request telemetry | ● | ◐ | — | — | ◐ | — | ◐ |
@@ -72,7 +73,7 @@ Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 | CI/CD + config-as-code | ● | ● | ◐ | ◐ (`pyrit_scan`) | — | ● | — |
 | OTel observability | ● | ◐ | — | — | ◐ | — | ◐ |
 | MCP security (live) | ● | ◐ | — | — | ◐ | ○ static | — |
-| Published benchmark numbers | ● AgentDojo v1 | ◐ | ◐ | ◐ | — | — | — |
+| Published benchmark numbers | ● AgentDojo v1 + full ladder (see row above) | ◐ | ◐ | ◐ | — | — | — |
 | Open self-hosted | ● MIT | ◐ | ● Apache-2.0 | ● MIT | ● Apache-2.0 | ○ | ○ |
 | Compliance evidence | ● | ◐ mapping only | ◐ tags only | — | — | — | — |
 
@@ -184,5 +185,5 @@ closes a gap the incumbents still hold.
 ---
 
 *Sources: live vendor docs/repos verified Aug 22, 2026; competitor source code
-(cloned repos) verified Aug 23, 2026; project internals verified by the 992-test
+(cloned repos) verified Aug 23, 2026; project internals verified by the 1,376-test
 suite and `archon plugins` output on `hackathon-v2`.*

@@ -291,7 +291,7 @@ This implementation draws on published research in AI security:
 | [STATUS.md](./STATUS.md) | **Current-state snapshot** — what's shipped, what remains (start here) |
 | [BLUEPRINT_HACKATHON.md](./BLUEPRINT_HACKATHON.md) | v3 architecture (core-first, extensible ABCs), gap analysis, hackathon strategy & progress log |
 | [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) | Verified competitor/market intelligence (code-verified vs 9 repos) + OWASP Agentic alignment |
-| [RESULTS.md](./RESULTS.md) | Published AgentDojo v1 benchmark numbers |
+| [RESULTS.md](./RESULTS.md) | Published benchmark ladder (AgentDojo det.+Tier-3, InjecAgent, strict-ASR, per-target series, pass^k, R-Judge) — all attempt-budget-disclosed |
 | [REPORT_COMPARATIVE.md](./REPORT_COMPARATIVE.md) | Current-state capability report vs competitors |
 | [ROADMAP.md](./ROADMAP.md) | Post-hackathon product roadmap |
 | [DEPLOY_GCP.md](./DEPLOY_GCP.md) | Cloud Run deployment + Gemini demo path + judge demo script |

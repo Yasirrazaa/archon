@@ -231,7 +231,7 @@ report output.
 
 ## 6. Where Archon Wins Today
 
-Code-verified (649 tests green). Full table: COMPETITIVE_ANALYSIS §7.1 /
+Code-verified (1,376 tests green as of Aug 24). Full table: COMPETITIVE_ANALYSIS §7.1 /
 REPORT_COMPARATIVE §3.1.
 
 1. Closed-loop verified security (attack → shield → re-attack proof)

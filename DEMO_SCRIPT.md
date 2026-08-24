@@ -11,7 +11,7 @@
 uv run archon register --agent-id demo-agent --name "Demo" --upstream-base-url https://generativelanguage.googleapis.com/v1beta/openai ...
 uv run archon scan --registry registry.db --agent-id demo-agent --pack owasp_llm_10
 ```
-**Say:** "152 probes across OWASP LLM Top 10, the Agentic Top 10, HarmBench domains. Baseline: the unshielded agent leaks."
+**Say:** "202 probes across OWASP LLM Top 10, the Agentic Top 10, HarmBench domains. Baseline: the unshielded agent leaks."
 📸 Screenshot: scan report with block rate.
 
 ## Beat 2 — Live tool-execution attack (1:00–1:40)

@@ -5,6 +5,25 @@ All notable changes to Archon are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added (waves 6–9, Aug 24)
+
+- **Submission package**: DEVPOST.md, DEMO_SCRIPT.md (beat-by-beat 4-min script), BLOG_POST.md draft.
+- **Benchmarks**: full published ladder in RESULTS.md — AgentDojo deterministic (66.7% ASR / 0% FPR),
+  Tier-3 full-pipeline with live Gemini (27.2%), InjecAgent (1,054 cases), strict multi-attempt ASR
+  (evasion 100% vs compromise 18.5%), per-target ground-truth series (81.8%), tau-bench pass^k
+  consistency (11/11 = 1.0), R-Judge judge-agreement (heuristic floor + live LLM judge at 89.2%
+  accuracy / F1 0.893). All numbers carry attempt-budget/adaptivity/judge methodology blocks.
+- **Attackers**: LlmBrainAttacker (GOAT-style O-T-S-R loop), LayerTargetingAttacker,
+  CrescendoEscalationAttacker, Gemma provider option, OpenRouter/NVIDIA/vLLM provider presets.
+- **Security**: ed25519 identity v2 (CredentialStore + Ed25519Verifier), macaroon-style
+  attenuating tokens, shadow mode (evaluate-not-enforce), cosign keyless release signing,
+  monthly kill-switch drill workflow with MTTC assertion.
+- **Platform**: Google ADK adapter, multi-tenancy v1 (tenant-scoped results), config JSON schema
+  + editor autocomplete wiring, GitHub Pages docs workflow, Mermaid architecture diagrams,
+  docs-site tutorials ×8, FinBot CTF adapter.
+
 ## [1.0.0] - 2026-08-23
 
 First stable release of the Archon adversarial AI agent security testing platform.

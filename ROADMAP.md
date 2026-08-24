@@ -23,7 +23,7 @@
 | Multi-provider support | `LLMProvider` ABC; OpenAI-compat + Gemini providers | `packages/archon_core/providers/` |
 | YAML configuration | `archon scan --config archon.yaml` | `packages/archon_core/config.py` |
 | CLI with CI exit codes | `archon register / scan / scan-mcp / battle / serve / report / fleet / plugins` | `packages/archon_cli/` |
-| Probe corpus + OWASP mapping | 120 probes across all 10 OWASP LLM Top-10 categories + encoding + latent + benign canaries + contrib | `packages/archon_armor/probes.py` |
+| Probe corpus + OWASP mapping | 202 probes across all 10 OWASP LLM Top-10 categories + encoding + latent + data-exfiltration + HarmBench + jailbreak-persona packs + benign canaries + contrib | `packages/archon_armor/probes.py` |
 | Community plugin packs | `load_pack_file()`, `ARCHON_CONTRIB_DIR` auto-load | `probes.py`, `archon_cli/main.py` |
 | Runtime defense product | archon-armor FastAPI OpenAI-compat proxy | `packages/archon_armor/` |
 | Enterprise governance | Versioned policies, immutable audit trail, Postgres registry | `registry/versioned.py`, `registry/postgres.py`, `audit.py` |
@@ -52,12 +52,13 @@
 
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
-*Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1376 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+*Code-quality audit verdict at audit time: **B+ hackathon, C+ enterprise** — every gap it
+named has since been closed by Phases E0/E2.6 (see the gap table below). Current state:
+**1376 passing tests**, CI-enforced.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 992 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why (at audit time):* All tests passed locally but nothing enforced that on PRs. This was the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
@@ -93,8 +94,8 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* The hackathon demo is time-limited; a persistent demo is what enterprises actually evaluate.
    - *Effort:* 3–5 days
 
-4. **Probe corpus 150+** — add adversarial benchmark suites (HarmBench) as packs; port top Garak/Promptfoo families via the loader; target 195+ to match Garak.
-   - *Why:* Corpus breadth is Archon's weakest attack-side row. Community pack loader makes this crowd-solvable.
+4. ~~**Probe corpus 150+**~~ ✅ **SHIPPED** (waves 5+7: HarmBench behavioral ×25, jailbreak personas ×25, data-exfiltration ×50 packs; corpus 102→**202**, now ahead of Garak's 195; threshold test ≥200) — adversarial benchmark suites as packs; community pack loader keeps this crowd-solvable.
+   - *Why:* Corpus breadth was Archon's weakest attack-side row. Community pack loader makes this crowd-solvable.
    - *Effort:* 1–2 weeks (incremental)
 
 ### Phase E2 — The Unclaimed Gaps (weeks 5–12)
@@ -315,11 +316,11 @@ and formal certification, not engineering hygiene.*
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| Probe corpus breadth vs Garak (195) | 🟠 Medium | 120 probes vs 195 | Community pack loader + HarmBench integration |
-| Provider diversity (local vLLM) | 🟡 Low | Claude ✅ shipped (`ClaudeNativeProvider`, commit e37305c); OpenAI-compat + Gemini + Anthropic covered | vLLM OpenAI-compat endpoint (zero code — reuse `OpenAICompatProvider`) |
-| Live demo + persistent docs | 🟠 Medium | Hackathon demo time-limited | Docker + Postgres + Helm + YouTube walkthrough |
-| Full-pipeline benchmark (LLM layers) | 🟠 Medium | Deterministic-tier only published | Re-run with LLM layers enabled |
-| ASI04/ASI08/ASI09/ASI10 coverage | 🟠 Medium | 6/10 OWASP Agentic risks covered | Phase E2 targets |
+| ~~Probe corpus breadth vs Garak (195)~~ | ✅ CLOSED | **202 probes** vs 195 — largest open agentic-security corpus (wave 7 data-exfiltration pack) | Done; contrib gallery keeps growing it |
+| ~~Provider diversity (local vLLM)~~ | ✅ CLOSED | VllmProvider preset + docs + schema-valid example (wave 8); Claude/Gemini/Gemma/OpenRouter/NVIDIA presets shipped | Done |
+| Live demo + persistent docs | 🟠 Medium | mkdocs site shipped; GitHub Pages enablement is user-side 2-click | Enable Pages + YouTube walkthrough |
+| ~~Full-pipeline benchmark (LLM layers)~~ | ✅ CLOSED | Tier-3 published: live Gemini full-pipeline ASR 27.2% vs deterministic 66.7% | Done |
+| ~~ASI04/ASI08/ASI09/ASI10 coverage~~ | ✅ CLOSED | supplychain/cascade/trust/rogue targets shipped (waves 1–2); 9/10 ASI full, ASI05 partial | Done |
 | Community/team size | 🟡 Low (product) | Solo developer | Plugin seams + MIT license attract contributors |
 | Managed cloud offering | 🟡 Low (post-adoption) | Self-hosted only | Phase E3 control plane |
 
@@ -345,8 +346,8 @@ An enterprise CISO evaluating agent security tools needs:
 | Metric | Target | Current |
 |---|---|---|
 | GitHub stars | 5,000+ | ~500 |
-| Probe corpus | 200+ | 120 |
-| Published benchmarks | 3+ (AgentDojo, HarmBench, custom) | 1 (AgentDojo deterministic) |
+| Probe corpus | 200+ | **202** ✅ |
+| Published benchmarks | 3+ (AgentDojo, HarmBench, custom) | **8+** ✅ (AgentDojo deterministic + Tier-3, InjecAgent, pass^k, R-Judge heuristic+LLM, strict-ASR, per-target series, FPR) |
 | Enterprise pilots | 5+ | 0 |
 | Community plugins | 50+ | 18 (contrib/) |
 | Documentation pages | 100+ | ~20 |

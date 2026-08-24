@@ -24,7 +24,7 @@ archon/
 │   ├── archon_armor/       # THE deployable artifact: FastAPI defense proxy
 │   │   ├── server.py       # OpenAI-compatible /v1/chat/completions endpoint
 │   │   ├── battles.py      # BattleManager for attack campaigns
-│   │   ├── probes.py       # Probe corpus (120 probes, OWASP-mapped)
+│   │   ├── probes.py       # Probe corpus (202 probes, OWASP-mapped)
 │   │   ├── baselines.py    # Policy-CI baseline stores
 │   │   ├── compare.py      # A-vs-B battle comparison
 │   │   ├── checkpoints.py  # Crash-safe long-battle persistence

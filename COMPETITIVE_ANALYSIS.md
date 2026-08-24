@@ -101,7 +101,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 
 ## 5. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**649 tests**, Aug 23, post-N3).
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,376 tests**, Aug 24, post-wave-9).
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
@@ -198,6 +198,7 @@ Each is small, tested, and compounds: every one either adds users, adds proof, o
 9. ✅ (Aug 23, post-N3) Full refresh at 649 tests: §5 scorecard updated for the shipped post-hackathon sprint wave (sandbox battles, memory poisoning, ASI07 attacks, trace-driven generation, severity derivation, compare engine, Web UI, contrib gallery, distribution); new agentic scorecard §5.1 — Archon holds full coverage on all seven agentic dimensions; no competitor holds more than one partial.
 10. ➕ (Aug 23) Added Augustus (Praetorian), Obot, Guardrails AI, NeuralTrust to the landscape based on web research.
 11. ➕ (Aug 23) Added market size data ($769M→$2.1B by 2035) and M&A activity (Palo Alto/Protect AI, Snyk/Invariant Labs).
+12. ✅ (Aug 24, post-waves 7–9) Refresh at 1,376 tests: corpus row now 202 probes (largest open agentic corpus); published-benchmark ladder added (AgentDojo deterministic + Tier-3 full-pipeline 27.2%, InjecAgent, strict-ASR 18.5%, per-target ground-truth 81.8%, pass^k, R-Judge judge-agreement 89.2% at human ceiling — no competitor publishes attempt-budget-disclosed numbers); ASI coverage 9/10 full.
 
 ---
 

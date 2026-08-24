@@ -14,19 +14,19 @@ Prior drafts state *"334/404 passing tests"*. Current reality:
 
 | Area | Status |
 |---|---|
-| Tests | **649 passing / 3 skipped** |
-| P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity, `archon` CLI + CI gates, scrubbed OTel→Cloud Trace telemetry, policy versioning + audit trail, Postgres registry, Dockerfile/compose/wheel/Helm |
-| P1 differentiators | ✅ **All shipped + expanded**: 120-probe OWASP-mapped corpus (encoding-evasion + latent-injection packs, false-positive canaries), MCP static + live behavioral scanning, compliance evidence reports with evidence-derived severity, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer |
-| Post-hackathon sprints (Aug 23) | ✅ **ROADMAP COMPLETE**: live tool-execution battles w/ env-state ground truth, live memory/vector-store poisoning, ASI07 trust-boundary attacks, trace-driven attack generation, comparison engine + checkpoint/resume, Web UI dashboard, contrib gallery, Homebrew/npm distribution |
-| Benchmarks | ✅ **AgentDojo v1 harness shipped**; deterministic-tier ASR published in [`RESULTS.md`](./RESULTS.md) |
+| Tests | **1,376 passing / 3 skipped** (CI-enforced, ≥85% coverage gate) |
+| P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity (+ ed25519 identity v2, attenuating tokens, nonce store), `archon` CLI + CI gates, scrubbed OTel→Cloud Trace telemetry, policy versioning + audit trail, Postgres registry + migrations, Dockerfile/compose/wheel/Helm, SECURITY.md threat model, cosign-signed SBOM releases |
+| P1 differentiators | ✅ **All shipped + expanded**: 202-probe corpus (largest open agentic corpus, ahead of Garak's 195), MCP static + live behavioral scanning, compliance evidence reports with evidence-derived severity, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer, kill-switch w/ MTTC, purple runs, shadow mode, plan-divergence detection |
+| Post-hackathon sprints | ✅ **ROADMAP COMPLETE through Phase E2.9**: live tool/memory/multi-agent/MCP/supply-chain/cascade/trust/rogue attack targets, trace-driven generation, comparison engine + checkpoint/resume, Web UI, contrib gallery, Homebrew/npm distribution, ADK adapter, multi-tenancy v1, FinBot CTF adapter |
+| Benchmarks | ✅ **Full published ladder in RESULTS.md**: AgentDojo deterministic 66.7%/FPR 0% → Tier-3 full-pipeline 27.2% → InjecAgent → strict-ASR 18.5% (evasion ≠ compromise) → per-target ground-truth 81.8% → pass^k 11/11=1.0 → R-Judge judge-agreement 89.2% (at human ceiling) — all with attempt-budget/adaptivity/judge methodology blocks |
 
-Remaining from old plans: live Cloud Run deployment (needs GCP creds), demo video, Devpost package, full-pipeline benchmark run (LLM layers enabled), local vLLM attacker provider.
+Remaining from old plans: live Cloud Run deployment (user-side, needs GCP creds), demo video, Devpost submission, GitHub Pages enablement.
 
 ## 0.1 The Maturity Thesis (Aug 23 audit + landscape research)
 
-Internal code-quality audit verdict: **B+ hackathon, C+ enterprise** — 649 tests at a 1.2:1
-test:source ratio and clean 5-seam architecture, but no CI pipeline, no lint/type gates,
-legacy packaging, no release process, SQLite-first persistence, and no self threat model.
+Internal code-quality audit verdict (Aug 23, at 649 tests): **B+ hackathon, C+ enterprise** —
+no CI pipeline, no lint/type gates, legacy packaging, no release process, SQLite-first
+persistence, and no self threat model.
 Combined with the [`LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) research:
 
 > **The hard part is done. What's missing is the boring 80%: CI, packaging hygiene, docs,
@@ -34,11 +34,12 @@ Combined with the [`LANDSCAPE_2026.md`](./docs/LANDSCAPE_2026.md) research:
 > attack technology than Archon now has. Enterprises buy operational maturity; researchers
 > buy capability.**
 
-Strategic consequence: **Phase E0 (engineering maturity) executes before any new capability
-work**, then E2.5 converts the landscape research into differentiators competitors can't
-copy quickly (adaptive multi-attempt methodology per CAISI's 11%→81% finding, UAR/PED
-metrics productization, MCP/A2A protocol-layer inspection, compliance evidence automation
-against AIUC-1/CSA STAR certification schemes). Full detail in ROADMAP.md v5.1.
+Strategic consequence: **Phase E0 (engineering maturity) executed before any new capability
+work — DONE** (all six audit gaps closed; see ROADMAP gap table), then E2.5–E2.9 converted
+the landscape research into differentiators competitors can't copy quickly (adaptive
+multi-attempt methodology per CAISI's 11%→81% finding, UAR/PED metrics productization,
+MCP/A2A protocol-layer inspection, compliance evidence automation against AIUC-1/CSA STAR
+certification schemes). Full detail in ROADMAP.md v5.1.
 
 ---
 
@@ -186,11 +187,11 @@ about someone else's guardrail. Nothing else on stage says that.
 | "Garak v0.15.0 GOAT probe + agent-breaker" | ✅ Verified in code Aug 23 | `probes/goat.py` + `probes/agent_breaker.py` exist in v0.16.1.pre1 |
 | "PyRIT v0.13 AttackTechnique abstraction" | ✅ Superseded by v1.1 rewrite | Now scenario/registry architecture with `pyrit_scan` CLI + CoPyRIT GUI; still zero compliance mapping (grep-verified) |
 | "97M+ MCP downloads / 82% vulnerable" | ❓ Unverified | Do not cite without source |
-| "Status: 334/404 tests" | ❌ Stale | 649 tests; ROADMAP v4 fully closed (see §0) |
+| "Status: 334/404 tests" | ❌ Stale | Now **1,376 tests**, CI-enforced; ROADMAP fully closed through Phase E2.9 (see §0) |
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
 | "OWASP Agentic ASI01-10 IDs unverified" | ✅ Verified | Confirmed via DeepTeam integration and Auth0 analysis: ASI01–ASI10 |
 | "Augustus doesn't exist" | ❌ New competitor | Praetorian's Augustus v0.0.9: 210+ probes, 4 multi-turn strategies, Go-based |
-| "Archon covers 6/10 OWASP Agentic risks" | ✅ Honest assessment | ASI01, ASI02, ASI06, ASI07 + partial ASI03/ASI05; gap: ASI04, ASI08, ASI09, ASI10 |
+| "Archon covers 6/10 OWASP Agentic risks" | ✅ Honest assessment → superseded | At audit: ASI01/02/06/07 + partial ASI03/05. **Now 9/10 full** (ASI03/04/08/09/10 closed by waves 1–2 + identity v2); only ASI05 remains partial |
 
 ---
 
