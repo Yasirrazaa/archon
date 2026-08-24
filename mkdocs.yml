@@ -6,9 +6,26 @@ theme: material
 
 docs_dir: docs-site
 
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
 nav:
   - index.md
   - quickstart.md
   - architecture.md
+  - architecture-diagram.md
   - security.md
   - benchmarks.md
+  - tutorials/index.md
+  - tutorials/first-memory-poisoning-battle.md
+  - tutorials/first-tool-sandbox-battle.md
+  - tutorials/multi-agent-trust-boundary.md
+  - tutorials/mcp-rug-pull.md
+  - tutorials/supply-chain-pinning.md
+  - tutorials/approval-fatigue-trust.md
+  - tutorials/rogue-stego-channels.md
+  - tutorials/beyond-asi-gap-patterns.md

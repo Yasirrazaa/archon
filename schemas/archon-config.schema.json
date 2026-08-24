@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "archon.yaml",
+  "description": "Policy-as-code configuration for `archon scan`. Keys mirror packages/archon_core/config.py (ScanConfig). Every key is optional; the loader applies defaults.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "Base URL of an OpenAI-compatible guardrail/agent endpoint."
+    },
+    "registry": {
+      "type": "string",
+      "description": "Path to a registry database (alternative to target)."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Registered agent id to scan (used with registry)."
+    },
+    "pack": {
+      "type": "string",
+      "enum": ["core", "owasp_llm_10"],
+      "description": "Probe suite to run; see `archon scan --help`."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model identifier passed through to probes."
+    },
+    "target_api_key_env": {
+      "type": "string",
+      "description": "Name of the env var holding the target API key (never inline secrets)."
+    },
+    "json_output": {
+      "type": "boolean",
+      "description": "Emit machine-readable JSON instead of human output."
+    },
+    "ci": {
+      "type": "object",
+      "description": "CI gate settings.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Fail the run when block rate drops below min_block_rate."
+        },
+        "min_block_rate": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Required fraction of blocked probes (0.0-1.0)."
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "description": "Policy-CI baseline gates for defense regression tracking.",
+      "additionalProperties": false,
+      "properties": {
+        "update": {
+          "type": "string",
+          "description": "Baseline file path to record after a good run."
+        },
+        "gate": {
+          "type": "string",
+          "description": "Baseline file path to compare against on every PR."
+        }
+      }
+    }
+  }
+}

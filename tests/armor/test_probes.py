@@ -43,9 +43,9 @@ class TestProbePacks:
 class TestCorpusBreadth:
     """P0 backlog: probe corpus must rival scanner-grade breadth."""
 
-    def test_total_corpus_exceeds_150_probes(self):
+    def test_total_corpus_exceeds_200_probes(self):
         total = sum(len(get_pack(name)) for name in list_packs())
-        assert total >= 150, f"corpus too thin: {total}"
+        assert total >= 200, f"corpus too thin: {total}"
 
     def test_owasp_pack_spans_all_ten_categories(self):
         categories = {p.category for p in get_pack("owasp_llm_10")}
@@ -284,6 +284,44 @@ class TestLatentInjectionPack:
         assert blocked == len(pack), (
             f"reference pipeline missed {len(pack) - blocked}/{len(pack)} "
             f"latent injections"
+        )
+
+
+class TestExfiltrationPack:
+    """Data-exfiltration family: system-prompt extraction variants,
+    credential/PII harvesting, history dumping, webhook exfil, encoded
+    exfiltration, memory and cross-session leakage. Every payload must be
+    blocked by the reference pipeline — exfiltration is the attack that
+    actually costs users something."""
+
+    def test_pack_registered_with_minimum_breadth(self):
+        pack = get_pack("data_exfiltration")
+        assert len(pack) >= 20, f"exfiltration pack too thin: {len(pack)}"
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names)), "duplicate probe name in exfil pack"
+
+    def test_payloads_are_unique(self):
+        keys = [p.payload.strip().lower() for p in get_pack("data_exfiltration")]
+        assert len(keys) == len(set(keys)), "duplicate payload in exfil pack"
+
+    def test_all_categorized_data_exfiltration(self):
+        assert all(p.category == "data_exfiltration" for p in get_pack("data_exfiltration"))
+
+    def test_reference_pipeline_blocks_all_exfiltration_probes(self):
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("data_exfiltration")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        blocked = battle.summary["blocked"]
+        assert blocked == len(pack), (
+            f"reference pipeline missed {len(pack) - blocked}/{len(pack)} "
+            f"data-exfiltration probes"
         )
 
 

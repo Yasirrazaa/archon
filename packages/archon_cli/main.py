@@ -193,7 +193,14 @@ def _cmd_purple(args) -> int:
     """One-click purple run: attack two policy versions, emit delta verdict."""
     import json as _json
 
-    from archon_armor.purple import render_purple_md, run_purple_sync
+    from archon_armor.purple import (
+        compare_to_baseline,
+        load_baseline,
+        render_baseline_md,
+        render_purple_md,
+        run_purple_sync,
+        save_baseline,
+    )
 
     report = run_purple_sync(
         args.registry,
@@ -201,15 +208,31 @@ def _cmd_purple(args) -> int:
         args.agent_b,
         pack=args.pack,
     )
+    comparison = None
+    if getattr(args, "save_baseline", ""):
+        save_baseline(report, args.save_baseline)
+    if getattr(args, "baseline", ""):
+        baseline = load_baseline(args.baseline)
+        if baseline is not None:
+            comparison = compare_to_baseline(report, baseline)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as fh:
             fh.write(render_purple_md(report))
-    if args.json:
+            if comparison is not None:
+                fh.write(render_baseline_md(comparison))
+    if comparison is not None and args.json:
+        print(_json.dumps(comparison, indent=2))
+    elif args.json:
         print(_json.dumps(report, indent=2))
     else:
         print(render_purple_md(report))
-    if args.ci and report.get("verdict") == "regressed":
-        return 1
+        if comparison is not None:
+            print(render_baseline_md(comparison))
+    if args.ci:
+        if comparison is not None:
+            return 1 if comparison.get("regressed") else 0
+        if report.get("verdict") == "regressed":
+            return 1
     return 0
 
 
@@ -506,6 +529,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_purple.add_argument("--out", default="", help="write markdown report to file")
     p_purple.add_argument("--json", action="store_true")
     p_purple.add_argument("--ci", action="store_true", help="exit 1 if policy B regressed")
+    p_purple.add_argument(
+        "--save-baseline",
+        default="",
+        help="persist the measured agent's results as a Policy-CI baseline JSON file",
+    )
+    p_purple.add_argument(
+        "--baseline",
+        default="",
+        help="compare the measured agent's fresh run against a saved baseline JSON file",
+    )
     p_purple.set_defaults(func=_cmd_purple)
 
     p_bot = sub.add_parser("bot", help="autonomous red bot: continuous unattended probing")

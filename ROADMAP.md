@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1081 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1259 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -223,16 +223,16 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 *Sources: RESULTS.md "follow-up benchmark series" promise; methodology commitment #4 (utility cost); competitor gap-closure plan (garak breadth / LLM-brain attackers / promptfoo DX); Devpost architecture-diagram requirement.*
 
-45. **Per-target ground-truth benchmark series** — run the adaptive attacker against every live attack target (sandbox banking transfer, memory poisoning, multi-agent trust boundary, MCP rug-pull, supply-chain rug-pull, cascade, trust exploitation, rogue stego, recon/config-tamper/staged-payload gaps); `attack_success` comes from state diffs, so these are real ASR numbers with zero LLM calls. Publish in `RESULTS.md` (fulfills the existing promise there).
-46. **False-positive-rate publication** — measure the deterministic tier's over-refusal rate on the 12 benign canaries (`harmless_helpfulness` pack); completes methodology commitment #4.
-47. **Applied-metrics exemplar** — compute UAR / Privilege Escalation Distance / GUARDEDJOINT quadrants on the sandbox banking scenario and publish as a worked example in `RESULTS.md`.
-48. **Identity v2: signed agent credentials** — ed25519-signed per-agent identities issued and verified by armor (replacing shared HMAC secrets); pairs with the wave-6 attenuating-token caveats module.
-49. **Purple --baseline Policy-CI gate** — commit a baseline verdict file; `archon purple --ci --baseline FILE` fails when any probe regresses vs baseline (merge-blocking defense regression gate).
-50. **FinBot CTF adapter** — clone the OWASP-referenced repo, wrap it as a battle target for third-party-validated numbers (closes deferred item 44 if feasible pre-deadline).
-51. **Community scaffolding** — CONTRIBUTING.md, CODE_OF_CONDUCT.md, feature-issue template; tag v1.0.0 to exercise release.yml + cosign end-to-end.
-52. **Architecture diagram** — Mermaid diagram in docs-site (renders on GitHub); fills the Devpost image slot.
-53. **Docs-site expansion** — tutorial pages per attack target ("run your first memory-poisoning battle").
-54. **GitHub Pages enablement** — user-side 2-click repo setting (docs.yml already shipped, item 42).
+45. ~~**Per-target ground-truth benchmark series**~~ ✅ **SHIPPED** (wave 7 — target_series.py: adaptive attacker (budget 3, seed 42) vs all 11 live targets; aggregate ASR 81.8% (27/33) from state-diff ground truth, zero LLM calls; published in RESULTS.md) — run the adaptive attacker against every live attack target (sandbox banking transfer, memory poisoning, multi-agent trust boundary, MCP rug-pull, supply-chain rug-pull, cascade, trust exploitation, rogue stego, recon/config-tamper/staged-payload gaps); `attack_success` comes from state diffs, so these are real ASR numbers with zero LLM calls. Publish in `RESULTS.md` (fulfills the existing promise there).
+46. ~~**False-positive-rate publication**~~ ✅ **SHIPPED** (wave 7 — 0/12 benign canaries blocked — deterministic-tier over-refusal rate 0.0%, published in RESULTS.md (methodology commitment #4 closed)) — measure the deterministic tier's over-refusal rate on the 12 benign canaries (`harmless_helpfulness` pack); completes methodology commitment #4.
+47. ~~**Applied-metrics exemplar**~~ ✅ **SHIPPED** (wave 7 — UAR 0.75 / PED 4 hops / GUARDEDJOINT quadrants worked example on the banking sandbox, published in RESULTS.md) — compute UAR / Privilege Escalation Distance / GUARDEDJOINT quadrants on the sandbox banking scenario and publish as a worked example in `RESULTS.md`.
+48. ~~**Identity v2: signed agent credentials**~~ ✅ **SHIPPED** (wave 7 — security/identity.py: CredentialStore sqlite + ed25519 sign_request_ed25519 + Ed25519Verifier drop-in via create_app(identity=...); cryptography dep added; 23 tests) — ed25519-signed per-agent identities issued and verified by armor (replacing shared HMAC secrets); pairs with the wave-6 attenuating-token caveats module.
+49. ~~**Purple --baseline Policy-CI gate**~~ ✅ **SHIPPED** (wave 7 — purple.py save_baseline/load_baseline/compare_to_baseline + CLI --save-baseline/--baseline; --ci exits 1 on regression vs baseline) — commit a baseline verdict file; `archon purple --ci --baseline FILE` fails when any probe regresses vs baseline (merge-blocking defense regression gate).
+50. ~~**FinBot CTF adapter**~~ ✅ **SHIPPED** (wave 7 — finbot-ctf cloned (gitignored) + targets/finbot.py FinBotTarget wrapping the CTF with offline sim fallback; 20 tests incl skipif-guarded live integration) — clone the OWASP-referenced repo, wrap it as a battle target for third-party-validated numbers (closes deferred item 44 if feasible pre-deadline).
+51. ~~**Community scaffolding**~~ ✅ **SHIPPED** (wave 7 — CONTRIBUTING.md, CODE_OF_CONDUCT.md (Contributor Covenant), feature_request template, test_community guards; tag v1.0.0 pushed to exercise release.yml+cosign) — CONTRIBUTING.md, CODE_OF_CONDUCT.md, feature-issue template; tag v1.0.0 to exercise release.yml + cosign end-to-end.
+52. ~~**Architecture diagram**~~ ✅ **SHIPPED** (wave 7 — docs-site/architecture-diagram.md — 3 Mermaid diagrams (request flow, closed-loop red/blue, GCP topology); Devpost image slot filled) — Mermaid diagram in docs-site (renders on GitHub); fills the Devpost image slot.
+53. ~~**Docs-site expansion**~~ ✅ **SHIPPED** (wave 7 — docs-site/tutorials/ — index + 8 per-target tutorials w/ verified uv run snippets and ASI mappings; mkdocs nav updated) — tutorial pages per attack target ("run your first memory-poisoning battle").
+54. **GitHub Pages enablement** — *user-side*: flip the 2-click repo setting (docs.yml already shipped, item 42).
 
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 

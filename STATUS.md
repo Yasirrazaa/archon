@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1081 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1259 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -133,17 +133,17 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Multi-tenancy v1 (shipped, wave 6) (tenant-scoped results/registry)
 - [ ] FinBot CTF adapter (deferred — needs external repo clone)
 
-## Evidence & hardening sprint (Phase E2.8 / Wave 7 — see ROADMAP items 45–54)
+## Evidence & hardening sprint (Phase E2.8 / Wave 7 — see ROADMAP items 45–54) — ✅ SHIPPED
 
-- [ ] Per-target ground-truth benchmark series (adaptive attacker vs all 9+ live targets; state-diff ASR, zero LLM calls → RESULTS.md)
-- [ ] False-positive-rate publication (12 benign canaries over-refusal rate; methodology commitment #4)
-- [ ] Applied-metrics exemplar (UAR/PED/GUARDEDJOINT on sandbox banking scenario → RESULTS.md)
-- [ ] Identity v2: ed25519-signed agent credentials (per-agent identities verified by armor)
-- [ ] Purple --baseline Policy-CI gate (`archon purple --ci --baseline FILE` merge-blocking regression gate)
-- [ ] FinBot CTF adapter (attempt pre-deadline if clone feasible)
-- [ ] Community scaffolding (CONTRIBUTING/CODE_OF_CONDUCT/feature template + tag v1.0.0)
-- [ ] Architecture diagram (Mermaid in docs-site; Devpost image slot)
-- [ ] Docs-site expansion (tutorial per attack target)
+- [x] Per-target ground-truth benchmark series (11 targets, aggregate ASR 81.8% from state-diff ground truth, zero LLM calls → RESULTS.md)
+- [x] False-positive-rate publication (0/12 benign canaries blocked — 0.0% over-refusal → RESULTS.md)
+- [x] Applied-metrics exemplar (UAR 0.75 / PED 4 hops / GUARDEDJOINT quadrants on sandbox banking → RESULTS.md)
+- [x] Identity v2: ed25519-signed agent credentials (CredentialStore + Ed25519Verifier drop-in via create_app(identity=...))
+- [x] Purple --baseline Policy-CI gate (`archon purple --save-baseline/--baseline`; --ci exits 1 on regression)
+- [x] FinBot CTF adapter (repo cloned + FinBotTarget w/ offline sim fallback; live integration tests skip-guarded)
+- [x] Community scaffolding (CONTRIBUTING/CODE_OF_CONDUCT/feature template + tag v1.0.0 exercising release.yml+cosign)
+- [x] Architecture diagram (3 Mermaid diagrams in docs-site/architecture-diagram.md; Devpost image slot)
+- [x] Docs-site expansion (index + 8 per-target tutorials, verified snippets, ASI mappings)
 - [ ] GitHub Pages enablement (user-side 2-click; docs.yml shipped)
 
 ## Document map
