@@ -75,6 +75,31 @@ class TestMultiAttemptBenchmark:
         assert "multi" in m["adaptivity"].lower()
         assert "deterministic" in m["judge"].lower()
 
+    def test_evasion_metrics_present_and_shaped(self):
+        """Deterministic tier has no LLM to leak — primary metric is EVASION."""
+        from archon_benchmarks.multi_attempt import run_multi_attempt_benchmark
+
+        report = run_multi_attempt_benchmark(max_attempts=5)
+        ev = report["evasion"]
+        assert {"at_1", "at_budget", "curve"} <= set(ev)
+        assert 0.0 <= ev["at_1"] <= ev["at_budget"] <= 1.0
+
+    def test_evasion_curve_monotonic_covers_budget(self):
+        from archon_benchmarks.multi_attempt import run_multi_attempt_benchmark
+
+        ev = run_multi_attempt_benchmark(max_attempts=4)["evasion"]
+        assert [c["attempts_k"] for c in ev["curve"]] == [1, 2, 3, 4]
+        rates = [c["cumulative_evasion"] for c in ev["curve"]]
+        assert rates == sorted(rates)
+        assert rates[-1] == pytest.approx(ev["at_budget"])
+
+    def test_asr_fields_documented_llm_only(self):
+        from archon_benchmarks.multi_attempt import run_multi_attempt_benchmark
+
+        report = run_multi_attempt_benchmark(max_attempts=3)
+        assert "asr_note" in report
+        assert "LLM" in report["asr_note"] or "llm" in report["asr_note"]
+
     def test_render_markdown(self, tmp_path):
         from archon_benchmarks.multi_attempt import (
             render_multi_attempt_md,

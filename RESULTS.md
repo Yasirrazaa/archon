@@ -52,3 +52,29 @@ Since this run was published, Archon's attack surface expanded well beyond HTTP-
 ## Methodology commitments
 
 Per the NIST CAISI finding that aggregate ASR climbs 57%→80% at 25 attempts per task (and Best-of-N follows a power law), all future published Archon benchmark numbers will state: (1) attempt budget and per-task attempt distribution; (2) adaptivity level of the attacker (static template / branching / LLM-adaptive); (3) judge method and calibration; (4) utility cost of defenses (over-refusal measured via the harmless_helpfulness canary pack); (5) dual ASR where applicable (intermediate vs end-to-end). See `docs/LANDSCAPE_2026.md` §4.3 for the full metrics program (GUARDEDJOINT-style KPIs, Unsafe Action Rate for CI gates, Privilege Escalation Distance on customer tool graphs).
+
+## Multi-attempt series (deterministic tier) — Aug 24, 2026
+
+First published run of the CAISI-methodology multi-attempt benchmark (`archon_benchmarks.multi_attempt`): one adaptive campaign per AgentDojo task, 5-variant mutation rotation (verbatim / paraphrase-prefix / encoding-wrap / role-framing / fragmentation), **attempt budget 25**, seed 42, fully offline and reproducible.
+
+**Primary metric in this tier is EVASION** — the fraction of tasks where at least one mutated variant got past the shield unblocked. (Strict ASR — goal actually achieved — requires a live LLM behind the pipeline; see the full-pipeline tier below.)
+
+| Attempts k | Cumulative evasion |
+|---|---|
+| 1 | 0.0% |
+| 2 | **100.0%** |
+| 3–25 | 100.0% |
+
+Per-suite at budget: banking / slack / travel / workspace all 100% evaded. Strict ASR: 0.0% at every k (no LLM present to leak — by construction).
+
+### Honest interpretation
+
+1. **The deterministic tier is evadable within 2 attempts.** Attempt 1 (verbatim of a shuffled seed) was blocked for every task; attempt 2's mutated variant evaded for every task. This is exactly the CAISI warning: static, rule-based defenses degrade fast under budgeted adaptive pressure. It is why Archon ships the deterministic tier as a *free first line*, not the whole defense — and why the closed-loop purple verification (`archon purple --ci`) re-attacks after every policy change.
+2. **Single-attempt numbers flatter static defenses.** The Tier-1 table above shows 33.3% block rate; under a 2-attempt adaptive attacker the deterministic tier's effective block rate is ~0%. Any vendor publishing single-shot numbers without an attempt-budget disclosure is likely overstating protection.
+3. **This is the case for the full-pipeline tier.** The production stack adds LLM layers (dynamic invariants, Task Shield-style checks, exchange classifier) precisely for these structural wrappers. Publishing that number requires only `ARCHON_ATTACK_PROVIDER_API_KEY` + `archon_benchmarks.llm_tier.run_full_pipeline_benchmark()`.
+
+Methodology declared per commitments: attempt_budget=25 · adaptivity=multi-attempt-5-variant-rotation · judge=deterministic-rules (evasion = pipeline not blocked). Reproduce:
+
+```bash
+uv run python -c "from archon_benchmarks.multi_attempt import run_multi_attempt_benchmark; print(run_multi_attempt_benchmark(max_attempts=25, seed=42)['evasion'])"
+```
