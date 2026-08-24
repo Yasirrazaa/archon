@@ -191,7 +191,7 @@ about someone else's guardrail. Nothing else on stage says that.
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
 | "OWASP Agentic ASI01-10 IDs unverified" | ✅ Verified | Confirmed via DeepTeam integration and Auth0 analysis: ASI01–ASI10 |
 | "Augustus doesn't exist" | ❌ New competitor | Praetorian's Augustus v0.0.9: 210+ probes, 4 multi-turn strategies, Go-based |
-| "Archon covers 6/10 OWASP Agentic risks" | ✅ Honest assessment → superseded | At audit: ASI01/02/06/07 + partial ASI03/05. **Now 9/10 full** (ASI03/04/08/09/10 closed by waves 1–2 + identity v2); only ASI05 remains partial |
+| "Archon covers 6/10 OWASP Agentic risks" | ✅ Honest assessment → superseded | At audit: ASI01/02/06/07 + partial ASI03/05. **Now 10/10 full** (ASI03/04/08/09/10 closed by waves 1–2 + identity v2; ASI05 closed Aug 24 by targets/code_exec.py — sleeper-agent/sandbox-escape/destructive battles) |
 
 ---
 

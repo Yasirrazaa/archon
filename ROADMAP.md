@@ -54,7 +54,7 @@
 
 *Code-quality audit verdict at audit time: **B+ hackathon, C+ enterprise** — every gap it
 named has since been closed by Phases E0/E2.6 (see the gap table below). Current state:
-**1376 passing tests**, CI-enforced.*
+**1402 passing tests**, CI-enforced.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -320,7 +320,7 @@ and formal certification, not engineering hygiene.*
 | ~~Provider diversity (local vLLM)~~ | ✅ CLOSED | VllmProvider preset + docs + schema-valid example (wave 8); Claude/Gemini/Gemma/OpenRouter/NVIDIA presets shipped | Done |
 | Live demo + persistent docs | 🟠 Medium | mkdocs site shipped; GitHub Pages enablement is user-side 2-click | Enable Pages + YouTube walkthrough |
 | ~~Full-pipeline benchmark (LLM layers)~~ | ✅ CLOSED | Tier-3 published: live Gemini full-pipeline ASR 27.2% vs deterministic 66.7% | Done |
-| ~~ASI04/ASI08/ASI09/ASI10 coverage~~ | ✅ CLOSED | supplychain/cascade/trust/rogue targets shipped (waves 1–2); 9/10 ASI full, ASI05 partial | Done |
+| ~~ASI04/ASI08/ASI09/ASI10 coverage~~ | ✅ CLOSED | supplychain/cascade/trust/rogue targets shipped (waves 1–2); ASI05 closed by `targets/code_exec.py` (sleeper-agent/sandbox-escape/destructive battles) — **10/10 ASI full** | Done |
 | Community/team size | 🟡 Low (product) | Solo developer | Plugin seams + MIT license attract contributors |
 | Managed cloud offering | 🟡 Low (post-adoption) | Self-hosted only | Phase E3 control plane |
 

@@ -88,7 +88,7 @@ The **OWASP Top 10 for Agentic Applications (2026)** is now published and peer-r
 | Tool Misuse & Exploitation | ASI02 | ✅ MCP static scan + live behavioral probing + sandbox targets | — |
 | Agent Identity & Privilege Abuse | ASI03 | ⚠️ HMAC identity, but no privilege escalation testing | policy-aware targets |
 | Agentic Supply Chain Compromise | ASI04 | ⚠️ MCP tool-poisoning scan | schema manipulation attacks |
-| Unexpected Code Execution | ASI05 | ⚠️ via sandbox targets | code-execution battle suite |
+| Unexpected Code Execution | ASI05 | ✅ Full | `targets/code_exec.py` battle suite (sleeper agent, sandbox escape, destructive commands) + defenses |
 | Memory & Context Poisoning | ASI06 | ✅ live memory/vector-store poisoning | — |
 | Insecure Inter-Agent Communication | ASI07 | ✅ ASI07 trust-boundary attacks (closed-loop) | — |
 | Cascading Agent Failures | ASI08 | ❌ | cascade-recovery targets |
@@ -198,7 +198,7 @@ Each is small, tested, and compounds: every one either adds users, adds proof, o
 9. ✅ (Aug 23, post-N3) Full refresh at 649 tests: §5 scorecard updated for the shipped post-hackathon sprint wave (sandbox battles, memory poisoning, ASI07 attacks, trace-driven generation, severity derivation, compare engine, Web UI, contrib gallery, distribution); new agentic scorecard §5.1 — Archon holds full coverage on all seven agentic dimensions; no competitor holds more than one partial.
 10. ➕ (Aug 23) Added Augustus (Praetorian), Obot, Guardrails AI, NeuralTrust to the landscape based on web research.
 11. ➕ (Aug 23) Added market size data ($769M→$2.1B by 2035) and M&A activity (Palo Alto/Protect AI, Snyk/Invariant Labs).
-12. ✅ (Aug 24, post-waves 7–9) Refresh at 1,376 tests: corpus row now 202 probes (largest open agentic corpus); published-benchmark ladder added (AgentDojo deterministic + Tier-3 full-pipeline 27.2%, InjecAgent, strict-ASR 18.5%, per-target ground-truth 81.8%, pass^k, R-Judge judge-agreement 89.2% at human ceiling — no competitor publishes attempt-budget-disclosed numbers); ASI coverage 9/10 full.
+12. ✅ (Aug 24, post-waves 7–9) Refresh at 1,376 tests: corpus row now 202 probes (largest open agentic corpus); published-benchmark ladder added (AgentDojo deterministic + Tier-3 full-pipeline 27.2%, InjecAgent, strict-ASR 18.5%, per-target ground-truth 81.8%, pass^k, R-Judge judge-agreement 89.2% at human ceiling — no competitor publishes attempt-budget-disclosed numbers); ASI coverage now 10/10 full (ASI05 closed Aug 24 by targets/code_exec.py).
 
 ---
 

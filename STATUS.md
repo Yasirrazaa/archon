@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1376 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1402 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -50,7 +50,7 @@ numbering authority — not engineering hygiene.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,376
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,402
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -70,7 +70,7 @@ defense + adversarial proof.
 | Tool Misuse & Exploitation | ASI02 | ✅ Full | MCP static scan + live behavioral probing + sandbox targets |
 | Agent Identity & Privilege Abuse | ASI03 | ✅ Full | HMAC + ed25519 identity v2, attenuating tokens, kill-switch revocation, trust-exploitation target |
 | Agentic Supply Chain Compromise | ASI04 | ✅ Full | Rug-pull-after-N-calls simulation, SHA-256 pinning, PinningDefense closed-loop |
-| Unexpected Code Execution | ASI05 | ⚠️ Partial | Sandbox targets execute real tool calls; no dedicated code-execution battle suite |
+| Unexpected Code Execution | ASI05 | ✅ Full | `targets/code_exec.py`: SleeperAgentTarget (persistent payload → privileged read → execution, FinBot sleeper-agent pattern), SandboxEscapeTarget (os.system/subprocess/workspace-path escape vectors), DestructiveCommandTarget (mass purge without approval); paired defenses (write-time quarantine, command allowlist, approval gate); 26 tests |
 | Memory & Context Poisoning | ASI06 | ✅ Full | Live memory/vector-store poisoning + remediation |
 | Insecure Inter-Agent Communication | ASI07 | ✅ Full | Trust-boundary attacks, closed-loop vs sanitized |
 | Cascading Agent Failures | ASI08 | ✅ Full | Seeded amplification pipeline + ValidationDefense closed-loop |

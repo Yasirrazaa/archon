@@ -33,3 +33,7 @@ because NIST CAISI showed single-attempt scores understate attack success by up 
 Reproduce: `uv run python -m archon_benchmarks.runner` (deterministic),
 `run_full_pipeline_benchmark()` / `run_strict_asr_benchmark()` / `run_injecagent_benchmark()`
 (env-gated with an API key), `run_target_series()` / `run_passk()` (offline).
+
+Status: all tiers above are published. Still pending: LLM-brain
+(GOAT-style) validation at CAISI-scale attempt budgets, which requires a
+high-quota API key; our free-tier validation run is documented in RESULTS.md.
