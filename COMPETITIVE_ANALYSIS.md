@@ -112,7 +112,7 @@ Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflect
 | 5 | Agent identity/registry/policy governance | **2** ✅ HMAC identity, versioned policies, audit trail | 0 | 0 | 0 | 0 | **2** (GCP IAM) | 0 |
 | 6 | Observability & audit evidence | **2** ✅ OTel→Cloud Trace, scrubbed, immutable audit | 1 | 1 | 0 | 1 | **2** | 1 |
 | 7 | CI/CD developer experience (CLI, exit codes) | **2** ✅ scan/battle/fleet/report/compare all `--ci` | **2** | 1 | 1 (`pyrit_scan`) | 1 | n/a | **2** |
-| 8 | Threat/probe corpus breadth | **2** ✅ (120 probes: OWASP×10 + encoding + latent + benign canaries + contrib verticals; benchmark-backed via published AgentDojo numbers; live-execution attack classes nobody else has) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
+| 8 | Threat/probe corpus breadth | **2** ✅ (202 probes post-wave-7 — now the largest open agentic-security corpus, ahead of Garak's 195; benchmark-backed via published AgentDojo numbers, per-target ground-truth series ASR 81.8%, FPR 0%; live-execution attack classes nobody else has) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
 | 9 | MCP/tool-surface testing | **2** ✅ static scan + live behavioral probing | 1 (real MCP target) | 0 | 0 | 1 (schema rails) | 1 (integration) | **2** (static, closed analysis) |
 | 10 | Production hardening (authN/Z, HA, multi-tenant) | **2** ✅ HMAC+rate-limit, Postgres, Helm non-root | 1 | 0 | 0 | 1 | **2** | 1 |
 | 11 | Open source + self-hostable | **2** | **2** | **2** | **2** | **2** | 0 | 2 (no contribs) |
@@ -176,7 +176,7 @@ The dimensions that define *agent* security in 2026. Scale as above; DeepTeam an
 **Then (in this order):**
 1. **Publish a live demo + docs** — one Docker + Postgres + Helm template, one YouTube walkthrough. Makes it usable, credible, enterprise-pilot-ready.
 2. ~~AgentDojo / benchmark runner~~ — ✅ **DONE (Aug 23):** harness shipped, numbers published in [`RESULTS.md`](./RESULTS.md). Next: run with LLM layers enabled for the full-pipeline ASR.
-3. **Probe corpus 150+** — add adversarial benchmark suites (HarmBench) as packs; port top Garak/Promptfoo families via the loader; target 195+ to match Garak.
+3. ~~**Probe corpus 150+**~~ — ✅ **DONE (wave 7):** corpus 202, ahead of Garak's 195. Next frontier is LLM-driven attacker brains (GOAT/TAP/PAIR-class generation quality) on the provider seam.
 4. **Attacker diversity** — providers beyond OpenAI-compat (local vLLM, Claude native) via the `LLMProvider` seam, benchmark-driven tuning.
 5. **Ecosystem** — `contrib/` gallery, CI matrix for community pulls, plugin marketplace directory in README.
 6. **Full-pipeline benchmark** — re-run AgentDojo with LLM layers enabled; publish end-to-end ASR next to deterministic-tier number.

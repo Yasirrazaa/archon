@@ -98,19 +98,46 @@ these projects publishing reproducible AgentDojo numbers from its own harness.
 ## 4. Honest gaps (where competitors still lead)
 
 These are the rows we must own to be the best at anything, not just the best "gap".
+*Refreshed Aug 24 post-wave-7 — per-competitor closure ledger.*
 
-1. **Probe/plugin corpus** — 102 probes is respectable but Promptfoo (~150 plugins) and
-   Garak (195 probes) are ahead. Our loader now lets the community scale this; the
-   AgentDojo harness adds benchmark credibility that raw plugin count can't.
-2. **Model/harness breadth** — Garak's generator/transport matrix and Promptfoo's
-   provider list are deeper than our OpenAI-compat + Gemini providers. Attacker-side LLM
-   diversity (Claude native, local vLLM) matters for benchmark credibility.
-3. **Live ecosystem (docs, real configs, first-run DX)** — Garak/Promptfoo ship
-   batteries-included examples and VS Code tooling; we have docs + Docker + Helm
-   but no full real-cloud live demo yet (that is the hackathon-pending item).
-4. ~~Canned benchmark numbers~~ — ✅ **CLOSED (Aug 23):** AgentDojo v1 numbers published in [`RESULTS.md`](./RESULTS.md) with a baseline comparison. HarmBench-style breadth remains future work.
-5. **Community/team** — incumbents have thousands of contributors; Archon is
-   largely solo. The plugin seams + MIT license help attract, but mindshare
+1. ~~**Probe/plugin corpus**~~ — ✅ **CLOSED (wave 7):** corpus **202** main-corpus probes
+   (+18 contrib verticals) vs Garak's 195. We are now the largest open agentic-security
+   probe corpus, and ours execute against live targets with state-diff ground truth —
+   a property no raw probe count captures.
+2. **LLM-driven attacker brains (Garak GOAT/TAP, PyRIT PAIR)** — ◐ **PARTIALLY CLOSED
+   (wave 7):** shipped deterministic brains — `LayerTargetingAttacker` (feedback-driven:
+   reads which defense layer blocked, pivots to that layer's evasion payload),
+   `CrescendoEscalationAttacker` (6-rung escalation ladder), `MultiAttemptAttacker`
+   (5-variant rotation), plus tree fan-out/prune in `BranchingAttacker`. What remains
+   open is the *LLM-in-the-loop* generation quality of GOAT/TAP/PAIR — buildable on our
+   provider seam the moment an API key is present (`llm_tier.py` pattern). Our standing
+   counter: their multi-turn numbers ship with no attempt-budget disclosure and no
+   defense to verify against; ours declare budget/adaptivity/judge per methodology
+   commitments.
+3. **Model/harness breadth** — Garak's generator/transport matrix is deeper than our
+   OpenAI-compat + Gemini + Claude + Gemma providers. Local vLLM remains zero-code via
+   the compat seam.
+4. **Ecosystem gravity (promptfoo: 24k stars, Discord, npm telemetry; DeepTeam/DeepEval:
+   Confident platform + 202 commits/mo momentum)** — not closable by code. Wave 7
+   shipped the *scaffolding* (CONTRIBUTING/CODE_OF_CONDUCT/issue templates, tag v1.0.0
+   w/ cosign-signed release, docs-site tutorials, config JSON schema for DX); mindshare
+   takes time. Standing counter: post-acquisition vendor-neutrality objection against
+   promptfoo is real, and its multi-turn brains are proprietary cloud calls.
+5. **Certifications & sales motion (Lakera→Check Point, Zenity $185M, Model Armor)** —
+   ◐ **PARTIALLY CLOSED:** AIUC-1 + CSA STAR conformance profiles, tamper-evident
+   evidence packs w/ chain-of-custody, and compliance mapping ship today; actual SOC2/
+   ISO audits are org-level, post-hackathon work. Standing counter: they're black
+   boxes — none publish methodology or let you audit the tests.
+6. ~~Canned benchmark numbers~~ — ✅ **CLOSED (Aug 23–24):** AgentDojo v1 series,
+   multi-attempt CAISI curves, per-target ground-truth series (ASR 81.8% aggregate),
+   and false-positive rate 0% all published in [`RESULTS.md`](./RESULTS.md).
+7. **Production hardening (NeMo Guardrails, NVIDIA channel)** — ◐ **LARGELY CLOSED:**
+   shadow mode, kill-switch drill w/ MTTC assertion, nightly fuzzing, CI matrix +
+   coverage gate, migrations, SECURITY.md threat model all shipped. Their structural
+   counter stands: NeMo cannot test its own guards and ships zero compliance artifacts;
+   Archon's closed loop does both by construction.
+8. **Community/team** — incumbents have thousands of contributors; Archon is largely
+   solo. The five seams + MIT license + contrib gallery help attract, but mindshare
    takes time.
 
 ---
