@@ -83,6 +83,15 @@ defense + adversarial proof.
 | Human-Agent Trust Exploitation | ASI09 | ❌ Gap | Social engineering attacks untested |
 | Rogue Agents | ASI10 | ❌ Gap | Rogue agent detection untested |
 
+## External benchmark expansion (Phase E2.9 — see ROADMAP items 55–60)
+
+- [ ] InjecAgent harness (deterministic tool-call grading; second published agentic benchmark)
+- [ ] tau-bench pass^k consistency metric over per-target series
+- [ ] R-Judge harness (LLM-judged, env-gated)
+- [x] Dual-ASR formal labeling + NIST CAISI methodology-alignment citations in RESULTS.md
+- [ ] Multi-provider presets (OpenRouter / NVIDIA NIM) in provider_from_env
+- [ ] AgentHarm harness (stretch)
+
 ## Remaining before hackathon submission (deadline Aug 31, 5pm PDT)
 
 - [ ] Deploy archon-armor to Cloud Run per [`DEPLOY_GCP.md`](./DEPLOY_GCP.md) (requires GCP credentials)

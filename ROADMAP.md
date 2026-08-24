@@ -234,6 +234,17 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 53. ~~**Docs-site expansion**~~ ✅ **SHIPPED** (wave 7 — docs-site/tutorials/ — index + 8 per-target tutorials w/ verified uv run snippets and ASI mappings; mkdocs nav updated) — tutorial pages per attack target ("run your first memory-poisoning battle").
 54. **GitHub Pages enablement** — *user-side*: flip the 2-click repo setting (docs.yml already shipped, item 42).
 
+### Phase E2.9 — External Benchmark Expansion (Wave 9, pre-deadline)
+
+*Sources: benchmark-gap analysis vs garak/promptfoo/PyRIT dataset inventories; LANDSCAPE_2026 §4 benchmark adoption table; NIST CAISI cyber-evals methodology review (cloned, capability-axis — cited not run).*
+
+55. **InjecAgent benchmark harness** — run the InjecAgent corpus (direct + indirect injection during tool use, ground-truth tool-call labels → deterministic grading, zero LLM-judge cost); publish block rate / ASR in RESULTS.md alongside AgentDojo. Second published agentic benchmark kills the "one-off" objection.
+56. **tau-bench pass^k consistency metric** — re-run the per-target series across k seeds and report pass^k consistency (models drop hard on this metric per tau-bench); reuses existing target_series infrastructure.
+57. **R-Judge benchmark harness** — real-world unsafe agent trajectories (569 records) scored via the provider-seam LLM judge; env-gated live run + offline stub tests.
+58. **Dual-ASR formal labeling + NIST CAISI alignment citations** — label the existing evasion-vs-strict-ASR results as dual ASR per WASP; cite NIST CAISI evaluation practice (multi-attempt budgets, Inspect harness) as methodology alignment in RESULTS.md. Doc-only, zero cost.
+59. **Multi-provider presets** — OpenRouter (`https://openrouter.ai/api/v1`) and NVIDIA NIM (`https://integrate.api.nvidia.com/v1`) OpenAI-compatible presets in `provider_from_env` (kind `openrouter` / `nvidia`), mirroring the vLLM preset pattern; enables multi-provider benchmark runs without code changes.
+60. **AgentHarm benchmark harness** *(stretch)* — harmful-behavior tasks with jailbreaks (440-task extended set), judge-scored; only if quota and time allow after 55–59.
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
