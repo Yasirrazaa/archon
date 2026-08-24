@@ -325,6 +325,69 @@ class TestExfiltrationPack:
         )
 
 
+class TestAnsiExfiltrationPack:
+    """ANSI escape exfiltration (ROADMAP item 72): terminal escape sequences
+    used as a covert exfil channel. Every payload must be blocked by the
+    reference pipeline."""
+
+    def test_pack_registered(self):
+        pack = get_pack("ansi_exfiltration")
+        assert len(pack) >= 10
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names))
+
+    def test_payloads_are_unique_and_categorized(self):
+        pack = get_pack("ansi_exfiltration")
+        keys = [p.payload.strip().lower() for p in pack]
+        assert len(keys) == len(set(keys))
+        assert all(p.category == "ansi_exfiltration" for p in pack)
+
+    def test_reference_pipeline_blocks_all_ansi_probes(self):
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("ansi_exfiltration")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        assert battle.summary["blocked"] == len(pack)
+
+
+class TestPackageHallucinationPack:
+    """Package hallucination / slop-squatting (ROADMAP item 76): agents
+    steered toward non-existent or attacker-registered packages. Every payload
+    must be blocked by the reference pipeline."""
+
+    def test_pack_registered(self):
+        pack = get_pack("package_hallucination")
+        assert len(pack) >= 10
+        names = [p.name for p in pack]
+        assert len(names) == len(set(names))
+
+    def test_payloads_are_unique_and_categorized(self):
+        pack = get_pack("package_hallucination")
+        keys = [p.payload.strip().lower() for p in pack]
+        assert len(keys) == len(set(keys))
+        assert all(p.category == "package_hallucination" for p in pack)
+
+    def test_reference_pipeline_blocks_all_package_probes(self):
+        import asyncio
+
+        registry = InMemoryRegistry()
+        registry.register(AgentCard(
+            agent_id="a1", name="t", version="1",
+            policy=SecurityPolicy(upstream_base_url="https://u.test/v1")))
+        manager = BattleManager(registry)
+        battle = manager.create("a1")
+        pack = get_pack("package_hallucination")
+        asyncio.run(manager.execute(battle.battle_id, probes=pack))
+        assert battle.summary["blocked"] == len(pack)
+
+
+
 class TestHarmBenchPack:
     """HarmBench-style behavioral probes: direct requests across the six
     HarmBench harm domains, framed as jailbreaks so the reference pipeline

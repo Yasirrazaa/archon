@@ -494,7 +494,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_results.add_argument("--agent-id", default=None, help="filter by agent id")
     p_results.add_argument("--limit", type=int, default=50)
     p_results.add_argument("--share", default="", help="battle id: print its share URL fragment")
+    p_results.add_argument("--sarif", default="", help="battle id: write SARIF 2.1.0 to this path (GitHub Code Scanning)")
+    p_results.add_argument("--html", default="", help="battle id: write self-contained HTML report to this path")
     p_results.set_defaults(func=_cmd_results)
+    p_disc = sub.add_parser("discover", help="discover local agent configs (Claude/Cursor/VSCode/Gemini CLI...)")
+    p_disc.add_argument("--root", default=None, help="override home dir for discovery")
+    p_disc.add_argument("--json", action="store_true")
+    p_disc.set_defaults(func=_cmd_discover)
 
     p_fleet = sub.add_parser("fleet", help="fleet overview from baselines (dashboard primitive)")
     p_fleet.add_argument("--registry", required=True)
@@ -676,8 +682,35 @@ def _cmd_results(args) -> int:
             "url_fragment": f"?share={token}",
         }, indent=None if getattr(args, "json", False) else 2))
         return 0
+    if getattr(args, "sarif", "") or getattr(args, "html", ""):
+        battle = store.get_battle(args.sarif or args.html)
+        if battle is None:
+            print(json.dumps({"error": f"unknown battle: {args.sarif or args.html}"}))
+            return 2
+        out = {}
+        if args.sarif:
+            from archon_core.reporting.sarif import render_sarif
+
+            render_sarif(battle, args.sarif)
+            out["sarif"] = args.sarif
+        if args.html:
+            from archon_armor.html_report import write_battle_html
+
+            write_battle_html(battle, args.html)
+            out["html"] = args.html
+        print(json.dumps(out, indent=2))
+        return 0
     rows = store.list_battles(agent_id=args.agent_id, limit=args.limit)
     print(json.dumps(rows, indent=None if getattr(args, "json", False) else 2))
+    return 0
+
+
+def _cmd_discover(args) -> int:
+    from archon_core.discovery.clients import discover_clients, summarize_discovery
+
+    found = discover_clients(root=getattr(args, "root", None))
+    summary = summarize_discovery(found)
+    print(json.dumps(summary, indent=None if getattr(args, "json", False) else 2))
     return 0
 
 

@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from archon_core.attacks.branching import score_response
+from archon_core.attacks.progression import ProgressionController
 from archon_core.targets.base import TargetAdapter
 
 # ------------------------------------------------------- variant transforms --
@@ -114,6 +115,7 @@ class CampaignResult:
     first_success_attempt: int | None = None
     asr_contribution: float = 0.0
     budget_declared: int = 25
+    stop_reason: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -133,6 +135,7 @@ class CampaignResult:
             "first_success_attempt": self.first_success_attempt,
             "asr_contribution": self.asr_contribution,
             "budget_declared": self.budget_declared,
+            "stop_reason": self.stop_reason,
         }
 
 
@@ -145,8 +148,13 @@ class MultiAttemptAttacker:
     def __init__(self, campaign: AdaptiveAttackCampaign | None = None):
         self.campaign = campaign or AdaptiveAttackCampaign()
 
-    async def run(self, target: TargetAdapter, goal: str,
-                  seeds: list[str]) -> CampaignResult:
+    async def run(
+        self,
+        target: TargetAdapter,
+        goal: str,
+        seeds: list[str],
+        progression: ProgressionController | None = None,
+    ) -> CampaignResult:
         cfg = self.campaign
         rng = random.Random(cfg.seed)
 
@@ -192,6 +200,14 @@ class MultiAttemptAttacker:
 
             if success and cfg.early_stop_on_success:
                 break
+
+            if progression is not None:
+                reason = progression.register_response(
+                    resp.content, success=success, blocked=blocked
+                )
+                if reason is not None:
+                    result.stop_reason = reason.value
+                    break
 
         result.attempts_used = len(result.attempts)
         result.succeeded = result.first_success_attempt is not None

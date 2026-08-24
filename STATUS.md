@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1485 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1868 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -17,7 +17,7 @@ vendor-neutral.
 | 8-layer defense pipeline (deterministic tier → LLM layers) | `packages/archon_core/defenses/layers.py` |
 | Adaptive multi-turn attacker (Hydra-style fan-out/pivot/prune, deterministic verdicts) | `archon battle --target URL --goal G --ci` |
 | Runtime defense proxy (OpenAI-compatible; drop-in via `OPENAI_BASE_URL`) | `packages/archon_armor/` · HMAC identity, rate limiting, per-agent policy, output redaction |
-| Probe corpus: 202 probes across 8 packs (OWASP LLM Top-10 ×56, data exfiltration ×50, HarmBench behavioral ×25, jailbreak personas ×25, encoding evasion ×15, latent injection ×15, benign canaries ×12, core ×4) + 18 contrib probes | `archon plugins --ci` |
+| Probe corpus: 222 probes across 10 packs (OWASP LLM Top-10 ×56, data exfiltration ×50, ANSI escape exfiltration ×10, package hallucination ×10, HarmBench behavioral ×25, jailbreak personas ×25, encoding evasion ×15, latent injection ×15, benign canaries ×12, core ×4) + 18 contrib probes | `archon plugins --ci` |
 | MCP security: static tool-poisoning scan + live behavioral probing | `archon scan-mcp --url ... --probe-tool NAME` |
 | Third-party guardrail validation ("we validate them") | `archon scan --target <guardrail-url>` |
 | Pluggable external defenses (NeMo / Model Armor / Promptfoo Guardrails as DefenseLayers) | `ExternalGuardrailLayer` |
@@ -50,7 +50,7 @@ numbering authority — not engineering hygiene.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,485
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,868
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -166,10 +166,10 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 
 ## Competitor-mined completion wave (Phase E2.11 — see ROADMAP items 66–89)
 
-24 improvements mined from promptfoo/augustus/agent-scan/garak/PyRIT/NeMo/deepeval/deepteam/ragas source:
-- [ ] Tier 1 quick wins: tool-call schema rail, Policy Puppetry, token smuggling, SHIFT_DETECTED early-stop, /v1/checks sidecar, ensemble aggregation, ANSI exfil probes, hidden-unicode scanner, agent-loop metric, MetricOutputType contract, package-hallucination probes, harm-taxonomy layer
-- [ ] Tier 2: SARIF output ⭐ (category first), static HTML report, archon discover, skill scanning, buff layer, judge-calibration harness, run-history diffs, toxic-flow graph
-- [ ] Tier 3: coding-agent target suite, streaming rolling-buffer rails, BEAST suffixes, compliance-card report module
+24 improvements mined from promptfoo/augustus/agent-scan/garak/PyRIT/NeMo/deepeval/deepteam/ragas source — ALL SHIPPED (waves 11A+11B, Aug 25):
+- [x] Tier 1 quick wins: tool-call schema rail (defenses/tool_rail.py), Policy Puppetry + token smuggling converters, SHIFT_DETECTED early-stop wired into crescendo/adaptive, /v1/checks sidecar endpoint, ensemble aggregation, ANSI escape exfil probes (10), hidden-Unicode Cf/Cc scanner w/ U+E0000 tag decoding, agent-loop trace metric, MetricOutputType contract + kappa agreement, package-hallucination probes (10), harm-taxonomy YAML layer (12 defs × 5-level rubrics)
+- [x] Tier 2: SARIF 2.1.0 output ⭐ category-first (`archon results --sarif` → GitHub Code Scanning), self-contained HTML report (`archon results --html`), `archon discover` local-config discovery, SKILL.md supply-chain scanning, buff layer (N_probes × N_buffs multiplicative coverage), judge-calibration harness (accuracy/F1/kappa vs human labels), run-history experiment store w/ diffs, toxic-flow capability graph + E002 cross-server shadowing
+- [x] Tier 3: coding-agent target suite core-5 (verifier-sabotage / CI-poisoning / procfs-read / egress-bypass / tty-injection), streaming rolling-buffer rails, BEAST deterministic suffix attacker, compliance-card renderer
 
 ## Document map
 

@@ -10,6 +10,7 @@ Zero-trust flow per request:
 from __future__ import annotations
 
 import copy
+import json
 from typing import Any
 
 from archon_core.audit import SqliteAuditTrail
@@ -179,6 +180,64 @@ def create_app(
             return JSONResponse(
                 {"error": {"message": str(exc)}}, status_code=502
             )
+
+    @app.post("/v1/checks")
+    async def checks(request: Request) -> JSONResponse:
+        """Sidecar validation endpoint (ROADMAP item 70).
+
+        Runs the agent's defense pipeline against arbitrary messages WITHOUT
+        forwarding to an upstream LLM -- NeMo-style /v1/checks adoption unlock
+        for teams that cannot proxy all traffic through archon-armor.
+        """
+        raw_body = await request.body()
+        verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
+        if not verdict.ok:
+            return JSONResponse(
+                {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
+            )
+        agent_id = verdict.agent_id
+        if kill_switch is not None and kill_switch.is_revoked(agent_id):
+            return JSONResponse(
+                {"error": {"message": f"Agent {agent_id} is revoked (kill switch active)"}},
+                status_code=503,
+            )
+        try:
+            card = registry.get(agent_id)
+        except AgentNotFoundError:
+            return JSONResponse(
+                {"error": {"message": f"Unknown agent identity: {agent_id}"}},
+                status_code=404,
+            )
+        try:
+            payload = json.loads(raw_body or b"{}")
+        except json.JSONDecodeError:
+            return JSONResponse({"error": {"message": "Invalid JSON body"}}, status_code=400)
+        if not isinstance(payload, dict) or not isinstance(payload.get("messages"), list):
+            return JSONResponse(
+                {"error": {"message": "Body must include a 'messages' list"}}, status_code=400
+            )
+        messages = payload["messages"]
+        if not messages or not all(isinstance(m, dict) for m in messages):
+            return JSONResponse(
+                {"error": {"message": "messages must be a non-empty list of objects"}},
+                status_code=400,
+            )
+        user_content = _last_user_content(messages)
+        pipeline = _build_request_pipeline(card.policy, tracer)
+        exchange = Exchange(content=user_content, metadata={"agent_id": agent_id})
+        result = await pipeline.run(exchange)
+        blocked = bool(result.blocked)
+        if audit is not None and blocked:
+            audit.append("request.check_blocked", agent_id=agent_id, actor="checks")
+        return JSONResponse(
+            {
+                "status": "blocked" if blocked else "allowed",
+                "block_reason": result.block_reason,
+                "agent_id": agent_id,
+                "checked_content": user_content,
+            },
+            headers={"x-archon-blocked": "true"} if blocked else None,
+        )
 
     async def _handle_chat(raw_body, card, upstream, tracer, request_span):
         # --- 2. Validate body -------------------------------------------------------

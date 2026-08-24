@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from archon_core.attacks.branching import score_response
+from archon_core.attacks.progression import ProgressionController
 from archon_core.targets.base import TargetAdapter
 
 # A frame function: (goal, prev_excerpt) -> payload for one escalation rung.
@@ -113,6 +114,7 @@ class CrescendoResult:
     success: bool = False
     turns_used: int = 0
     stopped_at: int | None = None
+    stop_reason: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -121,6 +123,7 @@ class CrescendoResult:
             "success": self.success,
             "turns_used": self.turns_used,
             "stopped_at": self.stopped_at,
+            "stop_reason": self.stop_reason,
         }
 
 
@@ -143,7 +146,12 @@ class CrescendoEscalationAttacker:
         else:
             self.templates = ESCALATION_TEMPLATES
 
-    async def run(self, target: TargetAdapter, goal: str) -> CrescendoResult:
+    async def run(
+        self,
+        target: TargetAdapter,
+        goal: str,
+        progression: ProgressionController | None = None,
+    ) -> CrescendoResult:
         result = CrescendoResult(goal=goal)
         prev_excerpt = ""
         n_turns = min(self.max_turns, len(self.templates))
@@ -181,6 +189,16 @@ class CrescendoEscalationAttacker:
             if success:
                 result.success = True
                 result.stopped_at = i + 1
+
+            if progression is not None:
+                reason = progression.register_response(
+                    resp.content, success=success, blocked=blocked
+                )
+                if reason is not None:
+                    result.stop_reason = reason.value
+                    break
+
+            if success:
                 break
 
         return result

@@ -18,7 +18,7 @@ Most agent-security tools are half a loop. Scanners (garak, PyRIT) attack but ca
 
 **Archon is the only open platform where red team and blue team are the same system:**
 
-1. **Attack** — a 202-probe corpus across OWASP LLM Top 10, OWASP Agentic Top 10 (ASI01–10), HarmBench behavioral domains, jailbreak personas, encoding evasion, latent injection, and data exfiltration; plus live attack targets that execute real tool calls in instrumented sandboxes, poison real memory stores, cross real multi-agent trust boundaries, rug-pull simulated MCP servers, and exploit approval fatigue.
+1. **Attack** — a 222-probe corpus across OWASP LLM Top 10, OWASP Agentic Top 10 (ASI01–10), HarmBench behavioral domains, jailbreak personas, encoding evasion, latent injection, and data exfiltration; plus live attack targets that execute real tool calls in instrumented sandboxes, poison real memory stores, cross real multi-agent trust boundaries, rug-pull simulated MCP servers, and exploit approval fatigue.
 2. **Defend** — archon-armor, a drop-in OpenAI-compatible proxy (point `OPENAI_BASE_URL` at it), enforcing an 8-layer defense pipeline: normalization → threat classification → segmentation → spotlighting → execution-mode control → output guardrails, with HMAC workload identity, nonce-based replay protection, rate limiting, per-agent policy, and an atomic kill switch with measured MTTC.
 3. **Prove** — re-run the same attacks against the shielded agent and emit a delta verdict (`archon purple --ci`). Every finding carries evidence-derived severity vectors, tamper-evident hashes, chain-of-custody, and compliance-control mapping (EU AI Act Art. 9/15, NIST MEASURE-2/MANAGE-2, ISO 42001 A.6.1.6).
 
@@ -30,7 +30,7 @@ Fleet operators get `archon fleet --ci` as a merge-blocking policy gate, a web d
 - **Gemini API** powers the adaptive attack engine via its OpenAI-compatible endpoint (`ARCHON_ATTACK_PROVIDER_KIND=openai|gemma|anthropic`); Claude native provider included.
 - **Google Agent Framework**: Google ADK adapter wraps ADK agents as battle targets; Gemini OpenAI-compat integration throughout.
 - **GCP**: deployed on **Cloud Run** (GCS-backed durable state), with **Cloud Trace** via OTel — every request emits a span tree showing each defense layer's verdict (`service.name=archon-armor`). See DEPLOY_GCP.md for the verified spin-up path.
-- **Engineering discipline**: 1,485 tests (TDD, ~1.2:1 test:code ratio), CI matrix on Python 3.11–3.13 with ≥85% coverage gate, ruff, nightly fuzzing, SBOM + cosign-signed releases, Postgres integration job, schema migrations, SECURITY.md threat model with honest limitations.
+- **Engineering discipline**: 1,868 tests (TDD, ~1.2:1 test:code ratio), CI matrix on Python 3.11–3.13 with ≥85% coverage gate, ruff, nightly fuzzing, SBOM + cosign-signed releases, Postgres integration job, schema migrations, SECURITY.md threat model with honest limitations.
 
 ## Published results (all attempt-budget-disclosed — see RESULTS.md)
 
