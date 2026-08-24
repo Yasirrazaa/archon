@@ -156,6 +156,14 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Local vLLM provider path (VllmProvider + docs + schema-valid example)
 - [x] Editor DX wiring (.vscode settings mapping archon.yaml to the JSON schema; VS Code autocomplete)
 
+## Augustus-derived hardening (Phase E2.10 — see ROADMAP items 61–65)
+
+- [ ] MCP transport-layer attack target (DNS rebinding / session hijack / off-path attacker, closed-loop verified)
+- [ ] AI code-review CI workflow (PR review bot)
+- [ ] Prometheus `/metrics` endpoint on archon-armor
+- [ ] YAML declarative probe packs (community format)
+- [ ] Supply-chain CI hygiene (secrets-scan + verify-pins workflows)
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.

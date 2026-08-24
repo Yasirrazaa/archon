@@ -246,6 +246,16 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 59. ~~**Multi-provider presets**~~ ✅ **SHIPPED** (wave 9 — provider_from_env kinds openrouter (openrouter.ai/api/v1) + nvidia (integrate.api.nvidia.com/v1), model-overridable via env) — — OpenRouter (`https://openrouter.ai/api/v1`) and NVIDIA NIM (`https://integrate.api.nvidia.com/v1`) OpenAI-compatible presets in `provider_from_env` (kind `openrouter` / `nvidia`), mirroring the vLLM preset pattern; enables multi-provider benchmark runs without code changes.
 60. **AgentHarm benchmark harness** *(stretch)* — harmful-behavior tasks with jailbreaks (440-task extended set), judge-scored; only if quota and time allow after 55–59.
 
+### Phase E2.10 — Augustus-Derived Hardening (Wave 10)
+
+*Sources: deep engineering comparison vs praetorian-inc/augustus (cloned Aug 24; 201K Go LOC, 4,057 test funcs, 13 CI workflows, network-level MCP transport attacks). Augustus is the strongest offense-only rival; these items adopt its best ideas and pair them with Archon's uncontested closed-loop defense verification.*
+
+61. **MCP transport-layer attack target** — DNS-rebinding / session-hijack / off-path attacker modeling against HTTP-transport MCP endpoints (Augustus mcptransport pattern), implemented as a live battle target with state-diff ground truth + paired defense; unique because only Archon can verify a *defended* endpoint resists transport-layer attacks.
+62. **AI code-review CI workflow** — PR-review bot workflow (claude-code/codex pattern) posting automated review comments; credibility signal for engineering-maturity judging.
+63. **Prometheus `/metrics` endpoint on archon-armor** — ops-grade observability (request/block counters, latency histogram) closing an enterprise deployment gap Augustus covers scanner-side.
+64. **YAML declarative probe packs** — Nuclei-style community contribution format: drop a YAML file, get a registered pack; lowers contrib friction vs Python-only packs.
+65. **Supply-chain CI hygiene** — secrets-scan workflow (gitleaks-style) + dependency-pin verification workflow, mirroring Augustus security.yml/verify-pins.
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
