@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1260 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1321 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -145,6 +145,13 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Architecture diagram (3 Mermaid diagrams in docs-site/architecture-diagram.md; Devpost image slot)
 - [x] Docs-site expansion (index + 8 per-target tutorials, verified snippets, ASI mappings)
 - [ ] GitHub Pages enablement (user-side 2-click; docs.yml shipped)
+
+## Wave-8 additions (Aug 24 — key-unlocked gap closure)
+
+- [x] LlmBrainAttacker (GOAT-style O-T-S-R loop on provider seam; live-validated vs Gemini: mechanism works, 0/3 @ budget 4 — honest floor documented in RESULTS.md)
+- [x] Strict-ASR multi-attempt benchmark (evasion 100% vs strict ASR 18.5% — evasion ≠ compromise, published)
+- [x] Local vLLM provider path (VllmProvider + docs + schema-valid example)
+- [x] Editor DX wiring (.vscode settings mapping archon.yaml to the JSON schema; VS Code autocomplete)
 
 ## Document map
 

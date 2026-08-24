@@ -215,6 +215,10 @@ API surface:
 
 Core packages (zero vendor deps): `packages/archon_core` (defense layers, registry, providers, observability), `packages/archon_armor` (FastAPI proxy, battle manager). Gemini is supported via `GeminiOpenAICompatProvider` (OpenAI-compat endpoint).
 
+### Editor autocomplete for archon.yaml
+
+Open the repo in VS Code with the YAML extension (recommended via `.vscode/extensions.json`) and `examples/archon.yaml` gets schema validation + autocomplete from `schemas/archon-config.schema.json` automatically (see `yaml.schemas` in `.vscode/settings.json`). Copy it to `archon.yaml` and edit away.
+
 ## Contrib Pack Gallery
 
 Community probe packs ship in [`contrib/`](contrib/README.md) — finance, healthcare, and devops verticals, each loadable at runtime:

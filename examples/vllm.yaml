@@ -1,0 +1,21 @@
+# examples/vllm.yaml — archon.yaml preset for scanning against a local vLLM server
+#
+# Start the server first:
+#   pip install vllm && vllm serve meta-llama/Llama-3.1-8B-Instruct
+#
+# Then run:
+#   archon scan --config examples/vllm.yaml
+#
+target: http://localhost:8000/v1
+model: meta-llama/Llama-3.1-8B-Instruct
+
+pack: core
+
+ci:
+  enabled: true
+  min_block_rate: 0.9
+
+json_output: true
+
+# vLLM typically needs no key; set this if your gateway fronts the server:
+# target_api_key_env: ARCHON_TARGET_API_KEY

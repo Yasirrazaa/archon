@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1260 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1321 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -85,7 +85,7 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* The deterministic-tier ASR (66.7%) is honest but incomplete. Enterprises need to see the full pipeline's ASR to trust the defense.
    - *Effort:* 1–2 days (infrastructure: need LLM API access)
 
-2. **Attacker diversity — local vLLM** under the existing `LLMProvider` seam; benchmark-driven tuning. (ClaudeNativeProvider ✅ already shipped — commit e37305c, 10 tests.)
+2. ~~**Attacker diversity — local vLLM**~~ ✅ **SHIPPED (wave 8)** — providers/vllm.py VllmProvider preset + vllm_from_env, docs-site/local-models.md, examples/vllm.yaml (schema-valid); Claude/Gemini/Gemma native options shipped earlier.
    - *Why:* Garak and Promptfoo support multiple providers. Claude is covered natively; vLLM is free via its OpenAI-compat server + `OpenAICompatProvider` (zero new code).
    - *Effort:* 2–3 days
 

@@ -20,6 +20,7 @@ nav:
   - architecture-diagram.md
   - security.md
   - benchmarks.md
+  - local-models.md
   - tutorials/index.md
   - tutorials/first-memory-poisoning-battle.md
   - tutorials/first-tool-sandbox-battle.md

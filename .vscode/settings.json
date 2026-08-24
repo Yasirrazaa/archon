@@ -1,0 +1,10 @@
+{
+  "yaml.schemas": {
+    "./schemas/archon-config.schema.json": ["examples/archon.yaml", "archon.yaml"]
+  },
+  "yaml.schemaStore.enable": true,
+  "editor.formatOnSave": false,
+  "files.associations": {
+    "archon.yaml": "yaml"
+  }
+}

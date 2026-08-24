@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1260 passed / 3 skipped
+**Date:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1321 passed / 3 skipped
 
 ---
 
@@ -52,7 +52,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Distribution breadth | Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed MIT CLI | PyRIT/garak are pip-only; DeepTeam requires Confident cloud account for full flow |
 | Live memory/vector-store poisoning | Plants real poison entries in a live store; benign user queries retrieve them and the RAG target obeys; remediation scrubbing verified closed-loop | promptfoo's `agentic:memory-poisoning` is a simulated two-step scenario; nobody else touches real stores |
 
-System health: **1260 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **1321 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---
@@ -104,8 +104,11 @@ These are the rows we must own to be the best at anything, not just the best "ga
    (+18 contrib verticals) vs Garak's 195. We are now the largest open agentic-security
    probe corpus, and ours execute against live targets with state-diff ground truth —
    a property no raw probe count captures.
-2. **LLM-driven attacker brains (Garak GOAT/TAP, PyRIT PAIR)** — ◐ **PARTIALLY CLOSED
-   (wave 7):** shipped deterministic brains — `LayerTargetingAttacker` (feedback-driven:
+2. ~~**LLM-driven attacker brains (Garak GOAT/TAP, PyRIT PAIR)**~~ — ✅ **CLOSED (wave 8):**
+   `LlmBrainAttacker` ships the GOAT-style O-T-S-R loop on our provider seam (live-validated;
+   0/3 @ budget 4 vs gemini-3.5-flash-lite honestly documented), alongside the wave-7
+   deterministic brains. Standing counter upgraded: we publish brain budget + strict-vs-evasion
+   split (RESULTS.md: evasion 100% vs strict ASR 18.5%); shipped deterministic brains — `LayerTargetingAttacker` (feedback-driven:
    reads which defense layer blocked, pivots to that layer's evasion payload),
    `CrescendoEscalationAttacker` (6-rung escalation ladder), `MultiAttemptAttacker`
    (5-variant rotation), plus tree fan-out/prune in `BranchingAttacker`. What remains

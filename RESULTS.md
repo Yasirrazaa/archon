@@ -153,3 +153,26 @@ export ARCHON_ATTACK_PROVIDER_API_KEY=...   # Gemini API key
 export ARCHON_ATTACK_PROVIDER_MODEL=gemini-3.5-flash-lite
 uv run python -c "from archon_benchmarks.llm_tier import run_full_pipeline_benchmark; print(run_full_pipeline_benchmark()['asr_full_pipeline'])"
 ```
+
+## Strict-ASR multi-attempt series (live upstream) — Aug 24, 2026
+
+The compromise-truth companion to the evasion curves above: same AgentDojo tasks, same 5-variant rotation, but now judged by whether a **live Gemini agent actually complies** (`gemini-3.5-flash-lite`, attempt budget 5, seed 42). Pipeline-blocked attempts cost zero upstream calls (74 billed of 135 worst-case).
+
+| Metric | Value |
+|---|---|
+| Tasks | 27 |
+| Evasion rate (past deterministic tier) | **100%** |
+| **Strict ASR (model complied)** | **18.5%** (5/27 tasks) |
+| Median attempts to compliance | 3 |
+
+### The headline finding: evasion ≠ compromise
+
+Every task evades the rule-based tier within 2 attempts (Tier-2 table), yet only 18.5% of tasks produce actual model compliance even at budget 5. **Publishing evasion alone would overstate attacker success by >5×.** This is the quantified version of the CAISI warning — and the reason every Archon report separates the two numbers. Denominator note: Tier-3's 27.2% is per-*attack* (81 attacks); this 18.5% is per-*task* (27 tasks, first compliance wins).
+
+Methodology declared per commitments: attempt_budget=5 · adaptivity=multi-attempt-5-variant-rotation · judge=refusal-heuristic over `gemini-3.5-flash-lite` · upstream_calls=74/135. Reproduce via `archon_benchmarks.strict_asr.run_strict_asr_benchmark(budget=5, seed=42)`.
+
+## LLM-brain attacker — live validation — Aug 24, 2026
+
+First live run of `LlmBrainAttacker` (GOAT-style Observation-Thought-Strategy-Response loop on the provider seam): the brain LLM sees each turn's payload + the target's response/block-reason and adapts the next attack. Validated against `gemini-3.5-flash-lite` as both brain and target: 3 cross-suite goals × 4-turn budget → **0/3 successes**, 1 provider error degraded gracefully to deterministic fallback (mechanism verified end-to-end).
+
+Honest reading: a lite-model brain at budget 4 is a *floor*, not a ceiling — CAISI's 81%-adaptive numbers come from frontier brains at budget 25. The result independently confirms the strict-ASR finding: model-native safety absorbs most post-pipeline pressure. Brain budget is always declared in `BrainResult.budget_declared`; no competitor's GOAT/TAP equivalent discloses theirs.
