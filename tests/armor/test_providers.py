@@ -200,6 +200,70 @@ def test_provider_from_env_defaults_to_openai_compat(monkeypatch):
     assert isinstance(provider, OpenAICompatProvider)
 
 
+# --- provider_from_env: OpenAI-compatible hosted presets ---------------------
+
+
+def test_provider_from_env_openrouter_preset(monkeypatch):
+    from archon_core.providers import provider_from_env
+
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_KIND", "openrouter")
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_API_KEY", "sk-or-env")
+    monkeypatch.delenv("ARCHON_ATTACK_PROVIDER_MODEL", raising=False)
+    provider = provider_from_env(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, json={"choices": []})
+    ))
+    assert isinstance(provider, OpenAICompatProvider)
+    assert provider.base_url == "https://openrouter.ai/api/v1"
+    assert provider.api_key == "sk-or-env"
+    assert provider.model == "google/gemini-2.0-flash-lite-001"
+
+
+def test_provider_from_env_nvidia_preset(monkeypatch):
+    from archon_core.providers import provider_from_env
+
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_KIND", "nvidia")
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_API_KEY", "nvapi-env")
+    monkeypatch.delenv("ARCHON_ATTACK_PROVIDER_MODEL", raising=False)
+    provider = provider_from_env(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, json={"choices": []})
+    ))
+    assert isinstance(provider, OpenAICompatProvider)
+    assert provider.base_url == "https://integrate.api.nvidia.com/v1"
+    assert provider.api_key == "nvapi-env"
+    assert provider.model == "meta/llama-3.3-70b-instruct"
+
+
+def test_provider_from_env_presets_respect_model_override(monkeypatch):
+    from archon_core.providers import provider_from_env
+
+    for kind, model in (
+        ("openrouter", "openai/gpt-4o-mini"),
+        ("nvidia", "nvidia/llama-3.1-nemotron-70b-instruct"),
+    ):
+        monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_KIND", kind)
+        monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_MODEL", model)
+        provider = provider_from_env(transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={"choices": []})
+        ))
+        assert isinstance(provider, OpenAICompatProvider)
+        assert provider.model == model
+
+
+def test_provider_from_env_unknown_kind_falls_back_unchanged(monkeypatch):
+    from archon_core.providers import provider_from_env
+
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_KIND", "totally-unknown")
+    monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_API_KEY", "k")
+    provider = provider_from_env(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, json={"choices": []})
+    ))
+    assert isinstance(provider, OpenAICompatProvider)
+    assert provider.base_url == (
+        "https://generativelanguage.googleapis.com/v1beta/openai"
+    )
+    assert provider.model == "gemini-2.5-flash"
+
+
 def test_plugins_inventory_lists_claude(capsys):
     # the seam inventory must advertise the new provider
     import archon_cli.main as cli_main

@@ -7,8 +7,11 @@ def provider_from_env(transport=None) -> LLMProvider:
     """Build the attack-engine provider from ARCHON_ATTACK_PROVIDER_* env vars.
 
     ARCHON_ATTACK_PROVIDER_KIND: 'anthropic' (native Claude) | 'gemma' (Gemma via
-    Gemini's OpenAI-compat endpoint) | 'openai' (default, any OpenAI-compatible
-    endpoint incl. Gemini's compat API).
+    Gemini's OpenAI-compat endpoint) | 'openrouter' (OpenRouter's OpenAI-wire-
+    compatible /api/v1) | 'nvidia' (NVIDIA NIM's OpenAI-wire-compatible
+    integrate.api.nvidia.com/v1) | 'openai' (default, any OpenAI-compatible
+    endpoint incl. Gemini's compat API). The model is always overridable via
+    ARCHON_ATTACK_PROVIDER_MODEL.
     """
     import os
 
@@ -19,6 +22,20 @@ def provider_from_env(transport=None) -> LLMProvider:
         return ClaudeNativeProvider(
             api_key=api_key or "",
             model=model or "claude-sonnet-4-5",
+            transport=transport,
+        )
+    if kind == "openrouter":
+        return OpenAICompatProvider(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+            model=model or "google/gemini-2.0-flash-lite-001",
+            transport=transport,
+        )
+    if kind == "nvidia":
+        return OpenAICompatProvider(
+            base_url="https://integrate.api.nvidia.com/v1",
+            api_key=api_key,
+            model=model or "meta/llama-3.3-70b-instruct",
             transport=transport,
         )
     default_model = "gemma-3-27b-it" if kind == "gemma" else "gemini-2.5-flash"

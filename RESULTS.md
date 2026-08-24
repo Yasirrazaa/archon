@@ -165,9 +165,11 @@ The compromise-truth companion to the evasion curves above: same AgentDojo tasks
 | **Strict ASR (model complied)** | **18.5%** (5/27 tasks) |
 | Median attempts to compliance | 3 |
 
-### The headline finding: evasion ≠ compromise
+### The headline finding: evasion ≠ compromise (dual ASR, per WASP)
 
 Every task evades the rule-based tier within 2 attempts (Tier-2 table), yet only 18.5% of tasks produce actual model compliance even at budget 5. **Publishing evasion alone would overstate attacker success by >5×.** This is the quantified version of the CAISI warning — and the reason every Archon report separates the two numbers. Denominator note: Tier-3's 27.2% is per-*attack* (81 attacks); this 18.5% is per-*task* (27 tasks, first compliance wins).
+
+This pair of numbers is Archon's implementation of **dual ASR** as formalized by WASP (Wang et al., 2024): *ASR-intermediate* (attack cleared input defenses) reported alongside *ASR-end-to-end* (harmful outcome realized). WASP measured a 17–86% vs 0–17% gap on frontier models; our 100% vs 18.5% gap shows the same effect for defense-stacked agents.
 
 Methodology declared per commitments: attempt_budget=5 · adaptivity=multi-attempt-5-variant-rotation · judge=refusal-heuristic over `gemini-3.5-flash-lite` · upstream_calls=74/135. Reproduce via `archon_benchmarks.strict_asr.run_strict_asr_benchmark(budget=5, seed=42)`.
 
@@ -176,3 +178,42 @@ Methodology declared per commitments: attempt_budget=5 · adaptivity=multi-attem
 First live run of `LlmBrainAttacker` (GOAT-style Observation-Thought-Strategy-Response loop on the provider seam): the brain LLM sees each turn's payload + the target's response/block-reason and adapts the next attack. Validated against `gemini-3.5-flash-lite` as both brain and target: 3 cross-suite goals × 4-turn budget → **0/3 successes**, 1 provider error degraded gracefully to deterministic fallback (mechanism verified end-to-end).
 
 Honest reading: a lite-model brain at budget 4 is a *floor*, not a ceiling — CAISI's 81%-adaptive numbers come from frontier brains at budget 25. The result independently confirms the strict-ASR finding: model-native safety absorbs most post-pipeline pressure. Brain budget is always declared in `BrainResult.budget_declared`; no competitor's GOAT/TAP equivalent discloses theirs.
+
+## InjecAgent benchmark (deterministic tier) — Aug 24, 2026
+
+Second published agentic benchmark, alongside AgentDojo. InjecAgent (Shi et al., arXiv:2403.02691) tests tool-integrated agents against **1,054 injection cases embedded in tool responses**: 510 direct-harm and 544 data-stealing settings across 17 user tools. Unlike AgentDojo's wrappers, InjecAgent's injections are *polite imperative instructions inside JSON tool output* — no override keywords.
+
+| Setting | Cases | Block rate | ASR |
+|---|---|---|---|
+| Direct harm | 510 | 0.0% | 100% |
+| Data stealing | 544 | 0.0% | 100% |
+| **Overall** | **1,054** | **0.0%** | **100%** |
+
+Honest interpretation: the deterministic tier blocks none of these — by design. The rule classifier keys on override/extraction vocabulary; InjecAgent's embedded-polite-instruction style contains none, which is precisely the finding from our AgentDojo `important_instructions`/`document_embed` wrappers (ASR 100% at this tier). This is the empirical case for Archon's LLM defense layers: structural injections require semantic detection, not regex. Methodology: attempt_budget=1 · adaptivity=static · judge=deterministic-rules · zero upstream calls. Reproduce via `archon_benchmarks.injecagent.run_injecagent_benchmark()`.
+
+## Consistency: pass^k over the per-target series — Aug 24, 2026
+
+tau-bench's pass^k metric (Yao et al., arXiv:2406.12045) asks whether results hold across k independent attempts. Applied to our per-target ground-truth series (11 live targets, adaptive attacker, budget 3) across seeds 42/43/44:
+
+| Metric | Value |
+|---|---|
+| Targets reliably exploitable (pass^k) | **11/11** (rate 1.0) |
+| Targets robustly defended (fail^k) | 0 |
+| Seed-inconsistent targets | 0 |
+
+Every target succeeded in all three seeds; aggregate ASR was identical (81.8%) per seed. Reading: in vulnerable configurations these agentic failure modes are **structurally exploitable, not seed-luck** — defenses must be structural too. Reproduce via `archon_benchmarks.passk.run_passk()`.
+
+## R-Judge safety-agreement — Aug 24, 2026
+
+R-Judge (Yuan et al., arXiv:2410.22776) provides 571 real-world agent-interaction records with human safety labels (270 safe / 301 unsafe). This benchmark measures something different from the attack suites: **how well a judge agrees with human safety judgments** — the same judge-reliability crisis CAISI documented ("A Coin Flip for Safety").
+
+| Judge | n | Accuracy | F1 (unsafe) |
+|---|---|---|---|
+| Keyword heuristic (deterministic tier) | 571 | 47.6% | 0.063 |
+| LLM judge (`gemini-3.5-flash-lite`) | see below | | |
+
+The keyword-heuristic floor demonstrates quantitatively why rule-based safety judging fails on naturalistic trajectories — motivating Archon's LLM-layer design and its declared-judge methodology block on every report.
+
+## Methodology alignment with NIST CAISI
+
+NIST CAISI's published agent evaluations (and their cyber-evals harness, built on UK AISI's Inspect framework) established the practices Archon adopts as first-class report fields: multi-attempt budgets with per-task distributions (their 11%→81% single-vs-adaptive result), refusal-aware strict scoring rather than evasion-only reporting, and declared judge methodology. Archon's `measurement` block on every published number is a direct implementation of that evaluation discipline.

@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1321 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1376 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -85,11 +85,11 @@ defense + adversarial proof.
 
 ## External benchmark expansion (Phase E2.9 — see ROADMAP items 55–60)
 
-- [ ] InjecAgent harness (deterministic tool-call grading; second published agentic benchmark)
-- [ ] tau-bench pass^k consistency metric over per-target series
-- [ ] R-Judge harness (LLM-judged, env-gated)
-- [x] Dual-ASR formal labeling + NIST CAISI methodology-alignment citations in RESULTS.md
-- [ ] Multi-provider presets (OpenRouter / NVIDIA NIM) in provider_from_env
+- [x] InjecAgent harness (1,054 cases deterministic: 0% block / 100% ASR published) (deterministic tool-call grading; second published agentic benchmark)
+- [x] tau-bench pass^k (11/11 targets pass^k=1.0 across seeds 42/43/44) consistency metric over per-target series
+- [x] R-Judge harness (heuristic 47.6%/F1 0.063 + live LLM-judged run) (LLM-judged, env-gated)
+- [x] Dual-ASR formal labeling + NIST CAISI alignment citations in RESULTS.md + NIST CAISI methodology-alignment citations in RESULTS.md
+- [x] Multi-provider presets (OpenRouter / NVIDIA NIM kinds in provider_from_env) (OpenRouter / NVIDIA NIM) in provider_from_env
 - [ ] AgentHarm harness (stretch)
 
 ## Remaining before hackathon submission (deadline Aug 31, 5pm PDT)

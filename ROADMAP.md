@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1321 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1376 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -238,11 +238,11 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 *Sources: benchmark-gap analysis vs garak/promptfoo/PyRIT dataset inventories; LANDSCAPE_2026 §4 benchmark adoption table; NIST CAISI cyber-evals methodology review (cloned, capability-axis — cited not run).*
 
-55. **InjecAgent benchmark harness** — run the InjecAgent corpus (direct + indirect injection during tool use, ground-truth tool-call labels → deterministic grading, zero LLM-judge cost); publish block rate / ASR in RESULTS.md alongside AgentDojo. Second published agentic benchmark kills the "one-off" objection.
-56. **tau-bench pass^k consistency metric** — re-run the per-target series across k seeds and report pass^k consistency (models drop hard on this metric per tau-bench); reuses existing target_series infrastructure.
-57. **R-Judge benchmark harness** — real-world unsafe agent trajectories (569 records) scored via the provider-seam LLM judge; env-gated live run + offline stub tests.
-58. **Dual-ASR formal labeling + NIST CAISI alignment citations** — label the existing evasion-vs-strict-ASR results as dual ASR per WASP; cite NIST CAISI evaluation practice (multi-attempt budgets, Inspect harness) as methodology alignment in RESULTS.md. Doc-only, zero cost.
-59. **Multi-provider presets** — OpenRouter (`https://openrouter.ai/api/v1`) and NVIDIA NIM (`https://integrate.api.nvidia.com/v1`) OpenAI-compatible presets in `provider_from_env` (kind `openrouter` / `nvidia`), mirroring the vLLM preset pattern; enables multi-provider benchmark runs without code changes.
+55. ~~**InjecAgent benchmark harness**~~ ✅ **SHIPPED** (wave 9 — injecagent.py harness + committed fixture; full 1,054-case deterministic run published in RESULTS.md (0% block / 100% ASR — embedded-polite injections need LLM layers, consistent with AgentDojo wrappers)) — — run the InjecAgent corpus (direct + indirect injection during tool use, ground-truth tool-call labels → deterministic grading, zero LLM-judge cost); publish block rate / ASR in RESULTS.md alongside AgentDojo. Second published agentic benchmark kills the "one-off" objection.
+56. ~~**tau-bench pass^k consistency metric**~~ ✅ **SHIPPED** (wave 9 — passk.py over per-target series seeds 42/43/44: pass^k 11/11 = 1.0, zero seed-inconsistency; published in RESULTS.md) — — re-run the per-target series across k seeds and report pass^k consistency (models drop hard on this metric per tau-bench); reuses existing target_series infrastructure.
+57. ~~**R-Judge benchmark harness**~~ ✅ **SHIPPED** (wave 9 — rjudge.py w/ heuristic + LLM-judge paths; heuristic agreement published 47.6% acc / F1 0.063; live Gemini-judged run completed same day) — real-world unsafe agent trajectories (569 records) scored via the provider-seam LLM judge; env-gated live run + offline stub tests.
+58. ~~**Dual-ASR formal labeling + NIST CAISI alignment citations**~~ ✅ **SHIPPED** (wave 9 — strict-ASR section formally labeled dual ASR per WASP; NIST CAISI methodology-alignment section added to RESULTS.md) — — label the existing evasion-vs-strict-ASR results as dual ASR per WASP; cite NIST CAISI evaluation practice (multi-attempt budgets, Inspect harness) as methodology alignment in RESULTS.md. Doc-only, zero cost.
+59. ~~**Multi-provider presets**~~ ✅ **SHIPPED** (wave 9 — provider_from_env kinds openrouter (openrouter.ai/api/v1) + nvidia (integrate.api.nvidia.com/v1), model-overridable via env) — — OpenRouter (`https://openrouter.ai/api/v1`) and NVIDIA NIM (`https://integrate.api.nvidia.com/v1`) OpenAI-compatible presets in `provider_from_env` (kind `openrouter` / `nvidia`), mirroring the vLLM preset pattern; enables multi-provider benchmark runs without code changes.
 60. **AgentHarm benchmark harness** *(stretch)* — harmful-behavior tasks with jailbreaks (440-task extended set), judge-scored; only if quota and time allow after 55–59.
 
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
