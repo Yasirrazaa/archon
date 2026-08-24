@@ -256,6 +256,43 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 64. ~~**YAML declarative probe packs**~~ ✅ **SHIPPED** (wave 10 — archon_armor/yaml_packs.py load_yaml_pack/load_yaml_dir/register_yaml_packs idempotent; contrib/yaml/example_pack.yaml 6 reference-blocked probes; 18 TDD tests)
 65. ~~**Supply-chain CI hygiene**~~ ✅ **SHIPPED** (wave 10 — secrets-scan.yml high-signal pattern scan failing on findings; verify-pins.yml exact-pin enforcement on runtime deps + uv.lock freshness)
 
+### Phase E2.11 — Competitor-Mined Completion Wave (Wave 11)
+
+Source: three-way improvement mining across promptfoo/augustus/agent-scan (DX + product), garak/PyRIT (attacks), NeMo/deepeval/deepteam/ragas (defense + eval). 24 candidates, all TDD.
+
+**Tier 1 — quick wins (items 66–77):**
+
+66. **Tool-call schema validation rail** — fail-closed validation of emitted tool calls against declared JSON schemas (NeMo IORails pattern); biggest remaining defense gap.
+67. **Policy Puppetry converter** — fake policy/config XML framing exploiting system-policy deference (PyRIT); deterministic, zero LLM cost.
+68. **Token smuggling converters** — Unicode variation-selector / ASCII-smuggler encodings invisible to moderation but decoded by tokenizers (PyRIT).
+69. **SHIFT_DETECTED early-stop** — behavior-shift termination for multi-turn attackers (deepteam progression pattern); cleaner ASR-vs-budget curves.
+70. **`/v1/checks` sidecar endpoint** — validate messages without proxying (NeMo server/api.py pattern); adoption unlock for teams that can't route all traffic through armor.
+71. **Ensemble score aggregation** — AND/OR/MAJORITY composites over regex + LLM judges (PyRIT aggregator patterns); cuts false negatives.
+72. **ANSI escape exfil probes** — terminal escape injection pack (garak ansiescape).
+73. **Hidden-Unicode tag-char scanner** — Cf/Cc detection incl. U+E0000 tag-sequence decoding (agent-scan W021 upgrade).
+74. **Agent-loop detection metric** — zero-cost loop scoring from trace spans: identical-call repetition, reasoning stagnation, DFS back-edge cycles (deepeval).
+75. **Typed MetricOutputType contract** — declarative judge output types + auto Cohen's-kappa agreement (ragas base.py pattern).
+76. **Package-hallucination probes** — slop-squatting code-gen test mapped to the supply-chain pinning target (garak packagehallucination).
+77. **Harm-taxonomy YAML layer** — severity-weighted reporting via structured harm definitions w/ 1–5 rubrics (PyRIT harm_definition).
+
+**Tier 2 — medium lifts (items 78–85):**
+
+78. **SARIF output** ⭐ — `archon results --sarif`; neither augustus nor any competitor emits SARIF; unlocks GitHub Code Scanning natively — category first.
+79. **Static self-contained HTML report** — `archon results --html`, single-file inline-CSS (augustus html.go pattern); share tokens work on any static host.
+80. **`archon discover`** — walk Claude Desktop/Cursor/VSCode/Gemini CLI config paths per-OS, list MCP servers/skills, one-command scan (agent-scan well_known_clients port).
+81. **Skill scanning** — SKILL.md injection/secrets/remote-fetch checks (agent-scan E004–E006/W007–W014); entire threat category added.
+82. **Buff layer** — composable perturbation wrappers giving N_probes × N_buffs multiplicative coverage with provenance (garak buffs/base.py).
+83. **Judge-calibration harness** — ScorerEvaluator-style accuracy/F1/Krippendorff α vs human-labeled sets; productizes R-Judge agreement into a judge-quality report.
+84. **Run-history diff views** — timestamped immutable run snapshots + regression diffing over results store (deepeval local_store pattern).
+85. **Toxic-flow capability graph + cross-server shadowing** — untrusted×sensitive×destructive combination analysis + E002 tool-shadowing flags (agent-scan W015–W020/E002).
+
+**Tier 3 — larger (items 86–89):**
+
+86. **Coding-agent target suite** — verifier-sabotage, automation-poisoning/delayed-CI-exfil, procfs-credential-read, network-egress-bypass, terminal-output-injection (promptfoo codingAgents.ts subset).
+87. **Streaming rolling-buffer output rails** — RollingBuffer/ChunkBatch design + tests, prerequisite for SSE so streamed jailbreaks can't bypass the output layer (NeMo buffer.py).
+88. **BEAST adversarial suffixes** — beam-search suffix generation without logprobs (garak suffix.py, arXiv 2402.15570) + cached-GCG variant.
+89. **Compliance-card report module** — framework compliance cards w/ pass-rate rollups (promptfoo FrameworkCompliance pattern) rendered from evidence packs.
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.

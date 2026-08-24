@@ -164,6 +164,13 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] YAML declarative probe packs (community format) (shipped wave 10)
 - [x] Supply-chain CI hygiene (secrets-scan + verify-pins workflows) (shipped wave 10)
 
+## Competitor-mined completion wave (Phase E2.11 — see ROADMAP items 66–89)
+
+24 improvements mined from promptfoo/augustus/agent-scan/garak/PyRIT/NeMo/deepeval/deepteam/ragas source:
+- [ ] Tier 1 quick wins: tool-call schema rail, Policy Puppetry, token smuggling, SHIFT_DETECTED early-stop, /v1/checks sidecar, ensemble aggregation, ANSI exfil probes, hidden-unicode scanner, agent-loop metric, MetricOutputType contract, package-hallucination probes, harm-taxonomy layer
+- [ ] Tier 2: SARIF output ⭐ (category first), static HTML report, archon discover, skill scanning, buff layer, judge-calibration harness, run-history diffs, toxic-flow graph
+- [ ] Tier 3: coding-agent target suite, streaming rolling-buffer rails, BEAST suffixes, compliance-card report module
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.
