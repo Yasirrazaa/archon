@@ -77,6 +77,29 @@ class TestReleaseWorkflow:
         assert "build" in blob, "release must build distributions"
         assert "sbom" in blob.lower(), "release must produce an SBOM"
 
+    def test_release_signs_artifacts_with_cosign(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text()
+        assert "cosign" in text.lower(), "release must sign artifacts with cosign"
+        assert "cosign-installer" in text or "sign-blob" in text, (
+            "release must install cosign and/or sign-blob the dist artifacts"
+        )
+        assert "sigstore/cosign-installer" in text, (
+            "cosign must be installed via sigstore/cosign-installer action"
+        )
+
+    def test_release_signing_keeps_existing_steps(self) -> None:
+        rel = _load("release.yml")
+        jobs = str(rel["jobs"]).lower()
+        assert "uv build" in jobs, "signing must not remove the build step"
+        assert "sbom" in jobs, "signing must not remove the SBOM step"
+        assert "softprops/action-gh-release" in jobs, (
+            "signing must not remove the release-attachment step"
+        )
+        signature_assets = str(rel["jobs"])
+        assert ".sig" in signature_assets and ".cert" in signature_assets, (
+            "signature and certificate files must be produced/uploaded"
+        )
+
 
 class TestLocalToolingConfig:
     def test_ruff_configured_in_pyproject(self) -> None:

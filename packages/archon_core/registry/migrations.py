@@ -60,6 +60,13 @@ MIGRATIONS: list[Migration] = [
             "CREATE INDEX IF NOT EXISTS idx_battles_agent_id ON battles(agent_id)",
         ],
     ),
+    Migration(
+        version=4,
+        name="battles_tenant_id",
+        statements=[
+            "ALTER TABLE battles ADD COLUMN tenant_id TEXT NOT NULL DEFAULT ''",
+        ],
+    ),
 ]
 
 _MIGRATIONS_TABLE_SQL = """

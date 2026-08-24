@@ -1,5 +1,5 @@
 # ARCHON — Comparative Security Report
-**Date:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 992 passed / 3 skipped
+**Date:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1065 passed / 3 skipped
 
 ---
 
@@ -52,7 +52,7 @@ defenses with per-layer evidence and a policy gate. That is our wedge.
 | Distribution breadth | Homebrew formula + npm wrapper (`npx archon-security`) around the uv-installed MIT CLI | PyRIT/garak are pip-only; DeepTeam requires Confident cloud account for full flow |
 | Live memory/vector-store poisoning | Plants real poison entries in a live store; benign user queries retrieve them and the RAG target obeys; remediation scrubbing verified closed-loop | promptfoo's `agentic:memory-poisoning` is a simulated two-step scenario; nobody else touches real stores |
 
-System health: **992 passed / 3 skipped** (skips: live-Postgres integration behind
+System health: **1065 passed / 3 skipped** (skips: live-Postgres integration behind
 `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 ---

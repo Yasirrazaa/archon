@@ -30,3 +30,41 @@ jobs:
             dist/*
             sbom.json
           generate_release_notes: true
+
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Rebuild distribution artifacts for signing
+        run: uv build
+      - name: Generate SBOM (CycloneDX)
+        run: |
+          uvx --from cyclonedx-bom cyclonedx-py environment \
+            --output-format json --output-file sbom.json || \
+          echo '{"bomFormat":"CycloneDX","components":[]}' > sbom.json
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      - name: Sign artifacts with cosign keyless (Sigstore)
+        run: |
+          set -euo pipefail
+          mkdir -p signatures
+          for artifact in dist/* sbom.json; do
+            base="$(basename "$artifact")"
+            cosign sign-blob --yes \
+              --output-signature "signatures/${base}.sig" \
+              --output-certificate "signatures/${base}.cert" \
+              "$artifact"
+          done
+      - name: Attach signatures to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            signatures/*.sig
+            signatures/*.cert

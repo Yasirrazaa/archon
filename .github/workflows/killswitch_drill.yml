@@ -1,0 +1,39 @@
+name: Kill-Switch Drill
+
+on:
+  schedule:
+    - cron: "0 4 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Sync environment
+        run: uv sync
+      - name: Run kill-switch revocation drill
+        run: |
+          uv run python - <<'PY'
+          from archon_core.security.killswitch import KillSwitch
+
+          ks = KillSwitch()
+
+          # Trigger revocation for a drill agent.
+          result = ks.trigger("drill-agent")
+          assert result.mttc_ms < 1000, (
+              f"kill-switch MTTC exceeded budget: {result.mttc_ms}ms"
+          )
+          print(f"revoked in {result.mttc_ms}ms")
+
+          # Restore must succeed.
+          restored = ks.restore("drill-agent")
+          assert restored, "kill-switch restore failed"
+          print("restored ok")
+          PY

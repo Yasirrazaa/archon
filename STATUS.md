@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 992 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1065 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -118,19 +118,19 @@ Derived from the Aug 23 OWASP deep review (Red-Teaming Taxonomy v1.0 + State of 
 
 Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 RFP essentials. All deploy-independent.
 
-- [ ] Devpost submission package (`DEVPOST.md`)
-- [ ] Demo video script (`DEMO_SCRIPT.md`)
-- [ ] Blog/social post draft (`#AllThingsAgenticHackathon`, bonus points)
-- [ ] Gemma provider option (`ARCHON_ATTACK_PROVIDER_KIND=gemma`, bonus points)
-- [ ] Signed releases (cosign/Sigstore in release.yml)
-- [ ] Kill-switch CI drill (scheduled workflow w/ MTTC assertion)
-- [ ] Shadow mode (evaluate-not-enforce would-block logging)
-- [ ] Full-pipeline benchmark tier (env-gated LLM-layer run)
-- [ ] Multi-attempt benchmark series (CAISI attempt-budget curves)
-- [ ] Macaroon-style attenuating tokens (delegation caveat verification)
-- [ ] Google ADK adapter (battle target; also mandatory-requirement evidence)
-- [ ] GitHub Pages docs workflow
-- [ ] Multi-tenancy v1 (tenant-scoped results/registry)
+- [x] Devpost submission package (shipped, wave 6 — `DEVPOST.md`)
+- [x] Demo video script (shipped, wave 6 — `DEMO_SCRIPT.md`)
+- [x] Blog/social post draft (shipped, wave 6) (`#AllThingsAgenticHackathon`, bonus points)
+- [x] Gemma provider option (shipped, wave 6) (`ARCHON_ATTACK_PROVIDER_KIND=gemma`, bonus points)
+- [x] Signed releases (shipped, wave 6) (cosign/Sigstore in release.yml)
+- [x] Kill-switch CI drill (shipped, wave 6) (scheduled workflow w/ MTTC assertion)
+- [x] Shadow mode (shipped, wave 6) (evaluate-not-enforce would-block logging)
+- [x] Full-pipeline benchmark tier (shipped, wave 6) (env-gated LLM-layer run)
+- [x] Multi-attempt benchmark series (shipped, wave 6) (CAISI attempt-budget curves)
+- [x] Macaroon-style attenuating tokens (shipped, wave 6) (delegation caveat verification)
+- [x] Google ADK adapter (shipped, wave 6) (battle target; also mandatory-requirement evidence)
+- [x] GitHub Pages docs workflow (shipped, wave 6)
+- [x] Multi-tenancy v1 (shipped, wave 6) (tenant-scoped results/registry)
 - [ ] FinBot CTF adapter (deferred — needs external repo clone)
 
 ## Document map

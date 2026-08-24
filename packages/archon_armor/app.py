@@ -93,11 +93,16 @@ def create_app(
     rate_limiter: TokenBucketRateLimiter | None = None,
     audit: SqliteAuditTrail | None = None,
     kill_switch=None,
+    shadow_mode: bool = False,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier.
     kill_switch: optional archon_core.security.killswitch.KillSwitch —
-    revoked agents receive 503 on every route until restored."""
+    revoked agents receive 503 on every route until restored.
+    shadow_mode=True evaluates the defense pipeline but never enforces:
+    would-block verdicts are recorded as 'request.shadow_would_block' audit
+    events and the request proceeds upstream — lets operators measure block
+    rates on mirrored traffic before taking enforcement risk."""
     app = FastAPI(title="archon-armor", version="0.1.0")
     app.state.tracer = tracer
     identity = identity or AllowAllVerifier()
@@ -193,18 +198,30 @@ def create_app(
             "execution_mode": exchange.metadata.get("execution_mode", ""),
         }
         if exchange.blocked:
-            if request_span is not None:
-                tracer.end_span(request_span, attributes={**blocked_attrs})
-            if audit is not None:
-                audit.append("request.blocked", card.agent_id, actor="armor",
-                             details={"reason": exchange.block_reason})
-            body = _completion_shape(payload, _REFUSAL_CONTENT)
-            body["archon"] = {
-                "blocked": True,
-                "block_reason": exchange.block_reason,
-                "agent_id": card.agent_id,
-            }
-            return JSONResponse(body, headers={"x-archon-blocked": "true"})
+            if shadow_mode:
+                # Shadow mode (E2.7 item 37): record the would-block verdict
+                # but let the request proceed — evaluate-not-enforce.
+                if request_span is not None:
+                    tracer.end_span(
+                        request_span,
+                        attributes={**blocked_attrs, "shadow_would_block": True},
+                    )
+                if audit is not None:
+                    audit.append("request.shadow_would_block", card.agent_id, actor="armor",
+                                 details={"reason": exchange.block_reason})
+            else:
+                if request_span is not None:
+                    tracer.end_span(request_span, attributes={**blocked_attrs})
+                if audit is not None:
+                    audit.append("request.blocked", card.agent_id, actor="armor",
+                                 details={"reason": exchange.block_reason})
+                body = _completion_shape(payload, _REFUSAL_CONTENT)
+                body["archon"] = {
+                    "blocked": True,
+                    "block_reason": exchange.block_reason,
+                    "agent_id": card.agent_id,
+                }
+                return JSONResponse(body, headers={"x-archon-blocked": "true"})
 
         # --- 4. Forward guarded request to upstream ---------------------------------
         forwarded = copy.deepcopy(payload)

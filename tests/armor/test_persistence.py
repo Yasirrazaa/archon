@@ -77,6 +77,59 @@ class TestMigrationFramework:
         assert migrator.apply_all() == [m.version for m in MIGRATIONS]
         assert migrator.applied_versions() == {m.version for m in MIGRATIONS}
 
+    def test_migration_v4_adds_tenant_column_on_fresh_db(self, tmp_path):
+        path = str(tmp_path / "m.db")
+        SchemaMigrator(path).apply_all()
+        conn = sqlite3.connect(path)
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(battles)").fetchall()}
+        assert "tenant_id" in cols
+
+    def test_upgrade_from_v3_adds_tenant_without_data_loss(self, tmp_path):
+        path = str(tmp_path / "m.db")
+        # Construct a genuine v3-era database by applying only v1-v3 SQL.
+        conn = sqlite3.connect(path)
+        from archon_core.registry.migrations import _MIGRATIONS_TABLE_SQL
+
+        conn.execute(_MIGRATIONS_TABLE_SQL)
+        for m in MIGRATIONS:
+            if m.version > 3:
+                continue
+            for stmt in m.statements:
+                conn.execute(stmt)
+            conn.execute(
+                "INSERT INTO schema_migrations (version, name, applied_at)"
+                " VALUES (?, ?, ?)",
+                (m.version, m.name, "2020-01-01T00:00:00+00:00"),
+            )
+        conn.execute(
+            "INSERT INTO battles (battle_id, agent_id, status, summary_json)"
+            " VALUES ('b-legacy', 'agent-a', 'done', '{}')"
+        )
+        conn.commit()
+        conn.close()
+
+        # Re-open and migrate: v4 applies, legacy row survives.
+        newly = SchemaMigrator(path).apply_all()
+        assert 4 in newly
+        conn = sqlite3.connect(path)
+        rows = conn.execute(
+            "SELECT battle_id, agent_id FROM battles"
+        ).fetchall()
+        assert rows == [("b-legacy", "agent-a")]
+        cols = {r[1]: r for r in conn.execute("PRAGMA table_info(battles)").fetchall()}
+        assert "tenant_id" in cols
+        # Legacy rows read back as '' (constant default).
+        tenants = [r[0] for r in conn.execute(
+            "SELECT tenant_id FROM battles WHERE battle_id = 'b-legacy'"
+        ).fetchall()]
+        assert tenants == [""]
+
+    def test_migration_v4_is_idempotent(self, tmp_path):
+        path = str(tmp_path / "m.db")
+        SchemaMigrator(path).apply_all()
+        second = SchemaMigrator(path).apply_all()
+        assert 4 not in second
+
 
 # ---------------------------------------------------------------------------
 # ResultsStore
@@ -149,6 +202,98 @@ class TestResultsStore:
     def test_resolve_unknown_token_returns_none(self, tmp_path):
         store = ResultsStore(str(tmp_path / "results.db"))
         assert store.resolve_share("deadbeefdeadbeef") is None
+
+
+# ---------------------------------------------------------------------------
+# Tenant scoping (Sprint E2.7 item 43)
+# ---------------------------------------------------------------------------
+
+
+class TestTenantScoping:
+    def test_save_with_tenant_id_is_stored(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-1", "agent-a", {"blocked": 1}, tenant_id="acme")
+        got = store.get_battle("b-1")
+        assert got is not None
+        assert got["tenant_id"] == "acme"
+
+    def test_save_without_tenant_defaults_to_default(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-1", "agent-a", {})
+        assert store.get_battle("b-1")["tenant_id"] == "default"
+
+    def test_list_filter_by_tenant_isolates_tenants(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-a1", "agent-a", {}, tenant_id="tenant-a")
+        store.save_battle("b-b1", "agent-b", {}, tenant_id="tenant-b")
+        store.save_battle("b-a2", "agent-c", {}, tenant_id="tenant-a")
+
+        only_a = store.list_battles(tenant_id="tenant-a")
+        assert {r["battle_id"] for r in only_a} == {"b-a1", "b-a2"}
+        only_b = store.list_battles(tenant_id="tenant-b")
+        assert [r["battle_id"] for r in only_b] == ["b-b1"]
+        # Tenant + agent filters compose.
+        both = store.list_battles(agent_id="agent-a", tenant_id="tenant-a")
+        assert [r["battle_id"] for r in both] == ["b-a1"]
+
+    def test_list_without_tenant_filter_sees_all(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-a", "agent-a", {}, tenant_id="tenant-a")
+        store.save_battle("b-b", "agent-b", {}, tenant_id="tenant-b")
+        store.save_battle("b-d", "agent-d", {})  # default tenant
+        rows = store.list_battles()
+        assert {r["battle_id"] for r in rows} == {"b-a", "b-b", "b-d"}
+
+    def test_get_battle_includes_tenant_id_key(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-1", "agent-a", {}, tenant_id="acme")
+        record = store.get_battle("b-1")
+        assert "tenant_id" in record
+
+    def test_upsert_updates_tenant_id(self, tmp_path):
+        store = ResultsStore(str(tmp_path / "results.db"))
+        store.save_battle("b-1", "agent-a", {}, tenant_id="tenant-old")
+        store.save_battle("b-1", "agent-a", {"v": 2}, tenant_id="tenant-new")
+        got = store.get_battle("b-1")
+        assert got["tenant_id"] == "tenant-new"
+        assert len(store.list_battles()) == 1
+        # Reassignment is visible from the new tenant's filter, not the old.
+        assert len(store.list_battles(tenant_id="tenant-new")) == 1
+        assert store.list_battles(tenant_id="tenant-old") == []
+
+    def test_legacy_store_rows_read_back_with_legacy_tenant(self, tmp_path):
+        """A pre-v4 battle_results db upgrades transparently and keeps data."""
+        import sqlite3 as _sq
+
+        db = tmp_path / "legacy.db"
+        conn = _sq.connect(str(db))
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS battle_results (
+                battle_id TEXT PRIMARY KEY,
+                agent_id TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                share_token TEXT NOT NULL UNIQUE
+            )
+            """
+        )
+        conn.execute(
+            "INSERT INTO battle_results (battle_id, agent_id, summary_json,"
+            " created_at, share_token) VALUES ('b-legacy', 'ag', '{}', 't0', 'tok')"
+        )
+        conn.commit()
+        conn.close()
+
+        store = ResultsStore(str(db))
+        got = store.get_battle("b-legacy")
+        assert got is not None
+        assert got["battle_id"] == "b-legacy"
+        assert got["tenant_id"] == ""
+        # Legacy '' matches only explicit '' in filters (exact-match semantics).
+        assert len(store.list_battles()) == 1
+        assert store.list_battles(tenant_id="default") == []
+        assert len(store.list_battles(tenant_id="")) == 1
 
 
 # ---------------------------------------------------------------------------

@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-992 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1065 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -200,23 +200,23 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 30. ~~**Docs site + advisory program**~~ ✅ **SHIPPED** (wave 5) — MkDocs site generated from existing markdown; `security@` contact + coordinated advisory publishing (enterprise rating gap).
     - *Effort:* 1 week
 
-### Phase E2.7 — Submission Package & Enterprise Quick Wins (pre-deadline sprint)
+### Phase E2.7 — Submission Package & Enterprise Quick Wins (pre-deadline sprint) — **COMPLETE**
 
 > Sources: enterprise A+ ladder analysis (Aug 24) against docs/LANDSCAPE_2026.md RFP essentials; hackathon bonus-point list. All items are deploy-independent.
 
-31. **Devpost submission package** — `DEVPOST.md`: project description, what-it-does, how-we-built-it, judging-criteria alignment copy, architecture description ready to paste into Devpost.
-32. **Demo video script** — `DEMO_SCRIPT.md`: beat-by-beat ~4-min script with exact commands, expected outputs, and screenshot mapping (Cloud Trace span tree = primary judge proof).
-33. **Blog/social post** — public post draft tagged #AllThingsAgenticHackathon (bonus points): the closed-loop security story.
-34. **Gemma provider option** — `ARCHON_ATTACK_PROVIDER_KIND=gemma` maps to the Gemini OpenAI-compat endpoint with a Gemma model default (hackathon bonus: Gemma integration).
-35. **Signed releases** — cosign/Sigstore keyless signing step in release.yml; artifacts published with signatures (supply-chain trust gate for hyperscaler buyers).
-36. **Kill-switch CI drill** — scheduled workflow running an automated kill-switch drill with MTTC assertion (OWASP survival capability: "tested monthly at agent speed").
-37. **Shadow mode** — armor evaluates every defense layer and logs would-block verdicts without enforcing, so enterprises measure block rates on mirrored traffic before taking enforcement risk.
-38. **Full-pipeline benchmark tier** — env-gated LLM-layer benchmark run in archon_benchmarks; publishes real full-pipeline ASR the moment an API key is present (closes the deterministic-tier-only credibility gap).
-39. **Multi-attempt benchmark series** — adaptive attacker (CAISI methodology, attempt budget ≤25) over the AgentDojo harness; publishes attempt-budget curves per RESULTS.md methodology commitments.
-40. **Macaroon-style attenuating tokens** — caveat-chain verification for agent credentials (delegation narrowing, offline subsumption checks); nobody in the landscape ships this.
-41. **Google ADK adapter** — target adapter wrapping an ADK agent as a battle target (also strengthens the mandatory Google-Agent-Framework requirement).
-42. **GitHub Pages docs workflow** — publishes the existing MkDocs site on push (docs site goes live without any GCP deploy).
-43. **Multi-tenancy v1** — tenant-scoped results store and registry scoping (`tenant_id` on battles/results/agents); first step toward the biggest enterprise RFP gap.
+31. ~~**Devpost submission package**~~ ✅ **SHIPPED** (wave 6) — `DEVPOST.md`: project description, what-it-does, how-we-built-it, judging-criteria alignment copy, architecture description ready to paste into Devpost.
+32. ~~**Demo video script**~~ ✅ **SHIPPED** (wave 6) — `DEMO_SCRIPT.md`: beat-by-beat ~4-min script with exact commands, expected outputs, and screenshot mapping (Cloud Trace span tree = primary judge proof).
+33. ~~**Blog/social post**~~ ✅ **SHIPPED** (wave 6) — public post draft tagged #AllThingsAgenticHackathon (bonus points): the closed-loop security story.
+34. ~~**Gemma provider option**~~ ✅ **SHIPPED** (wave 6) — `ARCHON_ATTACK_PROVIDER_KIND=gemma` maps to the Gemini OpenAI-compat endpoint with a Gemma model default (hackathon bonus: Gemma integration).
+35. ~~**Signed releases**~~ ✅ **SHIPPED** (wave 6) — cosign/Sigstore keyless signing step in release.yml; artifacts published with signatures (supply-chain trust gate for hyperscaler buyers).
+36. ~~**Kill-switch CI drill**~~ ✅ **SHIPPED** (wave 6) — scheduled workflow running an automated kill-switch drill with MTTC assertion (OWASP survival capability: "tested monthly at agent speed").
+37. ~~**Shadow mode**~~ ✅ **SHIPPED** (wave 6) — armor evaluates every defense layer and logs would-block verdicts without enforcing, so enterprises measure block rates on mirrored traffic before taking enforcement risk.
+38. ~~**Full-pipeline benchmark tier**~~ ✅ **SHIPPED** (wave 6) — env-gated LLM-layer benchmark run in archon_benchmarks; publishes real full-pipeline ASR the moment an API key is present (closes the deterministic-tier-only credibility gap).
+39. ~~**Multi-attempt benchmark series**~~ ✅ **SHIPPED** (wave 6) — adaptive attacker (CAISI methodology, attempt budget ≤25) over the AgentDojo harness; publishes attempt-budget curves per RESULTS.md methodology commitments.
+40. ~~**Macaroon-style attenuating tokens**~~ ✅ **SHIPPED** (wave 6) — caveat-chain verification for agent credentials (delegation narrowing, offline subsumption checks); nobody in the landscape ships this.
+41. ~~**Google ADK adapter**~~ ✅ **SHIPPED** (wave 6) — target adapter wrapping an ADK agent as a battle target (also strengthens the mandatory Google-Agent-Framework requirement).
+42. ~~**GitHub Pages docs workflow**~~ ✅ **SHIPPED** (wave 6) — publishes the existing MkDocs site on push (docs site goes live without any GCP deploy).
+43. ~~**Multi-tenancy v1**~~ ✅ **SHIPPED** (wave 6) — tenant-scoped results store and registry scoping (`tenant_id` on battles/results/agents); first step toward the biggest enterprise RFP gap.
 44. **FinBot CTF adapter** ⏸️ *remains deferred* (needs external repo clone + research).
 
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
