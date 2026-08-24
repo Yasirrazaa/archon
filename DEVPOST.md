@@ -43,6 +43,7 @@ Fleet operators get `archon fleet --ci` as a merge-blocking policy gate, a web d
 | Per-target ground-truth series (11 live targets) | ASR 81.8%, verified by environment state diffs |
 | tau-bench pass^k consistency (3 seeds) | 11/11 targets pass^k = 1.0 |
 | R-Judge judge agreement (571 records) | **89.2% accuracy / F1 0.893** — at the human ceiling (89.07%); GPT-4o's published F1 is 74.4% |
+| FinBot CTF challenge suite (7 vectors, offline sim) | vulnerable ASR 100% (7/7 flags) vs defended 0% — modeled from the official OWASP-referenced challenge YAMLs |
 
 No competitor publishes attempt budgets, judge methods, or dual-ASR breakdowns. We publish all of them.
 
