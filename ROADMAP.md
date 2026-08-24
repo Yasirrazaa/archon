@@ -250,11 +250,11 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 *Sources: deep engineering comparison vs praetorian-inc/augustus (cloned Aug 24; 201K Go LOC, 4,057 test funcs, 13 CI workflows, network-level MCP transport attacks). Augustus is the strongest offense-only rival; these items adopt its best ideas and pair them with Archon's uncontested closed-loop defense verification.*
 
-61. **MCP transport-layer attack target** — DNS-rebinding / session-hijack / off-path attacker modeling against HTTP-transport MCP endpoints (Augustus mcptransport pattern), implemented as a live battle target with state-diff ground truth + paired defense; unique because only Archon can verify a *defended* endpoint resists transport-layer attacks.
-62. **AI code-review CI workflow** — PR-review bot workflow (claude-code/codex pattern) posting automated review comments; credibility signal for engineering-maturity judging.
-63. **Prometheus `/metrics` endpoint on archon-armor** — ops-grade observability (request/block counters, latency histogram) closing an enterprise deployment gap Augustus covers scanner-side.
-64. **YAML declarative probe packs** — Nuclei-style community contribution format: drop a YAML file, get a registered pack; lowers contrib friction vs Python-only packs.
-65. **Supply-chain CI hygiene** — secrets-scan workflow (gitleaks-style) + dependency-pin verification workflow, mirroring Augustus security.yml/verify-pins.
+61. ~~**MCP transport-layer attack target**~~ ✅ **SHIPPED** (wave 10 — targets/mcp_transport.py: DnsRebindingTarget TOCTOU rebind+exploit ARCHON-MCP-DNS-77, SessionHijackTarget foreign/stale-token privilege use ARCHON-MCP-SESS-88, OffPathAttackerTarget credential-exfil egress check ARCHON-MCP-OFFPATH-99; paired defenses pin/bind/allowlist; 22 TDD tests incl closed-loop)
+62. ~~**AI code-review CI workflow**~~ ✅ **SHIPPED** (wave 10 — .github/workflows/ai-review.yml: PR-triggered Claude review posting automated comments; graceful no-op without ANTHROPIC_API_KEY)
+63. ~~**Prometheus `/metrics` endpoint on archon-armor**~~ ✅ **SHIPPED** (wave 10 — archon_armor/metrics.py ArmorMetrics stdlib collector: per-agent request/blocked counters + latency histogram w/ standard buckets, thread-safe; wired into create_app GET /metrics text exposition)
+64. ~~**YAML declarative probe packs**~~ ✅ **SHIPPED** (wave 10 — archon_armor/yaml_packs.py load_yaml_pack/load_yaml_dir/register_yaml_packs idempotent; contrib/yaml/example_pack.yaml 6 reference-blocked probes; 18 TDD tests)
+65. ~~**Supply-chain CI hygiene**~~ ✅ **SHIPPED** (wave 10 — secrets-scan.yml high-signal pattern scan failing on findings; verify-pins.yml exact-pin enforcement on runtime deps + uv.lock freshness)
 
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 

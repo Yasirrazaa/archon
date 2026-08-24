@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1421 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1485 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -50,7 +50,7 @@ numbering authority — not engineering hygiene.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,421
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,485
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -158,11 +158,11 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 
 ## Augustus-derived hardening (Phase E2.10 — see ROADMAP items 61–65)
 
-- [ ] MCP transport-layer attack target (DNS rebinding / session hijack / off-path attacker, closed-loop verified)
-- [ ] AI code-review CI workflow (PR review bot)
-- [ ] Prometheus `/metrics` endpoint on archon-armor
-- [ ] YAML declarative probe packs (community format)
-- [ ] Supply-chain CI hygiene (secrets-scan + verify-pins workflows)
+- [x] MCP transport-layer attack target (DNS rebinding / session hijack / off-path attacker, closed-loop verified) (shipped wave 10)
+- [x] AI code-review CI workflow (PR review bot) (shipped wave 10)
+- [x] Prometheus `/metrics` endpoint on archon-armor (shipped wave 10)
+- [x] YAML declarative probe packs (community format) (shipped wave 10)
+- [x] Supply-chain CI hygiene (secrets-scan + verify-pins workflows) (shipped wave 10)
 
 ## Document map
 

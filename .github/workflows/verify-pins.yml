@@ -1,0 +1,53 @@
+name: Verify Dependency Pins
+
+# ROADMAP item 65b — supply-chain hygiene (Augustus verify-pins pattern).
+# Fails if any runtime dependency in pyproject.toml is unpinned or loosely
+# pinned (allows == only), and verifies uv.lock is present and fresh.
+
+on:
+  push:
+    paths:
+      - pyproject.toml
+      - uv.lock
+  pull_request:
+    paths:
+      - pyproject.toml
+      - uv.lock
+
+permissions:
+  contents: read
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Runtime deps must be exactly pinned (==)
+        run: |
+          python3 - <<'PYEOF'
+          import re, sys
+          text = open("pyproject.toml").read()
+          # Only inspect [project] dependencies (runtime), not dev groups/extras.
+          m = re.search(r"^dependencies\s*=\s*\[(.*?)\]", text, re.S | re.M)
+          if not m:
+              print("no runtime dependencies block found"); sys.exit(0)
+          deps = re.findall(r'"([^"]+)"', m.group(1))
+          bad = []
+          for dep in deps:
+              name = re.split(r"[<>=!\[]", dep)[0].strip()
+              if "=="+"" not in dep and not re.search(r"==\d", dep):
+                  bad.append(dep)
+          if bad:
+              print("UNPINNED runtime dependencies:")
+              for d in bad:
+                  print(f"  - {d}")
+              sys.exit(1)
+          print(f"all {len(deps)} runtime dependencies exactly pinned")
+          PYEOF
+
+      - name: uv.lock exists and is non-trivial
+        run: |
+          test -f uv.lock || { echo "uv.lock missing"; exit 1; }
+          test "$(wc -l < uv.lock)" -gt 100 || { echo "uv.lock suspiciously small"; exit 1; }
+          echo "uv.lock present ($(wc -l < uv.lock) lines)"

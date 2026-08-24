@@ -31,6 +31,7 @@ from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from .battles import BattleManager
+from .metrics import ArmorMetrics
 from .probes import UnknownPackError, get_pack
 from .upstream import LLMUpstream, UpstreamError
 
@@ -94,6 +95,7 @@ def create_app(
     audit: SqliteAuditTrail | None = None,
     kill_switch=None,
     shadow_mode: bool = False,
+    metrics: ArmorMetrics | None = None,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier.
@@ -105,12 +107,19 @@ def create_app(
     rates on mirrored traffic before taking enforcement risk."""
     app = FastAPI(title="archon-armor", version="0.1.0")
     app.state.tracer = tracer
+    metrics = metrics or ArmorMetrics()
     identity = identity or AllowAllVerifier()
     battles = battles or BattleManager(registry, tracer=tracer)
 
     @app.get("/healthz")
     def healthz() -> dict:
         return {"status": "ok"}
+
+    @app.get("/metrics")
+    def prometheus_metrics() -> Any:
+        from fastapi.responses import PlainTextResponse
+
+        return PlainTextResponse(metrics.render(), media_type="text/plain; version=0.0.4")
 
     @app.post("/v1/chat/completions")
     async def chat_completions(request: Request) -> JSONResponse:
@@ -154,9 +163,16 @@ def create_app(
             else None
         )
         try:
-            return await _handle_chat(
-                raw_body, card, upstream, tracer, request_span
+            import time as _time
+
+            _t0 = _time.perf_counter()
+            response = await _handle_chat(raw_body, card, upstream, tracer, request_span)
+            metrics.observe_request(
+                agent_id=agent_id,
+                blocked=response.headers.get("x-archon-blocked") == "true",
+                latency_ms=(_time.perf_counter() - _t0) * 1000.0,
             )
+            return response
         except UpstreamError as exc:
             if request_span is not None:
                 tracer.end_span(request_span, attributes={"error": str(exc)})
