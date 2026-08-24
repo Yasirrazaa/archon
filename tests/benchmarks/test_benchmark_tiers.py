@@ -178,3 +178,27 @@ class TestFullPipelineTier:
 
         report = llm_tier.run_full_pipeline_benchmark(target=_T())
         json.dumps(report)  # must not raise
+
+    def test_single_event_loop_across_all_probes(self, monkeypatch):
+        """Regression: per-probe asyncio.run() closed the loop under a live
+        httpx AsyncClient (RuntimeError: Event loop is closed on call #3).
+        All sends must happen on ONE event loop."""
+        import asyncio
+
+        from archon_benchmarks import llm_tier
+
+        monkeypatch.setenv("ARCHON_ATTACK_PROVIDER_API_KEY", "fake-key")
+        loops: list[int] = []
+
+        class _LoopRecordingTarget:
+            async def send(self, payload: str):
+                loops.append(id(asyncio.get_running_loop()))
+                from archon_core.targets.base import TargetResponse
+
+                return TargetResponse(
+                    content="I cannot assist with that request.", blocked=False
+                )
+
+        llm_tier.run_full_pipeline_benchmark(target=_LoopRecordingTarget())
+        assert len(loops) > 2  # corpus reaches the target multiple times
+        assert len(set(loops)) == 1  # exactly one event loop for the whole run

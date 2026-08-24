@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1259 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1260 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -125,7 +125,7 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Signed releases (shipped, wave 6) (cosign/Sigstore in release.yml)
 - [x] Kill-switch CI drill (shipped, wave 6) (scheduled workflow w/ MTTC assertion)
 - [x] Shadow mode (shipped, wave 6) (evaluate-not-enforce would-block logging)
-- [x] Full-pipeline benchmark tier (shipped, wave 6) (env-gated LLM-layer run)
+- [x] Full-pipeline benchmark tier (shipped, wave 6; **RUN Aug 24** — live Gemini full-pipeline ASR 27.2% published in RESULTS.md)
 - [x] Multi-attempt benchmark series (shipped, wave 6) (CAISI attempt-budget curves)
 - [x] Macaroon-style attenuating tokens (shipped, wave 6) (delegation caveat verification)
 - [x] Google ADK adapter (shipped, wave 6) (battle target; also mandatory-requirement evidence)

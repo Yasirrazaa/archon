@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1259 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1260 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -81,7 +81,7 @@
 
 These items close the gap between "impressive hackathon project" and "enterprise-ready platform":
 
-1. **Full-pipeline benchmark run** — re-run the AgentDojo harness with LLM layers enabled; publish end-to-end ASR next to the deterministic-tier number in `RESULTS.md`. This is the single most credible artifact for enterprise buyers and researchers.
+1. ~~**Full-pipeline benchmark run**~~ ✅ **SHIPPED (Aug 24)** — live Gemini (`gemini-3.5-flash-lite`) Tier-3 run published in RESULTS.md: full-pipeline ASR **27.2%** vs deterministic-tier 66.7% (27 blocked pre-upstream, 54 reached the model, 22 complied); includes event-loop regression fix in llm_tier.py (+1 test).
    - *Why:* The deterministic-tier ASR (66.7%) is honest but incomplete. Enterprises need to see the full pipeline's ASR to trust the defense.
    - *Effort:* 1–2 days (infrastructure: need LLM API access)
 

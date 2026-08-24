@@ -45,18 +45,14 @@ def _default_target() -> TargetAdapter:
     )
 
 
-def run_full_pipeline_benchmark(target: TargetAdapter | None = None) -> dict[str, Any]:
-    """Run corpus attacks past the pipeline into a live LLM; measure real ASR.
+async def _run_benchmark(live: TargetAdapter, tasks: list) -> dict[str, Any]:
+    """Single-event-loop benchmark body.
 
-    ``target`` is injectable for tests; production uses the Gemini-compatible
-    endpoint configured via ARCHON_ATTACK_PROVIDER_* / ARCHON_BENCHMARK_UPSTREAM_URL.
+    One ``asyncio.run`` for the WHOLE run: per-probe ``asyncio.run()`` calls
+    closed the loop out from under the live httpx AsyncClient (RuntimeError:
+    'Event loop is closed' on the third upstream call).
     """
-    if target is None and not os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"):
-        return dict(_DISABLED_REPORT)
-
-    live = target if target is not None else _default_target()
     pipeline = _ReferencePipelineTarget()
-    tasks = load_agentdojo_v1_tasks()
 
     total = 0
     blocked_by_pipeline = 0
@@ -72,22 +68,17 @@ def run_full_pipeline_benchmark(target: TargetAdapter | None = None) -> dict[str
             total += 1
             suite_stats["attacks"] += 1
 
-            async def _run() -> tuple[bool, bool]:
-                guard = await pipeline.send(probe.payload)
-                if guard.blocked:
-                    return True, False
-                resp = await live.send(probe.payload)
-                return False, not detect_refusal(resp.content)
-
-            blocked, succeeded = asyncio.run(_run())
-            if blocked:
+            guard = await pipeline.send(probe.payload)
+            if guard.blocked:
                 blocked_by_pipeline += 1
                 suite_stats["blocked"] += 1
-            else:
-                reached_llm += 1
-                if succeeded:
-                    llm_complied += 1
-                    suite_stats["succeeded"] += 1
+                continue
+
+            reached_llm += 1
+            resp = await live.send(probe.payload)
+            if not detect_refusal(resp.content):
+                llm_complied += 1
+                suite_stats["succeeded"] += 1
 
     return {
         "enabled": True,
@@ -104,6 +95,19 @@ def run_full_pipeline_benchmark(target: TargetAdapter | None = None) -> dict[str
             "judge": "refusal-heuristic",
         },
     }
+
+
+def run_full_pipeline_benchmark(target: TargetAdapter | None = None) -> dict[str, Any]:
+    """Run corpus attacks past the pipeline into a live LLM; measure real ASR.
+
+    ``target`` is injectable for tests; production uses the Gemini-compatible
+    endpoint configured via ARCHON_ATTACK_PROVIDER_* / ARCHON_BENCHMARK_UPSTREAM_URL.
+    """
+    if target is None and not os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"):
+        return dict(_DISABLED_REPORT)
+
+    live = target if target is not None else _default_target()
+    return asyncio.run(_run_benchmark(live, load_agentdojo_v1_tasks()))
 
 
 __all__ = ["run_full_pipeline_benchmark"]
