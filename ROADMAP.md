@@ -53,7 +53,7 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-1065 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+1078 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
