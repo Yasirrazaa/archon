@@ -5,7 +5,7 @@ All notable changes to Archon are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-08-24
 
 ### Added (waves 6–9, Aug 24)
 
@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Platform**: Google ADK adapter, multi-tenancy v1 (tenant-scoped results), config JSON schema
   + editor autocomplete wiring, GitHub Pages docs workflow, Mermaid architecture diagrams,
   docs-site tutorials ×8, FinBot CTF adapter.
+
+- **ASI05 coverage**: code-execution battle targets — SleeperAgentTarget (dormant planted
+  payload detonating on privileged review), SandboxEscapeTarget (allowlist + workspace-path
+  escape detection), DestructiveCommandTarget (mass-purge with approval threshold), each with
+  a paired defense; OWASP Agentic Top-10 attack coverage now 10/10.
+- **FinBot CTF suite**: FinBotSimTarget extended to 7 challenge-grounded vectors (foot-in-the-door
+  RCE, two-phase scorched earth, recon policy leak, gradual status flip); offline benchmark
+  published — vulnerable ASR 7/7 (100%), defended ASR 0% (all blocked).
+
+## [Unreleased]
+
+Nothing yet.
 
 ## [1.0.0] - 2026-08-23
 

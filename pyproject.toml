@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentbeats-security-arena"
-version = "1.0.0"
+version = "1.0.1"
 description = "Adversarial AI agent security testing framework for the Lambda × Berkeley RDI AgentBeats Competition"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -44,7 +44,7 @@ class TestPyprojectMetadata:
 
     def test_version_is_100(self):
         data = self._load()
-        assert data["project"]["version"] == "1.0.0"
+        assert data["project"]["version"] == "1.0.1"
 
     def test_license_is_mit(self):
         data = self._load()
