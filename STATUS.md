@@ -114,6 +114,25 @@ Derived from the Aug 23 OWASP deep review (Red-Teaming Taxonomy v1.0 + State of 
 - [x] Nonce store closing the HMAC replay-within-window limitation (shipped, wave 5; auth-boundary tests updated to new behavior)
 - [x] Docs site (mkdocs) + security advisory program (shipped, wave 5: mkdocs.yml + docs-site/ + advisory template + security@ contact)
 
+## Submission package & enterprise quick wins (Phase E2.7 — see ROADMAP items 31–44)
+
+Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 RFP essentials. All deploy-independent.
+
+- [ ] Devpost submission package (`DEVPOST.md`)
+- [ ] Demo video script (`DEMO_SCRIPT.md`)
+- [ ] Blog/social post draft (`#AllThingsAgenticHackathon`, bonus points)
+- [ ] Gemma provider option (`ARCHON_ATTACK_PROVIDER_KIND=gemma`, bonus points)
+- [ ] Signed releases (cosign/Sigstore in release.yml)
+- [ ] Kill-switch CI drill (scheduled workflow w/ MTTC assertion)
+- [ ] Shadow mode (evaluate-not-enforce would-block logging)
+- [ ] Full-pipeline benchmark tier (env-gated LLM-layer run)
+- [ ] Multi-attempt benchmark series (CAISI attempt-budget curves)
+- [ ] Macaroon-style attenuating tokens (delegation caveat verification)
+- [ ] Google ADK adapter (battle target; also mandatory-requirement evidence)
+- [ ] GitHub Pages docs workflow
+- [ ] Multi-tenancy v1 (tenant-scoped results/registry)
+- [ ] FinBot CTF adapter (deferred — needs external repo clone)
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.

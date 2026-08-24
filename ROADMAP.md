@@ -200,6 +200,25 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 30. ~~**Docs site + advisory program**~~ ✅ **SHIPPED** (wave 5) — MkDocs site generated from existing markdown; `security@` contact + coordinated advisory publishing (enterprise rating gap).
     - *Effort:* 1 week
 
+### Phase E2.7 — Submission Package & Enterprise Quick Wins (pre-deadline sprint)
+
+> Sources: enterprise A+ ladder analysis (Aug 24) against docs/LANDSCAPE_2026.md RFP essentials; hackathon bonus-point list. All items are deploy-independent.
+
+31. **Devpost submission package** — `DEVPOST.md`: project description, what-it-does, how-we-built-it, judging-criteria alignment copy, architecture description ready to paste into Devpost.
+32. **Demo video script** — `DEMO_SCRIPT.md`: beat-by-beat ~4-min script with exact commands, expected outputs, and screenshot mapping (Cloud Trace span tree = primary judge proof).
+33. **Blog/social post** — public post draft tagged #AllThingsAgenticHackathon (bonus points): the closed-loop security story.
+34. **Gemma provider option** — `ARCHON_ATTACK_PROVIDER_KIND=gemma` maps to the Gemini OpenAI-compat endpoint with a Gemma model default (hackathon bonus: Gemma integration).
+35. **Signed releases** — cosign/Sigstore keyless signing step in release.yml; artifacts published with signatures (supply-chain trust gate for hyperscaler buyers).
+36. **Kill-switch CI drill** — scheduled workflow running an automated kill-switch drill with MTTC assertion (OWASP survival capability: "tested monthly at agent speed").
+37. **Shadow mode** — armor evaluates every defense layer and logs would-block verdicts without enforcing, so enterprises measure block rates on mirrored traffic before taking enforcement risk.
+38. **Full-pipeline benchmark tier** — env-gated LLM-layer benchmark run in archon_benchmarks; publishes real full-pipeline ASR the moment an API key is present (closes the deterministic-tier-only credibility gap).
+39. **Multi-attempt benchmark series** — adaptive attacker (CAISI methodology, attempt budget ≤25) over the AgentDojo harness; publishes attempt-budget curves per RESULTS.md methodology commitments.
+40. **Macaroon-style attenuating tokens** — caveat-chain verification for agent credentials (delegation narrowing, offline subsumption checks); nobody in the landscape ships this.
+41. **Google ADK adapter** — target adapter wrapping an ADK agent as a battle target (also strengthens the mandatory Google-Agent-Framework requirement).
+42. **GitHub Pages docs workflow** — publishes the existing MkDocs site on push (docs site goes live without any GCP deploy).
+43. **Multi-tenancy v1** — tenant-scoped results store and registry scoping (`tenant_id` on battles/results/agents); first step toward the biggest enterprise RFP gap.
+44. **FinBot CTF adapter** ⏸️ *remains deferred* (needs external repo clone + research).
+
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
