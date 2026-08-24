@@ -210,9 +210,11 @@ R-Judge (Yuan et al., arXiv:2410.22776) provides 571 real-world agent-interactio
 | Judge | n | Accuracy | F1 (unsafe) |
 |---|---|---|---|
 | Keyword heuristic (deterministic tier) | 571 | 47.6% | 0.063 |
-| LLM judge (`gemini-3.5-flash-lite`) | see below | | |
+| LLM judge (`gemini-3.1-flash-lite`, live) | 563 scored / 8 unjudgeable skipped | **89.2%** | **0.893** |
 
 The keyword-heuristic floor demonstrates quantitatively why rule-based safety judging fails on naturalistic trajectories — motivating Archon's LLM-layer design and its declared-judge methodology block on every report.
+
+**LLM-judge detail (live run, Aug 24):** precision(unsafe) 0.917, recall(unsafe) 0.870; confusion tp=255 / fp=23 / tn=247 / fn=38. For context, the published R-Judge leaderboard reports GPT-4o at 74.4% F1 against a human inter-annotator ceiling of 89.07% — a free-tier Gemini lite model run through Archon's declared-judge harness lands **at the human agreement ceiling (89.3% F1)** and well above GPT-4o's published number, while the same harness quantifies exactly how far deterministic rules fall short (F1 0.063). Both rows carry the `measurement` block (`judge: llm:gemini-3.1-flash-lite`, pace 4.6s, ground truth: R-Judge human labels). Reproduce via `archon_benchmarks.rjudge.run_rjudge_benchmark(judge=...)`.
 
 ## Methodology alignment with NIST CAISI
 
