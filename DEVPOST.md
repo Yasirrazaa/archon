@@ -30,7 +30,7 @@ Fleet operators get `archon fleet --ci` as a merge-blocking policy gate, a web d
 - **Gemini API** powers the adaptive attack engine via its OpenAI-compatible endpoint (`ARCHON_ATTACK_PROVIDER_KIND=openai|gemma|anthropic`); Claude native provider included.
 - **Google Agent Framework**: Google ADK adapter wraps ADK agents as battle targets; Gemini OpenAI-compat integration throughout.
 - **GCP**: deployed on **Cloud Run** (GCS-backed durable state), with **Cloud Trace** via OTel — every request emits a span tree showing each defense layer's verdict (`service.name=archon-armor`). See DEPLOY_GCP.md for the verified spin-up path.
-- **Engineering discipline**: 1,402 tests (TDD, ~1.2:1 test:code ratio), CI matrix on Python 3.11–3.13 with ≥85% coverage gate, ruff, nightly fuzzing, SBOM + cosign-signed releases, Postgres integration job, schema migrations, SECURITY.md threat model with honest limitations.
+- **Engineering discipline**: 1,421 tests (TDD, ~1.2:1 test:code ratio), CI matrix on Python 3.11–3.13 with ≥85% coverage gate, ruff, nightly fuzzing, SBOM + cosign-signed releases, Postgres integration job, schema migrations, SECURITY.md threat model with honest limitations.
 
 ## Published results (all attempt-budget-disclosed — see RESULTS.md)
 

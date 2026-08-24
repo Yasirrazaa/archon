@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1402 passed / 3 skipped
+> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1421 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -50,7 +50,7 @@ numbering authority — not engineering hygiene.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,402
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,421
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -113,7 +113,7 @@ Derived from the Aug 23 OWASP deep review (Red-Teaming Taxonomy v1.0 + State of 
 - [x] Kill-switch drill — atomic agent revocation with MTTC measurement (shipped, wave 5: `archon kill-switch`, armor-enforced 503, audit-integrated)
 - [x] Beyond-ASI attack patterns — recon/discovery, config-tampering persistence, staged payload delivery (shipped, wave 5: targets/gaps.py)
 - [x] Plan-divergence detection — trajectory-level intent-vs-executed monitoring (shipped, wave 5)
-- [ ] FinBot CTF as external validation target (deferred post-hackathon)
+- [x] FinBot CTF as external validation target (repo cloned; FinBotTarget live HTTP + FinBotSimTarget now modeling **7 challenge-grounded vectors** — fraud transfer, data exfil, goal hijack, rce-shell-shock foot-in-the-door RCE, scorched-earth poisoned-tool wipe, recon-onboarding policy leak, gradual status flip — each with paired defense + closed-loop tests)
 - [x] Nonce store closing the HMAC replay-within-window limitation (shipped, wave 5; auth-boundary tests updated to new behavior)
 - [x] Docs site (mkdocs) + security advisory program (shipped, wave 5: mkdocs.yml + docs-site/ + advisory template + security@ contact)
 
@@ -143,7 +143,7 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Applied-metrics exemplar (UAR 0.75 / PED 4 hops / GUARDEDJOINT quadrants on sandbox banking → RESULTS.md)
 - [x] Identity v2: ed25519-signed agent credentials (CredentialStore + Ed25519Verifier drop-in via create_app(identity=...))
 - [x] Purple --baseline Policy-CI gate (`archon purple --save-baseline/--baseline`; --ci exits 1 on regression)
-- [x] FinBot CTF adapter (repo cloned + FinBotTarget w/ offline sim fallback; live integration tests skip-guarded)
+- [x] FinBot CTF adapter (repo cloned + FinBotTarget w/ offline sim fallback; live integration tests skip-guarded; sim extended Aug 24 to 7 challenge-grounded vectors from the real YAML definitions)
 - [x] Community scaffolding (CONTRIBUTING/CODE_OF_CONDUCT/feature template + tag v1.0.0 exercising release.yml+cosign)
 - [x] Architecture diagram (3 Mermaid diagrams in docs-site/architecture-diagram.md; Devpost image slot)
 - [x] Docs-site expansion (index + 8 per-target tutorials, verified snippets, ASI mappings)

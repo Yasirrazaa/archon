@@ -218,7 +218,7 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 41. ~~**Google ADK adapter**~~ ✅ **SHIPPED** (wave 6) — target adapter wrapping an ADK agent as a battle target (also strengthens the mandatory Google-Agent-Framework requirement).
 42. ~~**GitHub Pages docs workflow**~~ ✅ **SHIPPED** (wave 6) — publishes the existing MkDocs site on push (docs site goes live without any GCP deploy).
 43. ~~**Multi-tenancy v1**~~ ✅ **SHIPPED** (wave 6) — tenant-scoped results store and registry scoping (`tenant_id` on battles/results/agents); first step toward the biggest enterprise RFP gap.
-44. **FinBot CTF adapter** ⏸️ *remains deferred* (needs external repo clone + research).
+44. ~~**FinBot CTF adapter**~~ ✅ **SHIPPED** (wave 7 adapter; Aug 24 sim extended to 7 challenge-grounded vectors from the real YAML definitions — shell-shock foot-in-the-door RCE, scorched-earth poisoned-tool wipe, recon policy leak, gradual status flip — each with paired defense + closed-loop tests).
 
 ### Phase E2.8 — Evidence & Hardening Sprint (Wave 7, pre-deadline)
 
