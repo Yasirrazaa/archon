@@ -1,0 +1,14 @@
+site_name: Archon
+site_description: Adversarial AI agent security testing framework — core library, deployable defense proxy, CLI.
+repo_url: https://github.com/Yasirrazaa/archon
+
+theme: material
+
+docs_dir: docs-site
+
+nav:
+  - index.md
+  - quickstart.md
+  - architecture.md
+  - security.md
+  - benchmarks.md

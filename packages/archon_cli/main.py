@@ -189,6 +189,68 @@ def _cmd_ui(args) -> int:
     return 0
 
 
+def _cmd_purple(args) -> int:
+    """One-click purple run: attack two policy versions, emit delta verdict."""
+    import json as _json
+
+    from archon_armor.purple import render_purple_md, run_purple_sync
+
+    report = run_purple_sync(
+        args.registry,
+        args.agent_a,
+        args.agent_b,
+        pack=args.pack,
+    )
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            fh.write(render_purple_md(report))
+    if args.json:
+        print(_json.dumps(report, indent=2))
+    else:
+        print(render_purple_md(report))
+    if args.ci and report.get("verdict") == "regressed":
+        return 1
+    return 0
+
+
+def _cmd_bot(args) -> int:
+    """Autonomous red bot: continuous unattended probing of a running target."""
+
+    from archon_core.bots import RedBot, RedBotConfig, summarize_bot_run
+
+    config = RedBotConfig(
+        interval=args.interval,
+        packs=tuple(args.packs),
+        max_rounds=args.max_rounds,
+        target_url=args.target,
+    )
+    bot = RedBot(config)
+    findings = bot.run()
+    summary = summarize_bot_run(findings)
+    import json as _json
+
+    print(_json.dumps(summary, indent=2))
+    return 0
+
+
+def _cmd_kill_switch(args) -> int:
+    """Kill-switch drill: atomic revocation with measured MTTC."""
+    import json as _json
+
+    from archon_core.audit import SqliteAuditTrail
+    from archon_core.security.killswitch import KillSwitch
+
+    audit = SqliteAuditTrail(args.store.replace(".db", "-audit.db"))
+    ks = KillSwitch(store_path=args.store, audit=audit)
+    if args.restore:
+        removed = ks.restore(args.agent)
+        print(_json.dumps({"agent_id": args.agent, "restored": removed}, indent=2))
+        return 0
+    result = ks.trigger(args.agent)
+    print(_json.dumps(result.to_dict(), indent=2))
+    return 0
+
+
 def _upstream_from_env(args):
     from archon_armor.upstream import HTTPOpenAIUpstream
 
@@ -433,6 +495,33 @@ def build_parser() -> argparse.ArgumentParser:
     p_ui.add_argument("--host", default="0.0.0.0")
     p_ui.add_argument("--port", type=int, default=8081)
     p_ui.set_defaults(func=_cmd_ui)
+
+    p_purple = sub.add_parser(
+        "purple", help="one-click purple run: attack two policy versions, emit delta verdict"
+    )
+    p_purple.add_argument("--registry", required=True)
+    p_purple.add_argument("--agent-a", required=True)
+    p_purple.add_argument("--agent-b", required=True)
+    p_purple.add_argument("--pack", default="core")
+    p_purple.add_argument("--out", default="", help="write markdown report to file")
+    p_purple.add_argument("--json", action="store_true")
+    p_purple.add_argument("--ci", action="store_true", help="exit 1 if policy B regressed")
+    p_purple.set_defaults(func=_cmd_purple)
+
+    p_bot = sub.add_parser("bot", help="autonomous red bot: continuous unattended probing")
+    p_bot.add_argument("--target", default="", help="target URL for the bot")
+    p_bot.add_argument("--packs", nargs="+", default=["core"], help="probe packs to cycle")
+    p_bot.add_argument("--interval", type=float, default=300.0)
+    p_bot.add_argument("--max-rounds", type=int, default=None)
+    p_bot.set_defaults(func=_cmd_bot)
+
+    p_kill = sub.add_parser(
+        "kill-switch", help="atomic agent revocation drill with measured MTTC"
+    )
+    p_kill.add_argument("--store", required=True, help="kill-switch SQLite store path")
+    p_kill.add_argument("--agent", required=True)
+    p_kill.add_argument("--restore", action="store_true", help="re-enable a revoked agent")
+    p_kill.set_defaults(func=_cmd_kill_switch)
 
     return parser
 

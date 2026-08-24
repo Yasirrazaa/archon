@@ -53,11 +53,11 @@
 ### Phase E0 — Engineering Maturity (weeks 0–3) ← *do this first*
 
 *Code-quality audit verdict: **B+ hackathon, C+ enterprise** (6,204 src / 7,466 test LOC,
-892 passing). The hard part is done; this phase is mechanical, high-leverage work.*
+992 passing). The hard part is done; this phase is mechanical, high-leverage work.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
-   - *Why:* All 892 tests pass locally — nothing enforces that on PRs. This is the single
+   - *Why:* All 992 tests pass locally — nothing enforces that on PRs. This is the single
      biggest credibility gap; promptfoo runs thousands of CI checks per commit.
    - *Effort:* 3–5 days
 2. **Split packaging** ✅ SHIPPED (Aug 23 — LICENSE MIT/Archon Contributors, CHANGELOG.md [1.0.0], pyproject version 1.0.0, competition extra isolating a2a-sdk/google-adk/google-genai/openai out of core deps; test_identity.py) — `archon-core` installable without the competition stack
@@ -176,28 +176,28 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 > `docs/LANDSCAPE_2026.md`). Each item closes a gap the OWASP criteria name
 > that Archon's Aug-23 honest self-assessment confirmed.
 
-23. **One-click purple runs** — `archon purple --policy-a A --policy-b B` attacks two policy versions with the same probe set and emits the compare verdict in one command (fuses `battles` + `compare`; taxonomy Purple/"one-click purple runs" + "map red scenarios to blue controls").
+23. ~~**One-click purple runs**~~ ✅ **SHIPPED** (wave 5) — `archon purple --policy-a A --policy-b B` attacks two policy versions with the same probe set and emits the compare verdict in one command (fuses `battles` + `compare`; taxonomy Purple/"one-click purple runs" + "map red scenarios to blue controls").
     - *Effort:* ≤2 days
 
-24. **Scheduled fuzzing + autonomous red bots** — nightly CI workflow running the seeded fuzz corpus against armor plus an `archon bot` continuous-probe loop against a live target (taxonomy Red/Operate: "autonomous red bots", "continuous prompt fuzzing").
+24. ~~**Scheduled fuzzing + autonomous red bots**~~ ✅ **SHIPPED** (wave 5) — nightly CI workflow running the seeded fuzz corpus against armor plus an `archon bot` continuous-probe loop against a live target (taxonomy Red/Operate: "autonomous red bots", "continuous prompt fuzzing").
     - *Effort:* ≤2 days
 
-25. **Kill-switch drill** — `archon kill-switch --agent X` revokes identity, drops subscriptions and denies egress in one atomic action; measures MTTC (State of Agentic survival capability #5: "a kill switch that works at agent speed rather than committee speed").
+25. ~~**Kill-switch drill**~~ ✅ **SHIPPED** (wave 5) — `archon kill-switch --agent X` revokes identity, drops subscriptions and denies egress in one atomic action; measures MTTC (State of Agentic survival capability #5: "a kill switch that works at agent speed rather than committee speed").
     - *Effort:* ≤2 days
 
-26. **Beyond-ASI attack patterns** — targets for reconnaissance/discovery, config-tampering persistence, and staged payload delivery — the three patterns OWASP itself flags as uncovered by ASI01–10.
+26. ~~**Beyond-ASI attack patterns**~~ ✅ **SHIPPED** (wave 5) — targets for reconnaissance/discovery, config-tampering persistence, and staged payload delivery — the three patterns OWASP itself flags as uncovered by ASI01–10.
     - *Effort:* 3–5 days
 
-27. **Plan-divergence detection** — trajectory-level monitoring comparing declared intent vs executed actions from trace spans (State of Agentic runtime-governance capability #1; natural extension of `trace_driven`).
+27. ~~**Plan-divergence detection**~~ ✅ **SHIPPED** (wave 5) — trajectory-level monitoring comparing declared intent vs executed actions from trace spans (State of Agentic runtime-governance capability #1; natural extension of `trace_driven`).
     - *Effort:* ~1 week
 
-28. **External validation target** — integrate the OWASP-referenced FinBot CTF (Apache-2.0, self-hostable) as an adapter target so published numbers gain third-party validation.
+28. **External validation target** ⏸️ **DEFERRED** (post-hackathon; needs repo clone + adapter research) — integrate the OWASP-referenced FinBot CTF (Apache-2.0, self-hostable) as an adapter target so published numbers gain third-party validation.
     - *Effort:* ~1 week
 
-29. **Nonce store for HMAC replay window** — closes the documented SECURITY.md limitation (same-signature replay succeeds within ±300s); update auth-boundary tests to the new behavior.
+29. ~~**Nonce store for HMAC replay window**~~ ✅ **SHIPPED** (wave 5) — closes the documented SECURITY.md limitation (same-signature replay succeeds within ±300s); update auth-boundary tests to the new behavior.
     - *Effort:* ≤2 days
 
-30. **Docs site + advisory program** — MkDocs site generated from existing markdown; `security@` contact + coordinated advisory publishing (enterprise rating gap).
+30. ~~**Docs site + advisory program**~~ ✅ **SHIPPED** (wave 5) — MkDocs site generated from existing markdown; `security@` contact + coordinated advisory publishing (enterprise rating gap).
     - *Effort:* 1 week
 
 ### Phase E3 — Ecosystem & Distribution (months 3–6)
@@ -245,23 +245,26 @@ competitor has productized. Same playbook as P1–P5b: unclaimed gap + existing 
 
 ## Enterprise Readiness Gap Analysis
 
-### Engineering maturity (code-quality audit, Aug 23)
+### Engineering maturity (code-quality audit, Aug 23 — **all six gaps CLOSED** by Phases E0/E2.6)
 
-| Gap | Severity | Evidence | Closure path |
+| Gap | Severity at audit | Status | Closed by |
 |---|---|---|---|
-| No CI pipeline | 🔴 High | Zero GitHub Actions workflows run the test suite; 892 passing tests are local-only | Phase E0 item 1 |
-| No lint/type enforcement | 🟠 Medium | mypy is a dev dep but no ruff config, no pre-commit, no coverage gate; type hints inconsistent | Phase E0 item 1 |
-| Legacy packaging baggage | 🟠 Medium | Root install pulls competition stack (`a2a-sdk`, `google-adk`, `google-genai`, `openai`); packages not cleanly separable | Phase E0 item 2 |
-| Identity confusion | 🟠 Medium | LICENSE says "Copyright 2025 AgentBeats"; v0.1.0; zero git tags; no CHANGELOG or release process | Phase E0 item 2 |
-| SQLite-first persistence | 🟠 Medium | Postgres registry exists but thin production mileage; no schema migrations | Phase E0 item 4 |
-| Security tool has no self threat model | 🟠 Medium | HMAC auth shipped, but no fuzzing of the proxy parser, no documented auth boundary, no SECURITY.md/CVE process | Phase E0 item 3 |
+| No CI pipeline | 🔴 High | ✅ CLOSED — ci.yml runs lint + py3.11–3.13 matrix + coverage gate (93% actual) on every push; release.yml tags/SBOM; fuzz.yml nightly | E0 item 1 |
+| No lint/type enforcement | 🟠 Medium | ✅ CLOSED — ruff enforced in CI, pytest-cov `--cov-fail-under=85` gate | E0 item 1 |
+| Legacy packaging baggage | 🟠 Medium | ✅ CLOSED — `competition` extra isolates a2a-sdk/google-adk/google-genai/openai out of core deps | E0 item 2 |
+| Identity confusion | 🟠 Medium | ✅ CLOSED — MIT / Archon Contributors, v1.0.0, CHANGELOG.md | E0 item 2 |
+| SQLite-first persistence | 🟠 Medium | ✅ CLOSED — SchemaMigrator versioned migrations + ResultsStore + Postgres integration job in CI | E0 item 4 |
+| No self threat model | 🟠 Medium | ✅ CLOSED — SECURITY.md + 200-iteration fuzz invariant + auth-boundary tests + nonce store closing the replay window | E0 item 3 + E2.6 item 29 |
 
-**What promptfoo has that Archon lacks** (the honest list): monorepo CI matrix + ~3,000 tests
-per commit, signed releases with SBOMs, npm distribution with telemetry, DB-backed shareable
-results, versioned docs site, YAML config with JSON-schema editor autocomplete, community
-(24k stars, Discord), CVE process. *Enterprises buy operational maturity; researchers buy
-capability. Archon currently has only the latter — E0 closes the maturity gap while E1–E4
-compound the capability lead.*
+**What promptfoo has that Archon lacks** (the honest list, updated Aug 23 post-E2.6):
+signed releases with SBOMs *(release workflow ships; signing pending)*, npm telemetry,
+DB-backed shareable results *(ResultsStore + share tokens shipped)*, ~~versioned docs
+site~~ *(mkdocs site now generated from the same markdown)*, YAML JSON-schema editor
+autocomplete, community (24k stars, Discord), CVE process *(SECURITY.md disclosure
+process + advisory template shipped; formal CVE numbering authority pending)*.
+*Enterprises buy operational maturity; researchers buy capability. Archon now has both
+the capability lead and the operational baseline — remaining deltas are community scale
+and formal certification, not engineering hygiene.*
 
 ### Capability gaps
 

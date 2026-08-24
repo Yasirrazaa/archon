@@ -4,7 +4,7 @@
 supporting core (`packages/archon_core/`): identity verification, rate
 limiting, registry, audit trail, and observability wiring.
 
-**Last reviewed:** 2026-08 (Sprint E0.3)
+**Last reviewed:** 2026-08 (Sprint IMP-7)
 
 ---
 
@@ -65,12 +65,19 @@ signature = HMAC_SHA256(secret, "{METHOD}:{path}:{timestamp}:{sha256(body)}")
   invalidates the signature (`hmac.compare_digest`, constant-time).
 - **Replay window.** Timestamps more than **±300 s** from server time
   (`tolerance_seconds=300`) are rejected as expired/future replay.
-- **Known gap — no nonce store.** Within the ±300 s window, the *same*
-  signed request can be replayed verbatim and will verify again. There is no
-  sequence-number or nonce cache. Mitigations: keep the window tight,
-  front with idempotency controls for non-idempotent operations, or add a
-  nonce store (Redis) before relying on armor for financial/irreversible
-  actions.
+- **Replay protection — nonce store (Sprint IMP-7).** The former
+  within-window replay gap is closed by an opt-in `NonceStore`
+  (`packages/archon_core/security/authn.py`): a verifier constructed as
+  `HmacVerifier(registry, nonce_store=NonceStore())` additionally requires
+  an `X-Nonce` header and rejects any nonce reuse within the TTL
+  (default 600 s) with `replay detected`. Nonces are single-use, tracked on
+  a monotonic clock with opportunistic pruning and a bounded entry count.
+  **Server mode enables this by default** (`server.py build_app`), so
+  production clients MUST send a fresh `X-Nonce` per request. Verifiers
+  built *without* a nonce store retain the legacy window-only semantics
+  described above. Caveats: the store is in-memory and per-process — it
+  resets on restart and is not shared across replicas (same trade-offs as
+  §3); for strict multi-replica guarantees use a shared store (e.g. Redis).
 - **Legacy mode danger.** `create_app(..., identity=None)` falls back to
   `AllowAllVerifier`, which trusts the bare `X-Agent-ID` header. This exists
   for dev/test only. The container entry point (`server.py`) always wires
@@ -109,8 +116,12 @@ quota.
    registry file/database can mint identities, weaken policies, or replace
    secrets. Protect storage with filesystem/DB permissions and IAM; there is
    currently no built-in tamper detection.
-4. **No nonce/replay cache** (see §2): same-signature replay works within the
-   timestamp window.
+4. **Per-process nonce store** (see §2): replay protection is in-memory and
+   not shared across replicas — a restart resets it (a captured request
+   replayed after restart, inside the timestamp window, can succeed once per
+   replica), and a replay routed to a different replica is not caught.
+   Verifiers built without a nonce store retain window-only semantics. Use a
+   shared store (e.g., Redis) for strict guarantees.
 5. **Per-process rate limiting** (see §3).
 6. **Secrets on the AgentCard.** Signing secrets live alongside registry
    data. There is no HSM/KMS envelope encryption or rotation mechanism yet;
@@ -127,9 +138,13 @@ quota.
 
 **Please do not open public GitHub issues for security reports.**
 
-- **Contact (placeholder — set before public launch):**
-  `security@archon-armor.example` *(TODO: replace with the project's real,
-  monitored inbox and add a PGP key)*
+- **Contact:** `security@archon.dev` *(placeholder until the domain is confirmed —
+  replace with the project's real, monitored inbox and add a PGP key before public
+  launch)*
+- **Report format:** use the structured advisory template at
+  [`.github/ISSUE_TEMPLATE/security_advisory.md`](./.github/ISSUE_TEMPLATE/security_advisory.md)
+  — or just include in your email the affected component/package, reproduction steps or
+  PoC, observed vs. expected behavior, and your assessment of impact.
 - **Expected response times:**
   - Acknowledgement: within **2 business days**
   - Initial triage & severity assessment: within **7 days**
@@ -155,7 +170,10 @@ Before exposing archon-armor to real traffic:
 - [ ] **Signed mode enforced.** Ensure requests are verified with
       `HmacVerifier` (the container entry point does this by default). Never
       build the app with `identity=None` / `AllowAllVerifier` outside tests.
-      Keep the timestamp tolerance tight for your latency budget.
+      Keep the timestamp tolerance tight for your latency budget. Server mode
+      also wires a `NonceStore` by default, so clients must send a fresh
+      `X-Nonce` header per request; if you build the verifier yourself, pass
+      `nonce_store=NonceStore()` to keep replay protection on.
 - [ ] **IAM front door.** Deploy on Cloud Run (or equivalent) with IAM-based
       authentication. Do **not** deploy with `--allow-unauthenticated`;
       armor's own HMAC layer is defense-in-depth, not a substitute for

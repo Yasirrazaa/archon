@@ -92,9 +92,12 @@ def create_app(
     identity: IdentityVerifier | None = None,
     rate_limiter: TokenBucketRateLimiter | None = None,
     audit: SqliteAuditTrail | None = None,
+    kill_switch=None,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
-    Production deployments must pass an HmacVerifier."""
+    Production deployments must pass an HmacVerifier.
+    kill_switch: optional archon_core.security.killswitch.KillSwitch —
+    revoked agents receive 503 on every route until restored."""
     app = FastAPI(title="archon-armor", version="0.1.0")
     app.state.tracer = tracer
     identity = identity or AllowAllVerifier()
@@ -113,6 +116,13 @@ def create_app(
             return JSONResponse(
                 {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
             )
+        agent_id = verdict.agent_id
+        # --- 1b. Kill switch: revoked agents are contained immediately ---
+        if kill_switch is not None and kill_switch.is_revoked(agent_id):
+            return JSONResponse(
+                {"error": {"message": f"Agent {agent_id} is revoked (kill switch active)"}},
+                status_code=503,
+            )
         if rate_limiter is not None and not rate_limiter.allow(verdict.agent_id):
             return JSONResponse(
                 {"error": {"message": "Rate limit exceeded"}}, status_code=429
@@ -125,12 +135,11 @@ def create_app(
                 {"error": {"message": f"Unknown agent identity: {agent_id}"}},
                 status_code=404,
             )
+        # NOTE: identity is verified exactly once above. A second verify here
+        # (previously present) is not idempotent for stateful verifiers such
+        # as HmacVerifier with a NonceStore (Sprint IMP-7) -- it would see
+        # the request's own nonce as a replay.
 
-        verdict = identity.verify(request.headers, raw_body, request.method, request.url.path)
-        if not verdict.ok:
-            return JSONResponse(
-                {"error": {"message": f"Unauthorized: {verdict.reason}"}}, status_code=401
-            )
         request_span = (
             tracer.start_span(
                 "armor.request",

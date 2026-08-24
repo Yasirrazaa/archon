@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 892 passed / 3 skipped
+> **Last updated:** August 23, 2026 · **Branch:** `hackathon-v2` · **Suite:** 992 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -56,7 +56,7 @@ promptfoo wins deals despite weaker agentic attack tech.
 
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 892
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed post-N3 at 992
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;
@@ -105,14 +105,14 @@ defense + adversarial proof.
 
 Derived from the Aug 23 OWASP deep review (Red-Teaming Taxonomy v1.0 + State of Agentic AI v2.01):
 
-- [ ] One-click purple runs — `archon purple` fusing battles + compare into a single delta verdict
-- [ ] Scheduled fuzzing + autonomous red bots in CI (nightly fuzz workflow + `archon bot`)
-- [ ] Kill-switch drill — atomic agent revocation with MTTC measurement
-- [ ] Beyond-ASI attack patterns — recon/discovery, config-tampering persistence, staged payload delivery
-- [ ] Plan-divergence detection — trajectory-level intent-vs-executed monitoring
-- [ ] FinBot CTF as external validation target
-- [ ] Nonce store closing the HMAC replay-within-window limitation
-- [ ] Docs site (mkdocs) + security advisory program
+- [x] One-click purple runs — `archon purple` fusing battles + compare into a single delta verdict (shipped, wave 5)
+- [x] Scheduled fuzzing + autonomous red bots in CI (nightly fuzz workflow + `archon bot`) (shipped, wave 5)
+- [x] Kill-switch drill — atomic agent revocation with MTTC measurement (shipped, wave 5: `archon kill-switch`, armor-enforced 503, audit-integrated)
+- [x] Beyond-ASI attack patterns — recon/discovery, config-tampering persistence, staged payload delivery (shipped, wave 5: targets/gaps.py)
+- [x] Plan-divergence detection — trajectory-level intent-vs-executed monitoring (shipped, wave 5)
+- [ ] FinBot CTF as external validation target (deferred post-hackathon)
+- [x] Nonce store closing the HMAC replay-within-window limitation (shipped, wave 5; auth-boundary tests updated to new behavior)
+- [x] Docs site (mkdocs) + security advisory program (shipped, wave 5: mkdocs.yml + docs-site/ + advisory template + security@ contact)
 
 ## Document map
 

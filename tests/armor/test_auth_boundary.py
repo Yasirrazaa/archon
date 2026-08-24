@@ -1,12 +1,13 @@
-"""Sprint E0.3: auth-boundary verification tests for the HMAC scheme.
+"""Sprint E0.3 / IMP-7: auth-boundary verification tests for the HMAC scheme.
 
 Asserts the REAL behavior of HmacVerifier (packages/archon_core/security/authn.py):
   - timestamp window (default +/-300s) rejects expired/future timestamps
   - body hash binds signatures to exact payloads (substitution rejected)
   - per-agent secrets are not interchangeable
-  - NOTE: there is no nonce store -- an identical request replayed WITHIN the
-    window still verifies. This is a documented limitation (see SECURITY.md),
-    asserted here as real behavior rather than invented semantics.
+  - Sprint IMP-7: verifiers WITH a nonce store reject replayed requests
+    ("replay detected"); verifiers WITHOUT one retain legacy window-only
+    semantics, so the former documented limitation (SECURITY.md) is now
+    opt-in-closed. Detailed nonce-store coverage lives in test_nonce_store.py.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import time
 from archon_armor.app import create_app
 from archon_core.registry.base import AgentCard, SecurityPolicy
 from archon_core.registry.memory import InMemoryRegistry
-from archon_core.security.authn import HmacVerifier, sign_request
+from archon_core.security.authn import HmacVerifier, NonceStore, sign_request
 from fastapi.testclient import TestClient
 
 PATH = "/v1/chat/completions"
@@ -49,22 +50,26 @@ def make_registry() -> InMemoryRegistry:
     return registry
 
 
-def make_signed_client():
+def make_signed_client(nonce_store: bool = False):
     registry = make_registry()
-    app = create_app(registry=registry, upstream=FakeUpstream(),
-                     identity=HmacVerifier(registry))
+    verifier = HmacVerifier(registry, nonce_store=NonceStore()) if nonce_store \
+        else HmacVerifier(registry)
+    app = create_app(registry=registry, upstream=FakeUpstream(), identity=verifier)
     # raise_server_exceptions=False so failures surface as HTTP status codes
     return TestClient(app, raise_server_exceptions=False)
 
 
 def headers_for(secret: str, agent_id: str, body: bytes, ts: int | None = None,
-                path: str = PATH, method: str = "POST"):
+                path: str = PATH, method: str = "POST", nonce: str | None = None):
     ts = ts if ts is not None else int(time.time())
-    return {
+    headers = {
         "X-Agent-ID": agent_id,
         "X-Timestamp": str(ts),
         "X-Signature": sign_request(secret, method, path, body, ts),
     }
+    if nonce is not None:
+        headers["X-Nonce"] = nonce
+    return headers
 
 
 BENIGN = json.dumps({"model": "m", "messages": [{"role": "user", "content": "hi"}]}).encode()
@@ -73,10 +78,23 @@ OTHER = json.dumps({"model": "m", "messages": [{"role": "user", "content": "EVIL
 
 # ------------------------------------------------------------- verifier ----
 
-def test_replay_same_signature_within_window_verifies():
-    """REAL behavior: no nonce store exists; the timestamp window is the only
-    replay defense, so an identical request replayed inside the window is
-    accepted. Documented limitation in SECURITY.md."""
+def test_replay_with_nonce_store_rejected():
+    """NEW behavior (Sprint IMP-7): with a nonce-configured verifier, the
+    same signed request replayed inside the window fails with 'replay
+    detected' -- the former documented SECURITY.md limitation is closed."""
+    verifier = HmacVerifier(make_registry(), nonce_store=NonceStore())
+    headers = headers_for(SECRET_ONE, "agent-1", BENIGN, nonce="n-1")
+    first = verifier.verify(headers, BENIGN, "POST", PATH)
+    second = verifier.verify(headers, BENIGN, "POST", PATH)
+    assert first.ok and not second.ok
+    assert "replay detected" in second.reason
+
+
+def test_replay_without_nonce_store_retains_legacy_semantics():
+    """Legacy mode (opt-in limitation): a verifier built WITHOUT a nonce
+    store has no single-use guarantee, so an identical request replayed
+    inside the window still verifies. Kept as documentation of what the
+    nonce store adds; see SECURITY.md §2."""
     verifier = HmacVerifier(make_registry())
     headers = headers_for(SECRET_ONE, "agent-1", BENIGN)
     first = verifier.verify(headers, BENIGN, "POST", PATH)
@@ -129,13 +147,26 @@ def test_cross_agent_secret_rejected():
 
 # ------------------------------------------------------- end-to-end app ----
 
-def test_app_accepts_signed_request_and_replay_within_window():
+def test_app_legacy_mode_accepts_replay_within_window():
+    """Legacy app-level mode (no nonce store): window-only replay defense
+    retained. Server mode (server.py) wires a nonce store by default, so
+    production rejects this; see test_nonce_store.py for the e2e rejection."""
     client = make_signed_client()
     headers = headers_for(SECRET_ONE, "agent-1", BENIGN)
     first = client.post(PATH, content=BENIGN, headers=headers)
     replay = client.post(PATH, content=BENIGN, headers=headers)  # same signature reused
     assert first.status_code == 200
-    assert replay.status_code == 200  # REAL behavior: window-only replay defense
+    assert replay.status_code == 200  # legacy semantics: opt-in limitation
+
+
+def test_app_nonce_mode_rejects_replay_with_401():
+    client = make_signed_client(nonce_store=True)
+    headers = headers_for(SECRET_ONE, "agent-1", BENIGN, nonce="n-app")
+    first = client.post(PATH, content=BENIGN, headers=headers)
+    replay = client.post(PATH, content=BENIGN, headers=headers)
+    assert first.status_code == 200
+    assert replay.status_code == 401
+    assert "replay detected" in replay.json()["error"]["message"]
 
 
 def test_app_rejects_expired_timestamp_with_401():

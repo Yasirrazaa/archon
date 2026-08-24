@@ -23,7 +23,7 @@ from archon_core.observability.jsonl import JsonlTracer
 from archon_core.observability.otel import build_tracer_from_env
 from archon_core.observability.scrubbing import AttributeScrubber, ScrubbingTracer
 from archon_core.registry.sqlite import SqliteRegistry
-from archon_core.security.authn import HmacVerifier
+from archon_core.security.authn import HmacVerifier, NonceStore
 from archon_core.security.ratelimit import TokenBucketRateLimiter
 
 from archon_armor.upstream import HTTPOpenAIUpstream
@@ -47,7 +47,9 @@ def build_app():
     if isinstance(base_tracer, NullTracer):
         base_tracer = JsonlTracer(spans_path)
     tracer = ScrubbingTracer(base_tracer, AttributeScrubber())
-    identity = HmacVerifier(registry)  # signed requests enforced in server mode
+    # Signed requests enforced; nonce store closes the within-window replay
+    # gap (clients must send a fresh X-Nonce per request).
+    identity = HmacVerifier(registry, nonce_store=NonceStore())
     rate_limiter = TokenBucketRateLimiter(capacity=60, refill_per_second=10)
     audit = SqliteAuditTrail(audit_path)
 
