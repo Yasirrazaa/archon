@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 25, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1868 passed / 3 skipped
+> **Last updated:** August 25, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1941 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -48,9 +48,11 @@ store + Postgres CI job, SECURITY.md threat model + fuzz invariant + nonce-store
 protection. Remaining honest deltas vs promptfoo are community scale and formal CVE
 numbering authority — not engineering hygiene.
 
+- Multi-tenancy v2: TenantStore (tenants + agent enrollment, strict isolation), X-Tenant-ID enforcement middleware (403 cross-tenant), SCIM v2 /scim/v2 provisioning router (CRUD+filter+PATCH, 409/404 envelopes), OIDC SSO verifier (RS256 JWKS w/ cache TTL, exp/iss/aud checks).
+
 ## Verified competitive position
 
-Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,868
+Code-verified against 9 competitor repos on Aug 23, 2026 (refreshed Aug 24 at 1,941
 tests) — full analysis in [`COMPETITIVE_ANALYSIS.md`](./COMPETITIVE_ANALYSIS.md).
 Headline: promptfoo's adaptive multi-turn brains run cloud-side; garak is multi-turn
 now but scanner-only with no defense evaluation; PyRIT has zero compliance mapping;

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 
 from .base import Completion, LLMProvider, ProviderError
@@ -19,7 +21,11 @@ class OpenAICompatProvider(LLMProvider):
         model: str = "default",
         timeout_seconds: float = 60.0,
         transport: httpx.BaseTransport | None = None,
+        max_retries: int = 0,
+        backoff_seconds: float = 2.0,
     ):
+        self.max_retries = max_retries
+        self.backoff_seconds = backoff_seconds
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
@@ -35,10 +41,7 @@ class OpenAICompatProvider(LLMProvider):
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         try:
-            resp = await self._client.post(
-                f"{self.base_url}/chat/completions", json=payload, headers=headers
-            )
-            resp.raise_for_status()
+            resp = await self._post_with_retry(payload, headers)
             data = resp.json()
             return Completion(
                 content=data["choices"][0]["message"]["content"],
@@ -47,6 +50,25 @@ class OpenAICompatProvider(LLMProvider):
             )
         except (httpx.HTTPError, KeyError, IndexError) as exc:
             raise ProviderError(f"provider call failed: {exc}") from exc
+
+    async def _post_with_retry(self, payload, headers):
+        """POST with exponential backoff on 429/5xx when max_retries > 0."""
+        attempts = self.max_retries + 1
+        last_exc: Exception | None = None
+        for attempt in range(attempts):
+            resp = await self._client.post(
+                f"{self.base_url}/chat/completions", json=payload, headers=headers
+            )
+            if resp.status_code == 200:
+                return resp
+            retryable = resp.status_code == 429 or resp.status_code >= 500
+            if not retryable or attempt == attempts - 1:
+                resp.raise_for_status()
+            last_exc = httpx.HTTPStatusError(
+                f"retryable {resp.status_code}", request=resp.request, response=resp
+            )
+            await asyncio.sleep(self.backoff_seconds * (2**attempt))
+        raise last_exc  # pragma: no cover - loop always returns or raises
 
     async def aclose(self) -> None:
         await self._client.aclose()

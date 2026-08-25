@@ -101,7 +101,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 
 ## 5. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,868 tests**, Aug 25, post-wave-11).
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,941 tests**, Aug 25, post-wave-11).
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
@@ -200,7 +200,7 @@ Each is small, tested, and compounds: every one either adds users, adds proof, o
 11. ➕ (Aug 23) Added market size data ($769M→$2.1B by 2035) and M&A activity (Palo Alto/Protect AI, Snyk/Invariant Labs).
 12. ✅ (Aug 24, post-waves 7–9) Refresh at 1,376 tests: corpus row now 202 probes (largest open agentic corpus); published-benchmark ladder added (AgentDojo deterministic + Tier-3 full-pipeline 27.2%, InjecAgent, strict-ASR 18.5%, per-target ground-truth 81.8%, pass^k, R-Judge judge-agreement 89.2% at human ceiling — no competitor publishes attempt-budget-disclosed numbers); ASI coverage now 10/10 full (ASI05 closed Aug 24 by targets/code_exec.py).
 
-13. ✅ (Aug 25, post-wave-11) Competitor-mined completion wave: all 24 improvements shipped — SARIF 2.1.0 output (**category-first: no competitor emits SARIF**, unlocks GitHub Code Scanning), judge-calibration harness w/ Krippendorff α (productizes R-Judge one-off), fail-closed tool-call schema rail (NeMo IORails port), Policy Puppetry + token-smuggling converters (PyRIT ports), coding-agent target suite core-5 (promptfoo parity), SKILL.md scanning + `archon discover` (agent-scan parity), toxic-flow graph + E002 shadowing, buff layer (garak pattern), BEAST suffixes, streaming rolling-buffer rails, /v1/checks sidecar. Corpus 202→222; suite →1,868.
+13. ✅ (Aug 25, post-wave-11) Competitor-mined completion wave: all 24 improvements shipped — SARIF 2.1.0 output (**category-first: no competitor emits SARIF**, unlocks GitHub Code Scanning), judge-calibration harness w/ Krippendorff α (productizes R-Judge one-off), fail-closed tool-call schema rail (NeMo IORails port), Policy Puppetry + token-smuggling converters (PyRIT ports), coding-agent target suite core-5 (promptfoo parity), SKILL.md scanning + `archon discover` (agent-scan parity), toxic-flow graph + E002 shadowing, buff layer (garak pattern), BEAST suffixes, streaming rolling-buffer rails, /v1/checks sidecar. Corpus 202→222; suite →1,941.
 
 ---
 

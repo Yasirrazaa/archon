@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (enterprise wave, Aug 25)
+
+- **Multi-tenancy v2**: TenantStore (tenant entities + agent enrollment, strict isolation), `X-Tenant-ID` enforcement middleware on armor (403 cross-tenant), tenant-scoped results (v1) now joined by registry-level tenancy primitives.
+- **SSO**: OIDC verifier — RS256 signature validation against cached JWKS, exp/iss/aud claims, never raises on malformed input.
+- **SCIM v2**: `/scim/v2` provisioning router (Users CRUD, `?filter=userName eq`, PATCH activate/deactivate, RFC-shaped error envelopes), optional OIDC bearer authentication.
+- **Providers**: opt-in retry with exponential backoff on 429/5xx (`max_retries`/`backoff_seconds`) for shared-pool upstreams.
+
 ### Added (waves 10–11, Aug 25)
 
 - **MCP transport attacks**: DNS-rebinding (TOCTOU), session-hijack, off-path credential-exfil targets with paired defenses.

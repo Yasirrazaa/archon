@@ -86,6 +86,16 @@ def _completion_shape(payload: dict[str, Any], content: str) -> dict[str, Any]:
     }
 
 
+def _bearer_token(authorization: str | None) -> str:
+    """Extract the raw token from a 'Bearer <token>' header value."""
+    if not authorization:
+        return ""
+    parts = authorization.split(None, 1)
+    if len(parts) == 2 and parts[0].lower() == "bearer":
+        return parts[1].strip()
+    return ""
+
+
 def create_app(
     registry: Registry,
     upstream: LLMUpstream,
@@ -97,11 +107,20 @@ def create_app(
     kill_switch=None,
     shadow_mode: bool = False,
     metrics: ArmorMetrics | None = None,
+    tenant_store=None,
+    scim_store=None,
+    oidc_verifier=None,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier.
     kill_switch: optional archon_core.security.killswitch.KillSwitch —
     revoked agents receive 503 on every route until restored.
+    tenant_store: optional archon_core.security.tenancy.TenantStore — when set,
+    requests carrying X-Tenant-ID are checked against agent enrollment (403 on
+    cross-tenant access); absent header keeps single-tenant behavior.
+    scim_store: optional ScimUserStore — mounts the SCIM v2 /scim/v2 router.
+    oidc_verifier: optional OidcVerifier — authenticates SCIM routes via OIDC
+    bearer tokens; without it SCIM runs in allow-all dev mode.
     shadow_mode=True evaluates the defense pipeline but never enforces:
     would-block verdicts are recorded as 'request.shadow_would_block' audit
     events and the request proceeds upstream — lets operators measure block
@@ -400,5 +419,33 @@ def create_app(
                 "summary": battle.summary,
             }
         )
+
+    # --- Multi-tenancy v2 + SCIM provisioning wiring ---------------------
+    if scim_store is not None:
+        from archon_core.security.scim import build_scim_router
+
+        def _scim_auth(authorization: str | None) -> bool:
+            if oidc_verifier is None:
+                return True  # dev mode
+            verdict = oidc_verifier.verify(_bearer_token(authorization))
+            return verdict.valid
+
+        app.include_router(build_scim_router(scim_store, authenticator=_scim_auth))
+
+    if tenant_store is not None:
+        from archon_core.security.tenancy import assert_agent_tenant, resolve_tenant
+
+        @app.middleware("http")
+        async def _tenant_guard(request, call_next):  # type: ignore[no-untyped-def]
+            if request.url.path.startswith("/v1/chat"):
+                tenant_id = resolve_tenant(request.headers, tenant_store)
+                if tenant_id is not None:
+                    agent_id = request.headers.get("X-Agent-ID", "")
+                    if not assert_agent_tenant(tenant_store, agent_id, tenant_id):
+                        return JSONResponse(
+                            status_code=403,
+                            content={"error": {"message": f"agent {agent_id!r} not enrolled in tenant {tenant_id!r}"}},
+                        )
+            return await call_next(request)
 
     return app

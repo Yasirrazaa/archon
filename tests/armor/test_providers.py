@@ -1,6 +1,8 @@
 """TDD Phase 5a: provider seam — OpenAI-compat + Gemini adapters (mocked transport).
 Aug 23 addition: ClaudeNativeProvider (Anthropic /v1/messages) + env-based selection."""
 
+import asyncio
+
 import httpx
 import pytest
 from archon_core.providers.anthropic import ClaudeNativeProvider
@@ -270,3 +272,57 @@ def test_plugins_inventory_lists_claude(capsys):
 
     names = cli_main._provider_names()
     assert "ClaudeNativeProvider" in names
+
+
+class TestRetryBackoff:
+    """429/5xx retry with exponential backoff (opt-in max_retries)."""
+
+    def _flaky_transport(self, statuses):
+        calls = {"n": 0}
+
+        def handler(request):
+            i = min(calls["n"], len(statuses) - 1)
+            calls["n"] += 1
+            status = statuses[i]
+            if status == 200:
+                return httpx.Response(
+                    200,
+                    json={"choices": [{"message": {"content": "ok"}}], "model": "m"},
+                )
+            return httpx.Response(status, json={"error": "upstream"})
+
+        return httpx.MockTransport(handler), calls
+
+    def test_no_retries_by_default(self):
+        transport, calls = self._flaky_transport([429, 200])
+        p = OpenAICompatProvider("https://x.test", api_key="k", model="m", transport=transport)
+        with pytest.raises(ProviderError):
+            asyncio.run(p.generate([{"role": "user", "content": "hi"}]))
+        assert calls["n"] == 1
+
+    def test_retries_on_429_then_succeeds(self):
+        transport, calls = self._flaky_transport([429, 429, 200])
+        p = OpenAICompatProvider(
+            "https://x.test", api_key="k", model="m", transport=transport, max_retries=3, backoff_seconds=0.0
+        )
+        c = asyncio.run(p.generate([{"role": "user", "content": "hi"}]))
+        assert c.content == "ok"
+        assert calls["n"] == 3
+
+    def test_exhausts_budget_then_raises(self):
+        transport, calls = self._flaky_transport([500])
+        p = OpenAICompatProvider(
+            "https://x.test", api_key="k", model="m", transport=transport, max_retries=2, backoff_seconds=0.0
+        )
+        with pytest.raises(ProviderError):
+            asyncio.run(p.generate([{"role": "user", "content": "hi"}]))
+        assert calls["n"] == 3
+
+    def test_does_not_retry_4xx_client_errors(self):
+        transport, calls = self._flaky_transport([400, 200])
+        p = OpenAICompatProvider(
+            "https://x.test", api_key="k", model="m", transport=transport, max_retries=3, backoff_seconds=0.0
+        )
+        with pytest.raises(ProviderError):
+            asyncio.run(p.generate([{"role": "user", "content": "hi"}]))
+        assert calls["n"] == 1

@@ -54,7 +54,7 @@
 
 *Code-quality audit verdict at audit time: **B+ hackathon, C+ enterprise** — every gap it
 named has since been closed by Phases E0/E2.6 (see the gap table below). Current state:
-**1,868 passing tests**, CI-enforced.*
+**1,941 passing tests**, CI-enforced.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
