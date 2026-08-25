@@ -101,7 +101,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 
 ## 5. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,941 tests**, Aug 25, post-wave-11).
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**2,093 tests**, Aug 25, post-wave-12).
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
