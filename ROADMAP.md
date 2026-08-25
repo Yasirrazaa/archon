@@ -54,7 +54,7 @@
 
 *Code-quality audit verdict at audit time: **B+ hackathon, C+ enterprise** — every gap it
 named has since been closed by Phases E0/E2.6 (see the gap table below). Current state:
-**2,093 passing tests**, CI-enforced.*
+**2,295 passing tests**, CI-enforced.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -305,7 +305,7 @@ Source: three-way improvement mining across promptfoo/augustus/agent-scan (DX + 
 71. ~~**Skill-scan lifecycle stages**~~ ✅ **SHIPPED (wave 12)** — Storage (manifest consistency declared-vs-body), Retrieval (cross-file similarity clustering for Sybil/stuffing), Evolution (version-diff escalation) per SkillSec-Eval.
 72. ~~**Prompt-as-Rule LLM audit tier**~~ ✅ **SHIPPED (wave 12)** — opt-in NL-criteria tier over mcp_scan regexes w/ mandatory exclusion conditions + network-reachability filtering (AI-Infra-Guard discipline).
 
-### Phase E4 — Universal Benchmark Coverage (wave 13, Aug 25)
+### Phase E4 — Universal Benchmark Coverage (wave 13, Aug 25) — ✅ ALL SHIPPED
 
 Goal: run every benchmark competitors and frontier papers use, fully reproducible
 (cache → network → committed fixture loaders, deterministic grading first, LLM tiers env-gated).

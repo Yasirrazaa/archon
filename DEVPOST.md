@@ -46,6 +46,10 @@ Fleet operators get `archon fleet --ci` as a merge-blocking policy gate, a web d
 | Model-sensitivity (ox-alpha) | Shielded Tier-3 ASR **12.35%** / unshielded strict-ASR **74.07%** / adaptive brain defeats rule-only defense ≤2 turns |
 | FinBot CTF challenge suite (7 vectors, offline sim) | vulnerable ASR 100% (7/7 flags) vs defended 0% — modeled from the official OWASP-referenced challenge YAMLs |
 | Wave-12 research-target series (6 targets) | mean ASR 66.7%, zero-LLM state-diff ground truth (StepJack CUA chains, MCP transport, RCE patterns) |
+| XSTest over-refusal | **0.0% over-refusal / 0.0% under-refusal** (citable FPR benchmark) |
+| HarmBench full (400 behaviors) | framed 100% blocked vs direct 0% — jailbreak-frame contrast |
+| IPIArena + ASB + BIPIA + Agent-SafetyBench + tau-bench probes | deterministic tier passes prose injections (consistent w/ InjecAgent) — why LLM layers exist; all official artifacts, reproducible in-repo |
+| MCPTox-style poisoned tool descriptions | static detection 100% (emulator ground truth) |
 
 No competitor publishes attempt budgets, judge methods, or dual-ASR breakdowns. We publish all of them.
 
