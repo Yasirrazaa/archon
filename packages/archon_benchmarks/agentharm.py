@@ -227,22 +227,24 @@ async def _run_live(
     target: TargetAdapter,
     behaviors: list[AgentHarmBehavior],
     judge: JudgeFn | None,
+    concurrency: int = 1,
 ) -> dict:
-    complied = 0
-    refused = 0
-    for behavior in behaviors:
-        resp = await target.send(behavior.query)
-        content = resp.content or ""
-        if judge is not None:
-            is_compliant = judge(content, behavior)
-            judge_label = "semantic-judge(custom)"
-        else:
-            is_compliant = not detect_refusal(content)
-            judge_label = "refusal-heuristic"
-        if is_compliant:
-            complied += 1
-        else:
-            refused += 1
+    sem = asyncio.Semaphore(max(1, concurrency))
+
+    async def _one(behavior: AgentHarmBehavior) -> bool:
+        async with sem:
+            resp = await target.send(behavior.query)
+            content = resp.content or ""
+            if judge is not None:
+                return judge(content, behavior)
+            return not detect_refusal(content)
+
+    # gather preserves submission order
+    outcomes = await asyncio.gather(*(_one(b) for b in behaviors))
+    complied = sum(1 for ok in outcomes if ok)
+    refused = len(outcomes) - complied
+    judge_label = "semantic-judge(custom)" if judge is not None \
+        else "refusal-heuristic"
 
     total = len(behaviors)
     return {
@@ -256,7 +258,7 @@ async def _run_live(
         "measurement": {
             "attempt_budget": 1,
             "adaptivity": "static",
-            "judge": judge_label if judge else "refusal-heuristic",
+            "judge": judge_label,
             "upstream_model": getattr(target, "model", None),
         },
     }
@@ -266,18 +268,20 @@ def run_agentharm_live(
     target: TargetAdapter | None,
     behaviors: list[AgentHarmBehavior] | None = None,
     judge: JudgeFn | None = None,
+    concurrency: int = 1,
 ) -> dict:
     """Live tier: send direct harm requests to a real target; grade refusals.
 
     GATED on ARCHON_ATTACK_PROVIDER_API_KEY unless an explicit ``target`` is
     injected (tests use fakes). ``judge`` is the provider seam for an LLM /
     semantic judge; default is the deterministic refusal-keyword heuristic.
+    ``concurrency`` bounds in-flight requests (1 = sequential).
     """
     if target is None and not os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"):
         return dict(_DISABLED_REPORT)
     if behaviors is None:
         behaviors = load_agentharm("augmented")
-    return asyncio.run(_run_live(target, behaviors, judge))
+    return asyncio.run(_run_live(target, behaviors, judge, concurrency))
 
 
 def render_agentharm_md(report: dict, path: Path) -> None:

@@ -241,7 +241,7 @@ def _make_provider(cfg: dict[str, str]):
 # ---------------------------------------------------------------------------
 
 
-def run_phase_strongreject(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]:
+def run_phase_strongreject(out_dir: Path, cfg: dict[str, str], concurrency: int = 1) -> dict[str, Any]:
     """Rubric-judge live StrongREJECT (~313 target calls + judge calls)."""
     from archon_benchmarks.strongreject import run_strongreject_live
 
@@ -251,34 +251,35 @@ def run_phase_strongreject(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]
         api_key=cfg["api_key"],
         model=cfg["model"],
     )
-    report = run_strongreject_live(target=target, provider=judge_provider)
+    report = run_strongreject_live(target=target, provider=judge_provider,
+                                   concurrency=concurrency)
     save_report(out_dir, "strongreject", report)
     return report
 
 
-def run_phase_agentharm(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]:
+def run_phase_agentharm(out_dir: Path, cfg: dict[str, str], concurrency: int = 1) -> dict[str, Any]:
     """Live AgentHarm behaviors w/ refusal-heuristic judge."""
     from archon_benchmarks.agentharm import run_agentharm_live
 
     target = _make_target(cfg)
     os.environ["ARCHON_ATTACK_PROVIDER_API_KEY"] = cfg["api_key"]
-    report = run_agentharm_live(target=target)
+    report = run_agentharm_live(target=target, concurrency=concurrency)
     save_report(out_dir, "agentharm", report)
     return report
 
 
-def run_phase_rjudge(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]:
+def run_phase_rjudge(out_dir: Path, cfg: dict[str, str], concurrency: int = 1) -> dict[str, Any]:
     """LLM-judged R-Judge agreement over the full 571-record corpus."""
     from archon_benchmarks.rjudge import make_llm_judge, run_rjudge_benchmark
 
     provider = _make_provider(cfg)
     judge = make_llm_judge(provider)
-    report = asyncio.run(run_rjudge_benchmark(judge=judge))
+    report = asyncio.run(run_rjudge_benchmark(judge=judge, concurrency=concurrency))
     save_report(out_dir, "rjudge", report)
     return report
 
 
-def run_phase_piminer(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]:
+def run_phase_piminer(out_dir: Path, cfg: dict[str, str], concurrency: int = 5) -> dict[str, Any]:
     """PiminerBrainAttacker @ budget 25 vs reference-pipeline shield on
     AgentDojo v1 — resumable per task; hierarchical RunMemory accumulates
     across tasks (cold-start strategy library is the honest config)."""
@@ -297,36 +298,43 @@ def run_phase_piminer(out_dir: Path, cfg: dict[str, str]) -> dict[str, Any]:
     results: list[dict[str, Any]] = list(state["results"])
     run_memory = RunMemory()
 
-    for task in tasks:
-        if task.task_id in done:
-            continue
-        seed = build_attack_prompts(task)[0].payload
+    pending = [t for t in tasks if t.task_id not in done]
+    lock = asyncio.Lock()
 
-        def one_task(seed_payload: str = seed, goal: str = task.goal):
-            attacker = PiminerBrainAttacker(
-                _make_provider(cfg),
-                max_turns=25,
-                run_memory=run_memory,
-            )
-            target = LiveAttackTarget(upstream=_make_target(cfg))
-            return asyncio.run(
-                attacker.run(target, goal, [seed_payload])
-            )
+    async def _pool() -> None:
+        sem = asyncio.Semaphore(max(1, concurrency))
 
-        result = one_task()
-        success = bool(getattr(result, "success", getattr(result, "succeeded", False)))
-        results.append(
-            {
-                "task_id": task.task_id,
-                "goal": task.goal,
-                "success": success,
-                "turns_used": getattr(result, "turns_used", None),
-                "errors": len(getattr(result, "errors", []) or []),
-            }
-        )
-        done.add(task.task_id)
-        save_piminer_partial(out_dir, sorted(done), results)
-        print(f"[piminer] {task.task_id}: success={success}")
+        async def worker(task) -> None:
+            async with sem:
+                seed = build_attack_prompts(task)[0].payload
+                attacker = PiminerBrainAttacker(
+                    _make_provider(cfg),
+                    max_turns=25,
+                    run_memory=run_memory,
+                )
+                target = LiveAttackTarget(upstream=_make_target(cfg))
+                result = await attacker.run(target, task.goal, [seed])
+                success = bool(
+                    getattr(result, "success", getattr(result, "succeeded", False))
+                )
+                async with lock:
+                    results.append(
+                        {
+                            "task_id": task.task_id,
+                            "goal": task.goal,
+                            "success": success,
+                            "turns_used": getattr(result, "turns_used", None),
+                            "errors": len(getattr(result, "errors", []) or []),
+                        }
+                    )
+                    done.add(task.task_id)
+                    save_piminer_partial(out_dir, sorted(done), results)
+                print(f"[piminer] {task.task_id}: success={success}", flush=True)
+
+        await asyncio.gather(*(worker(t) for t in pending))
+
+    if pending:
+        asyncio.run(_pool())
 
     succeeded = sum(1 for r in results if r["success"])
     report = {
@@ -374,6 +382,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--out", default="live_results")
     parser.add_argument("--model", default=None)
+    parser.add_argument("--concurrency", type=int, default=5,
+                        help="Max concurrent in-flight requests (piminer: parallel tasks)")
     parser.add_argument("--base-url", default=None)
     args = parser.parse_args(argv)
 
@@ -388,7 +398,7 @@ def main(argv: list[str] | None = None) -> int:
     for phase in args.phases:
         print(f"[live-runner] === phase: {phase} ===")
         try:
-            PHASES[phase](out_dir, cfg)
+            PHASES[phase](out_dir, cfg, concurrency=args.concurrency)
         except Exception as exc:  # noqa: BLE001 - driver must keep going
             print(f"[live-runner] phase {phase} FAILED: {exc}")
             failures.append(phase)

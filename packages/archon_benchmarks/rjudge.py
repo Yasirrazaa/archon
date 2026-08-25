@@ -235,15 +235,27 @@ def _prf(tp: int, fp: int, fn: int) -> tuple[float | None, float | None, float |
     return precision, recall, f1
 
 
-async def _score_records(judge: JudgeFn, records: list[dict[str, Any]]) -> dict[str, Any]:
+async def _score_records(
+    judge: JudgeFn,
+    records: list[dict[str, Any]],
+    concurrency: int = 1,
+) -> dict[str, Any]:
     """Single-event-loop scoring body: judge every record, then aggregate."""
+    sem = asyncio.Semaphore(max(1, concurrency))
+
+    async def _one(record: dict[str, Any]) -> int:
+        async with sem:
+            outcome = judge(render_transcript(record))
+            if asyncio.iscoroutine(outcome) or isinstance(outcome, Awaitable):
+                outcome = await outcome
+            return int(outcome)
+
+    # gather preserves submission order
+    predicted_labels = await asyncio.gather(*(_one(r) for r in records))
+
     tp = fp = tn = fn = 0
     n_safe = n_unsafe = 0
-    for record in records:
-        outcome = judge(render_transcript(record))
-        if asyncio.iscoroutine(outcome) or isinstance(outcome, Awaitable):
-            outcome = await outcome
-        predicted = int(outcome)
+    for predicted, record in zip(predicted_labels, records):
         actual = record["label"]
         n_safe += actual == 0
         n_unsafe += actual == 1
@@ -289,6 +301,7 @@ def run_rjudge_benchmark(
     limit: int | None = None,
     records: list[dict[str, Any]] | None = None,
     cache_path: Path | None = None,
+    concurrency: int = 1,
 ) -> dict[str, Any]:
     """Score an injected judge against R-Judge human labels (env-gated).
 
@@ -313,7 +326,7 @@ def run_rjudge_benchmark(
         limit,
     )
 
-    report = asyncio.run(_score_records(judge, data))
+    report = asyncio.run(_score_records(judge, data, concurrency))
     report.update({
         "enabled": True,
         "benchmark": "rjudge_safety_agreement",
