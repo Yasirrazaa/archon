@@ -17,6 +17,15 @@ verify_attenuation() checks subsumption structurally — no shared state, no
 registry lookup — enabling fully OFFLINE verification at any depth of the
 chain. check_authorization() is a pure function of (token, request, now):
 deny_tool beats allow_tool; spend limits cap amounts; expires bounds time.
+Multiple allow_tool clauses intersect (each appended clause narrows further),
+so allowed-action-set(child) is always a subset of the parent's (Thm 4.6).
+
+Composition closure (C2b, arXiv:2608.15888 — Bounded Agents / APC): an action
+must create no prohibited combination with prior session actions. Tokens may
+carry prohibit_pair / prohibit_tuple caveats checked against a
+SessionActionRegistry of infrastructure-held prior actions; removing ONE
+pairwise prohibition raised InjecAgent data-stealing ASR 0% -> 39.9% in the
+source paper, so restrictions only ever accumulate down the chain.
 """
 
 from __future__ import annotations
@@ -29,14 +38,50 @@ ALLOW_TOOL = "allow_tool"
 DENY_TOOL = "deny_tool"
 MAX_SPEND = "max_spend"
 EXPIRES = "expires"
+PROHIBIT_PAIR = "prohibit_pair"
+PROHIBIT_TUPLE = "prohibit_tuple"
 
 
 @dataclass(frozen=True)
 class Caveat:
-    """A single restriction clause attached to a token."""
+    """A single restriction clause attached to a token.
+
+    For PROHIBIT_PAIR / PROHIBIT_TUPLE the value is an ordered list of
+    action-type strings (pair: exactly 2; tuple: >= 2).
+    """
 
     kind: str
-    value: str
+    value: str | list[str]
+
+
+class SessionActionRegistry:
+    """Infrastructure-held record of prior session actions (APC C2b).
+
+    The registry is append-only via record(); the only way to reset it is an
+    explicit new_session(). Not thread-safe by design: each agent session is
+    expected to be owned by a single execution context.
+    """
+
+    def __init__(self) -> None:
+        self._history: list[str] = []
+
+    def record(self, action_type: str) -> None:
+        """Append an executed action to the ordered session history."""
+        self._history.append(action_type)
+
+    @property
+    def history(self) -> list[str]:
+        """Ordered list of recorded actions (defensive copy)."""
+        return list(self._history)
+
+    @property
+    def exercised(self) -> frozenset[str]:
+        """Set of distinct action types recorded this session."""
+        return frozenset(self._history)
+
+    def new_session(self) -> None:
+        """Explicitly start a new session, clearing all prior actions."""
+        self._history.clear()
 
 
 @dataclass(frozen=True)
@@ -104,17 +149,27 @@ def check_authorization(
     tool: str,
     amount: float = 0.0,
     now: datetime | None = None,
+    registry: SessionActionRegistry | None = None,
 ) -> AuthorizationResult:
-    """Check a tool invocation against all token caveats, reporting every violation."""
+    """Check a tool invocation against all token caveats, reporting every violation.
+
+    When a SessionActionRegistry is supplied, composition-closure caveats
+    (prohibit_pair / prohibit_tuple) are also enforced against prior session
+    actions.
+    """
     reasons: list[str] = []
 
-    allow_tools = [c.value for c in token.caveats if c.kind == ALLOW_TOOL]
+    # Each allow_tool clause independently narrows the permitted set (they
+    # intersect, never union): appending clauses down the chain therefore
+    # preserves Blast Radius Monotonicity (Thm 4.6, arXiv:2608.15888).
+    allow_clauses = [c.value for c in token.caveats if c.kind == ALLOW_TOOL]
     denied_tools = {c.value for c in token.caveats if c.kind == DENY_TOOL}
 
     if tool in denied_tools:
         reasons.append(f"tool '{tool}' denied by deny_tool caveat")
-    if allow_tools and tool not in allow_tools:
-        reasons.append(f"tool '{tool}' not in allow list")
+    for allowed in allow_clauses:
+        if tool != allowed:
+            reasons.append(f"tool '{tool}' not in allow list")
 
     for c in token.caveats:
         if c.kind == MAX_SPEND:
@@ -141,4 +196,64 @@ def check_authorization(
             if effective_now > expiry:
                 reasons.append(f"token expired at {expiry.isoformat()}")
 
+    if registry is not None:
+        reasons.extend(verify_composition(token, registry).reasons)
+
+    return AuthorizationResult(allowed=not reasons, reasons=reasons)
+
+
+def _is_subsequence(needle: list[str], haystack: list[str]) -> bool:
+    """True iff needle appears in haystack as an ordered subsequence.
+
+    Contiguous or scattered: [a, c, b] matches [a, x, c, b]; ordering is
+    strict, so [b, a] does not match [a, b].
+    """
+    pos = 0
+    for item in haystack:
+        if pos < len(needle) and item == needle[pos]:
+            pos += 1
+    return pos == len(needle)
+
+
+def _prohibited_actions(value: str | list[str]) -> list[str] | None:
+    """Validate a prohibit caveat value; None if malformed."""
+    if (
+        isinstance(value, list)
+        and len(value) >= 2
+        and all(isinstance(a, str) for a in value)
+    ):
+        return list(value)
+    return None
+
+
+def verify_composition(
+    token: AttenuatingToken, registry: SessionActionRegistry
+) -> AuthorizationResult:
+    """Enforce composition closure (APC C2b) against prior session actions.
+
+    For every prohibit_pair caveat: deny if BOTH actions were exercised this
+    session. For every prohibit_tuple: deny if its ordered sequence appears as
+    an ordered (contiguous or scattered) subsequence of the session history.
+    """
+    reasons: list[str] = []
+    for c in token.caveats:
+        if c.kind == PROHIBIT_PAIR:
+            actions = _prohibited_actions(c.value)
+            if actions is None or len(actions) != 2:
+                reasons.append(f"malformed {PROHIBIT_PAIR} value: {c.value!r}")
+                continue
+            first, second = actions
+            if first in registry.exercised and second in registry.exercised:
+                reasons.append(
+                    f"prohibited combination performed: '{first}' + '{second}'"
+                )
+        elif c.kind == PROHIBIT_TUPLE:
+            actions = _prohibited_actions(c.value)
+            if actions is None:
+                reasons.append(f"malformed {PROHIBIT_TUPLE} value: {c.value!r}")
+                continue
+            if _is_subsequence(actions, registry.history):
+                reasons.append(
+                    f"prohibited sequence performed: {'->'.join(actions)}"
+                )
     return AuthorizationResult(allowed=not reasons, reasons=reasons)

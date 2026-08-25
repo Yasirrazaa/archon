@@ -133,6 +133,10 @@ class BrainResult:
     turns_used: int = 0
     errors: list[str] = field(default_factory=list)
     budget_declared: int = 6
+    # PIMiner hierarchical-memory extensions (Sprint E3-66); empty/0 for brains
+    # that run without run-memory, so every consumer stays backward compatible.
+    routed_strategies: list[str] = field(default_factory=list)
+    memory_chars: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -142,6 +146,8 @@ class BrainResult:
             "turns_used": self.turns_used,
             "errors": list(self.errors),
             "budget_declared": self.budget_declared,
+            "routed_strategies": list(self.routed_strategies),
+            "memory_chars": self.memory_chars,
         }
 
 
@@ -173,7 +179,7 @@ class LlmBrainAttacker:
 
             try:
                 completion = await self.provider.generate(
-                    [{"role": "user", "content": meta_prompt}]
+                    self._prepare_messages(meta_prompt)
                 )
                 raw_completion = completion.content
                 payload = parse_response_payload(raw_completion)
@@ -209,6 +215,15 @@ class LlmBrainAttacker:
 
         result.turns_used = len(result.turns)
         return result
+
+    def _prepare_messages(self, meta_prompt: str) -> list[dict]:
+        """Seam for memory-augmented subclasses to prepend context messages.
+
+        The default brain sends exactly one user message; PIMiner-style
+        subclasses (:mod:`archon_core.attacks.piminer`) override this to
+        prepend strategy/run-memory blocks ahead of the O-T-S-R prompt.
+        """
+        return [{"role": "user", "content": meta_prompt}]
 
     @staticmethod
     def _render_observation(history: list[tuple[str, Any]]) -> str:

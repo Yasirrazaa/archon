@@ -14,7 +14,7 @@ Prior drafts state *"334/404 passing tests"*. Current reality:
 
 | Area | Status |
 |---|---|
-| Tests | **1,941 passing / 3 skipped** (CI-enforced, ≥85% coverage gate) |
+| Tests | **2,093 passing / 3 skipped** (CI-enforced, ≥85% coverage gate) |
 | P0 enterprise blockers | ✅ **All closed**: HMAC-signed identity (+ ed25519 identity v2, attenuating tokens, nonce store), `archon` CLI + CI gates, scrubbed OTel→Cloud Trace telemetry, policy versioning + audit trail, Postgres registry + migrations, Dockerfile/compose/wheel/Helm, SECURITY.md threat model, cosign-signed SBOM releases |
 | P1 differentiators | ✅ **All shipped + expanded**: 222-probe corpus (largest open agentic corpus, ahead of Garak's 195), MCP static + live behavioral scanning, compliance evidence reports with evidence-derived severity, Policy-CI baseline gates, fleet gate, community pack loader, ExternalGuardrailLayer, kill-switch w/ MTTC, purple runs, shadow mode, plan-divergence detection |
 | Post-hackathon sprints | ✅ **ROADMAP COMPLETE through Phase E2.11**: live tool/memory/multi-agent/MCP/supply-chain/cascade/trust/rogue attack targets, trace-driven generation, comparison engine + checkpoint/resume, Web UI, contrib gallery, Homebrew/npm distribution, ADK adapter, multi-tenancy v1, FinBot CTF adapter |
@@ -187,7 +187,7 @@ about someone else's guardrail. Nothing else on stage says that.
 | "Garak v0.15.0 GOAT probe + agent-breaker" | ✅ Verified in code Aug 23 | `probes/goat.py` + `probes/agent_breaker.py` exist in v0.16.1.pre1 |
 | "PyRIT v0.13 AttackTechnique abstraction" | ✅ Superseded by v1.1 rewrite | Now scenario/registry architecture with `pyrit_scan` CLI + CoPyRIT GUI; still zero compliance mapping (grep-verified) |
 | "97M+ MCP downloads / 82% vulnerable" | ❓ Unverified | Do not cite without source |
-| "Status: 334/404 tests" | ❌ Stale | Now **1,941 tests**, CI-enforced; ROADMAP fully closed through Phase E2.11 (see §0) |
+| "Status: 334/404 tests" | ❌ Stale | Now **2,093 tests**, CI-enforced; ROADMAP fully closed through Phase E3 (see §0) |
 | "Window is 6–12 months" | 🔴 Too optimistic | Verified Guardrails/MCP-Proxy move ⇒ ~3–6 months |
 | "OWASP Agentic ASI01-10 IDs unverified" | ✅ Verified | Confirmed via DeepTeam integration and Auth0 analysis: ASI01–ASI10 |
 | "Augustus doesn't exist" | ❌ New competitor | Praetorian's Augustus v0.0.9: 210+ probes, 4 multi-turn strategies, Go-based |
