@@ -183,6 +183,11 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Skill-scan Storage/Retrieval/Evolution stages
 - [x] Prompt-as-Rule LLM audit tier over MCP regexes
 
+
+## Universal benchmark coverage (Phase E4 — wave 13)
+
+- [ ] SkillTrustBench · XSTest · Agent-SafetyBench · BIPIA · AgentHarm · HarmBench-full · WASP dual-ASR · StrongREJECT · IPIArena · ASB · MCPTox wrapper · tau-bench loader — all reproducible (cache→network→fixture), deterministic-first
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.

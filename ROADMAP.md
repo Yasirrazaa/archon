@@ -305,6 +305,25 @@ Source: three-way improvement mining across promptfoo/augustus/agent-scan (DX + 
 71. ~~**Skill-scan lifecycle stages**~~ ✅ **SHIPPED (wave 12)** — Storage (manifest consistency declared-vs-body), Retrieval (cross-file similarity clustering for Sybil/stuffing), Evolution (version-diff escalation) per SkillSec-Eval.
 72. ~~**Prompt-as-Rule LLM audit tier**~~ ✅ **SHIPPED (wave 12)** — opt-in NL-criteria tier over mcp_scan regexes w/ mandatory exclusion conditions + network-reachability filtering (AI-Infra-Guard discipline).
 
+### Phase E4 — Universal Benchmark Coverage (wave 13, Aug 25)
+
+Goal: run every benchmark competitors and frontier papers use, fully reproducible
+(cache → network → committed fixture loaders, deterministic grading first, LLM tiers env-gated).
+All code lives in `packages/archon_benchmarks/`.
+
+73. ~~**SkillTrustBench**~~ (5,520-case skill-supply-chain dataset, HF cuhk-zhuque/SkillTrustBench) — validates skill_scan lifecycle stages vs ground-truth labels
+74. ~~**XSTest**~~ (250 over-refusal contrast prompts) — citable false-positive/over-refusal benchmark upgrading the FPR claim
+75. ~~**Agent-SafetyBench**~~ (2,000 cases, 10 risk categories) — deterministic reference-pipeline block-rate grading
+76. ~~**BIPIA**~~ (web/email indirect injection) — maps onto latent-injection machinery
+77. ~~**AgentHarm**~~ (440 tasks) — refusal-grading deterministic tier + env-gated LLM judge
+78. ~~**HarmBench full behaviors**~~ (400 behaviors vs 25-probe pack) — corpus expansion benchmark module
+79. ~~**WASP dual-ASR tagging**~~ on AgentDojo runs (ASR-intermediate vs end-to-end reporting layer)
+80. ~~**StrongREJECT**~~ (rubric judge; deterministic keyword fallback + env-gated LLM rubric)
+81. ~~**IPIArena loader**~~ (PIMiner's training/test arena; fixture fallback w/ honest availability note)
+82. ~~**ASB loader**~~ (agent security bench used by AgentFlow/APC)
+83. ~~**MCPTox-style live-MCP probing wrapper**~~ over mcp_live (env-gated live tier + offline emulation)
+84. ~~**tau-bench task loader**~~ (deterministic policy-probe tier over public tasks; full user-sim harness documented as stretch)
+
 ## Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
