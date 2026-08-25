@@ -293,7 +293,19 @@ Source: three-way improvement mining across promptfoo/augustus/agent-scan (DX + 
 88. ~~**BEAST adversarial suffixes**~~ ✅ **SHIPPED (wave 11)** — beam-search suffix generation without logprobs (garak suffix.py, arXiv 2402.15570) + cached-GCG variant.
 89. ~~**Compliance-card report module**~~ ✅ **SHIPPED (wave 11)** — framework compliance cards w/ pass-rate rollups (promptfoo FrameworkCompliance pattern) rendered from evidence packs.
 
-### Phase E3 — Ecosystem & Distribution (months 3–6)
+#### Phase E3 — Research-Derived Frontier (post-hackathon, weeks 1–6)
+
+> Sources: docs/new_research.md (12-paper deep read, Aug 25, arXiv-verified) + model-sensitivity study (RESULTS.md).
+
+66. ~~**PIMiner hierarchical-memory attacker upgrade**~~ ✅ **SHIPPED (wave 12)** — RunMemory intra-dataset Curate store (20K cap), StrategyLibrary markdown files, LLM Top-K router w/ cold-start fallback, Digester classify-by-mechanism protocol; ablation-grounded (+17.8–19.8 pts avg ASR per PIMiner Table).
+67. ~~**Action-time policy reminder DefenseLayer**~~ ✅ **SHIPPED (wave 12)** — runtime interjection at action boundary (NOT system prompt), REDAgentBench −74.19pp evidence, matched-pair replay w/ placebo control.
+68. ~~**Property-tagged metrics (SA/TA/AA/DI)**~~ ✅ **SHIPPED (wave 12)** — tag findings by violated property (Source Authorization / Task Alignment / Action Alignment / Data Isolation) per arXiv:2607.22024; reports decompose compromises by property.
+69. ~~**StepJack deterministic CUA target**~~ ✅ **SHIPPED (wave 12)** — page-chain simulator w/ env-state checkers + per-step compliance βᵢ diagnostics; GPL dataset loader (cache→network→fixture); DSP defense layer port.
+70. ~~**APC composition-closure caveats (C2b)**~~ ✅ **SHIPPED (wave 12)** — prohibit_pair/prohibit_tuple caveats + session prior-action registry held outside the model; Blast Radius Monotonicity property test.
+71. ~~**Skill-scan lifecycle stages**~~ ✅ **SHIPPED (wave 12)** — Storage (manifest consistency declared-vs-body), Retrieval (cross-file similarity clustering for Sybil/stuffing), Evolution (version-diff escalation) per SkillSec-Eval.
+72. ~~**Prompt-as-Rule LLM audit tier**~~ ✅ **SHIPPED (wave 12)** — opt-in NL-criteria tier over mcp_scan regexes w/ mandatory exclusion conditions + network-reachability filtering (AI-Infra-Guard discipline).
+
+## Phase E3 — Ecosystem & Distribution (months 3–6)
 
 16. **Plugin marketplace directory** — curated `contrib/` gallery indexed in README; CI matrix for community pulls; `archon plugins publish` command.
     - *Why:* Garak and Promptfoo have thriving plugin ecosystems; Archon's five seams need equivalent community engagement.

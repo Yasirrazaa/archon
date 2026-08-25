@@ -173,6 +173,16 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Tier 2: SARIF 2.1.0 output ⭐ category-first (`archon results --sarif` → GitHub Code Scanning), self-contained HTML report (`archon results --html`), `archon discover` local-config discovery, SKILL.md supply-chain scanning, buff layer (N_probes × N_buffs multiplicative coverage), judge-calibration harness (accuracy/F1/kappa vs human labels), run-history experiment store w/ diffs, toxic-flow capability graph + E002 cross-server shadowing
 - [x] Tier 3: coding-agent target suite core-5 (verifier-sabotage / CI-poisoning / procfs-read / egress-bypass / tty-injection), streaming rolling-buffer rails, BEAST deterministic suffix attacker, compliance-card renderer
 
+## Research-derived frontier (Phase E3 — wave 12)
+
+- [x] PIMiner hierarchical-memory attacker upgrade (RunMemory + StrategyLibrary + Router + Digester)
+- [x] Action-time policy reminder DefenseLayer (REDAgentBench −74pp protocol)
+- [x] Property-tagged metrics SA/TA/AA/DI (arXiv:2607.22024)
+- [x] StepJack deterministic CUA target + GPL dataset loader
+- [x] APC composition-closure caveats (C2b prior-action registry)
+- [x] Skill-scan Storage/Retrieval/Evolution stages
+- [x] Prompt-as-Rule LLM audit tier over MCP regexes
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.
