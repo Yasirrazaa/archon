@@ -34,6 +34,8 @@ Reproduce: `uv run python -m archon_benchmarks.runner` (deterministic),
 `run_full_pipeline_benchmark()` / `run_strict_asr_benchmark()` / `run_injecagent_benchmark()`
 (env-gated with an API key), `run_target_series()` / `run_passk()` (offline).
 
-Status: all tiers above are published. Still pending: LLM-brain
-(GOAT-style) validation at CAISI-scale attempt budgets, which requires a
-high-quota API key; our free-tier validation run is documented in RESULTS.md.
+Status: all tiers published, including CAISI-scale LLM-brain validation
+(Aug 25, stealth/ox-alpha): adaptive brains defeat rule-only defense in ≤2
+turns while the full-pipeline shield holds ASR to 12.35% — see the
+model-sensitivity study in RESULTS.md. Still pending: replication across
+additional frontier models.

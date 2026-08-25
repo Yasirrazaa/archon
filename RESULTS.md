@@ -179,6 +179,27 @@ First live run of `LlmBrainAttacker` (GOAT-style Observation-Thought-Strategy-Re
 
 Honest reading: a lite-model brain at budget 4 is a *floor*, not a ceiling — CAISI's 81%-adaptive numbers come from frontier brains at budget 25. The result independently confirms the strict-ASR finding: model-native safety absorbs most post-pipeline pressure. Brain budget is always declared in `BrainResult.budget_declared`; no competitor's GOAT/TAP equivalent discloses theirs.
 
+## Model-sensitivity study (stealth/ox-alpha via OpenRouter) — Aug 25, 2026
+
+Full re-run of the live ladder with a stronger model (`stealth/ox-alpha` via OpenRouter) as BOTH attack brain and target, closing the CAISI-scale validation pending item.
+
+| Series | gemini-3.5-flash-lite | stealth/ox-alpha |
+|---|---|---|
+| Tier-3 full-pipeline ASR (shielded) | 27.2% | **12.35%** |
+| Strict-ASR (unshielded, budget 5, seed 42) | 18.5% | **74.07%** |
+| LLM-brain vs unshielded target (max 25 turns) | — | **6/6 success, all at turn 1** |
+| LLM-brain vs deterministic-tier shield (max 25 turns) | 0/3 @ budget 4 | **6/6 success, mean 1.3 turns** |
+
+Tier-3 detail: 81 attacks — 27 blocked by the pipeline (33.3%), 54 reached the upstream model, 10 complied. Per-suite succeeded: banking 4, slack 2, travel 2, workspace 2.
+
+### Three findings
+
+1. **Model choice dominates unshielded posture.** Strict-ASR swings 18.5% → 74.07% on model selection alone (4×). Any vendor quoting a single "ASR number" without naming the target model is publishing noise.
+2. **Defense-in-depth compounds with model strength.** The same free deterministic tier cuts full-pipeline ASR 27.2% → 12.35% when paired with a stronger model — the shield and the model are complements, not substitutes.
+3. **Rule-only defense does not stop adaptive brains.** Against the deterministic reference pipeline alone (normalization + rule classification + segmentation + spotlighting + execution-mode), an ox-alpha-brained GOAT-style attacker defeated all 6 goals in ≤2 turns (mean 1.3). This is the empirical case for Archon's full stack: LLM defense layers in production policy, the external-guardrail seam, and continuous purple re-testing — defense is a process, not a config. Consistent with NIST CAISI's finding that adaptive attacks reach 81% where static baselines achieve 11%.
+
+Methodology: attempt_budget declared per series (1 / 5 / 25); adaptivity static (multi-attempt) vs adaptive (LlmBrainAttacker O-T-S-R); judge = refusal-heuristic + state compliance detection; upstream_model = stealth/ox-alpha via OpenRouter for both brain and target; one earlier partial run against a stricter policy variant held one goal for the full 25-turn budget — policy configuration materially changes outcomes, which is precisely why `archon purple` measures YOUR policy rather than trusting ours.
+
 ## InjecAgent benchmark (deterministic tier) — Aug 24, 2026
 
 Second published agentic benchmark, alongside AgentDojo. InjecAgent (Shi et al., arXiv:2403.02691) tests tool-integrated agents against **1,054 injection cases embedded in tool responses**: 510 direct-harm and 544 data-stealing settings across 17 user tools. Unlike AgentDojo's wrappers, InjecAgent's injections are *polite imperative instructions inside JSON tool output* — no override keywords.
