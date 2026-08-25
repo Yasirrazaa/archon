@@ -22,7 +22,7 @@ We kept asking one question: **why isn't the red team and the blue team the same
 
 Archon (open source, MIT) closes that loop:
 
-1. **Attack.** A 202-probe corpus spanning OWASP LLM Top 10 and the full Agentic Top 10 (ASI01–10), plus live attack targets: tool calls executed in instrumented sandboxes where success is verified by environment state (did the money actually move?), real vector-store poisoning, multi-agent swarms with trust boundaries, MCP servers that rug-pull after N clean calls, approval-fatigue exploitation.
+1. **Attack.** A 222-probe corpus spanning OWASP LLM Top 10 and the full Agentic Top 10 (ASI01–10), plus live attack targets: tool calls executed in instrumented sandboxes where success is verified by environment state (did the money actually move?), real vector-store poisoning, multi-agent swarms with trust boundaries, MCP servers that rug-pull after N clean calls, approval-fatigue exploitation.
 2. **Shield.** archon-armor is a drop-in OpenAI-compatible proxy — point your agent's `OPENAI_BASE_URL` at it. Eight defense layers, HMAC workload identity with replay protection, per-agent policy, rate limiting, and an atomic kill switch whose time-to-containment is measured in milliseconds and written to an immutable audit trail.
 3. **Prove.** Re-run identical attacks against the shielded agent. `archon purple --ci` emits a delta verdict — newly blocked probes, block-rate change, pass/fail for CI gates. Every finding carries evidence-derived severity vectors and maps to EU AI Act articles, NIST AI RMF functions, and ISO 42001 controls, with tamper-evident hashes and chain-of-custody.
 

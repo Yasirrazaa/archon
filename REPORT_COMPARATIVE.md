@@ -57,7 +57,7 @@ System health: **1868 passed / 3 skipped** (skips: live-Postgres integration beh
 
 ---
 
-## 3. Competitor scorecard (verified Aug 22, refreshed Aug 24 post-wave-9 — 1,868 tests)
+## 3. Competitor scorecard (verified Aug 22, refreshed Aug 25 post-wave-11 — 1,868 tests)
 
 Legend: ● mature/best-in-class · ◐ partial/new · ○ absent
 
@@ -99,9 +99,9 @@ these projects publishing reproducible AgentDojo numbers from its own harness.
 ## 4. Honest gaps (where competitors still lead)
 
 These are the rows we must own to be the best at anything, not just the best "gap".
-*Refreshed Aug 24 post-wave-7 — per-competitor closure ledger.*
+*Refreshed Aug 25 post-wave-11 — per-competitor closure ledger.*
 
-1. ~~**Probe/plugin corpus**~~ — ✅ **CLOSED (wave 7):** corpus **202** main-corpus probes
+1. ~~**Probe/plugin corpus**~~ — ✅ **CLOSED (wave 7):** corpus **222** main-corpus probes
    (+18 contrib verticals) vs Garak's 195. We are now the largest open agentic-security
    probe corpus, and ours execute against live targets with state-diff ground truth —
    a property no raw probe count captures.

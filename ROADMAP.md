@@ -23,7 +23,7 @@
 | Multi-provider support | `LLMProvider` ABC; OpenAI-compat + Gemini providers | `packages/archon_core/providers/` |
 | YAML configuration | `archon scan --config archon.yaml` | `packages/archon_core/config.py` |
 | CLI with CI exit codes | `archon register / scan / scan-mcp / battle / serve / report / fleet / plugins` | `packages/archon_cli/` |
-| Probe corpus + OWASP mapping | 202 probes across all 10 OWASP LLM Top-10 categories + encoding + latent + data-exfiltration + HarmBench + jailbreak-persona packs + benign canaries + contrib | `packages/archon_armor/probes.py` |
+| Probe corpus + OWASP mapping | 222 probes across 10 packs (all 10 OWASP LLM categories, data-exfil, ANSI exfil, package-hallucination, HarmBench, jailbreak personas, encoding, latent, canaries) + contrib | `packages/archon_armor/probes.py` |
 | Community plugin packs | `load_pack_file()`, `ARCHON_CONTRIB_DIR` auto-load | `probes.py`, `archon_cli/main.py` |
 | Runtime defense product | archon-armor FastAPI OpenAI-compat proxy | `packages/archon_armor/` |
 | Enterprise governance | Versioned policies, immutable audit trail, Postgres registry | `registry/versioned.py`, `registry/postgres.py`, `audit.py` |
@@ -54,7 +54,7 @@
 
 *Code-quality audit verdict at audit time: **B+ hackathon, C+ enterprise** — every gap it
 named has since been closed by Phases E0/E2.6 (see the gap table below). Current state:
-**1402 passing tests**, CI-enforced.*
+**1,868 passing tests**, CI-enforced.*
 
 1. **CI pipeline ✅ SHIPPED (Aug 23 — .github/workflows/ci.yml test matrix py3.11-3.13 + ruff + --cov-fail-under=85 gate at 93% actual + release.yml tags/SBOM)** — GitHub Actions: test matrix (py3.11/3.12/3.13), ruff + mypy strict on
    `packages/`, coverage gate ≥85%, release workflow with tags + SBOM.
@@ -94,7 +94,7 @@ These items close the gap between "impressive hackathon project" and "enterprise
    - *Why:* The hackathon demo is time-limited; a persistent demo is what enterprises actually evaluate.
    - *Effort:* 3–5 days
 
-4. ~~**Probe corpus 150+**~~ ✅ **SHIPPED** (waves 5+7: HarmBench behavioral ×25, jailbreak personas ×25, data-exfiltration ×50 packs; corpus 102→**202**, now ahead of Garak's 195; threshold test ≥200) — adversarial benchmark suites as packs; community pack loader keeps this crowd-solvable.
+4. ~~**Probe corpus 150+**~~ ✅ **SHIPPED** (waves 5+7: HarmBench behavioral ×25, jailbreak personas ×25, data-exfiltration ×50 packs; corpus 102→**222** (waves 7+11), ahead of Garak's 195; threshold test ≥200) — adversarial benchmark suites as packs; community pack loader keeps this crowd-solvable.
    - *Why:* Corpus breadth was Archon's weakest attack-side row. Community pack loader makes this crowd-solvable.
    - *Effort:* 1–2 weeks (incremental)
 
@@ -363,7 +363,7 @@ and formal certification, not engineering hygiene.*
 
 | Gap | Severity | Evidence | Closure path |
 |---|---|---|---|
-| ~~Probe corpus breadth vs Garak (195)~~ | ✅ CLOSED | **202 probes** vs 195 — largest open agentic-security corpus (wave 7 data-exfiltration pack) | Done; contrib gallery keeps growing it |
+| ~~Probe corpus breadth vs Garak (195)~~ | ✅ CLOSED | **222 probes** vs 195 — largest open agentic-security corpus (waves 7+11: data-exfil, ANSI exfil, package-hallucination packs) | Done; contrib gallery keeps growing it |
 | ~~Provider diversity (local vLLM)~~ | ✅ CLOSED | VllmProvider preset + docs + schema-valid example (wave 8); Claude/Gemini/Gemma/OpenRouter/NVIDIA presets shipped | Done |
 | Live demo + persistent docs | 🟠 Medium | mkdocs site shipped; GitHub Pages enablement is user-side 2-click | Enable Pages + YouTube walkthrough |
 | ~~Full-pipeline benchmark (LLM layers)~~ | ✅ CLOSED | Tier-3 published: live Gemini full-pipeline ASR 27.2% vs deterministic 66.7% | Done |
@@ -393,8 +393,8 @@ An enterprise CISO evaluating agent security tools needs:
 | Metric | Target | Current |
 |---|---|---|
 | GitHub stars | 5,000+ | ~500 |
-| Probe corpus | 200+ | **202** ✅ |
-| Published benchmarks | 3+ (AgentDojo, HarmBench, custom) | **8+** ✅ (AgentDojo deterministic + Tier-3, InjecAgent, pass^k, R-Judge heuristic+LLM, strict-ASR, per-target series, FPR) |
+| Probe corpus | 200+ | **222** ✅ |
+| Published benchmarks | 3+ (AgentDojo, HarmBench, custom) | **9+** ✅ (AgentDojo deterministic + Tier-3, InjecAgent, pass^k, R-Judge heuristic+LLM, strict-ASR, per-target series, FPR, FinBot suite) |
 | Enterprise pilots | 5+ | 0 |
 | Community plugins | 50+ | 18 (contrib/) |
 | Documentation pages | 100+ | ~20 |

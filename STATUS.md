@@ -1,6 +1,6 @@
 # Archon — Current Status
 
-> **Last updated:** August 24, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1868 passed / 3 skipped
+> **Last updated:** August 25, 2026 · **Branch:** `hackathon-v2` · **Suite:** 1868 passed / 3 skipped
 > This is the single source of truth for "where is the project right now." Historical docs live in `docs/archive/`.
 
 ## What Archon is
@@ -100,7 +100,7 @@ defense + adversarial proof.
 - [x] ClaudeNativeProvider (shipped, commit e37305c)
 - [x] Local vLLM attacker provider (shipped, wave 8: VllmProvider preset + docs)
 - [x] ASI04/ASI08/ASI09/ASI10 coverage (shipped, waves 1–2: supplychain/cascade/trust/rogue targets)
-- [x] HarmBench probe pack (shipped, commit 2841b7f; corpus now 202 incl data-exfiltration pack)
+- [x] HarmBench probe pack (shipped, commit 2841b7f; corpus now 222 across 10 packs (incl. data-exfiltration, ANSI-exfil, package-hallucination))
 - [ ] Persistent docs site hosting (mkdocs shipped; GitHub Pages = user-side 2-click)
 - [ ] Managed cloud control plane
 
@@ -134,7 +134,7 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 - [x] Google ADK adapter (shipped, wave 6) (battle target; also mandatory-requirement evidence)
 - [x] GitHub Pages docs workflow (shipped, wave 6)
 - [x] Multi-tenancy v1 (shipped, wave 6) (tenant-scoped results/registry)
-- [ ] FinBot CTF adapter (deferred — needs external repo clone)
+- [x] FinBot CTF adapter (shipped: repo cloned, FinBotTarget + offline sim extended to 7 challenge-grounded vectors; offline benchmark published in RESULTS.md)
 
 ## Evidence & hardening sprint (Phase E2.8 / Wave 7 — see ROADMAP items 45–54) — ✅ SHIPPED
 

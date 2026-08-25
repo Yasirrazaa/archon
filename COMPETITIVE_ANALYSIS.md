@@ -91,9 +91,9 @@ The **OWASP Top 10 for Agentic Applications (2026)** is now published and peer-r
 | Unexpected Code Execution | ASI05 | ✅ Full | `targets/code_exec.py` battle suite (sleeper agent, sandbox escape, destructive commands) + defenses |
 | Memory & Context Poisoning | ASI06 | ✅ live memory/vector-store poisoning | — |
 | Insecure Inter-Agent Communication | ASI07 | ✅ ASI07 trust-boundary attacks (closed-loop) | — |
-| Cascading Agent Failures | ASI08 | ❌ | cascade-recovery targets |
-| Human-Agent Trust Exploitation | ASI09 | ⚠️ via scenario plugins | social-engineering targets |
-| Rogue Agents | ASI10 | ❌ | rogue-agent detection |
+| Cascading Agent Failures | ASI08 | ✅ Full (cascade target) | cascade-recovery targets |
+| Human-Agent Trust Exploitation | ASI09 | ✅ Full (approval-fatigue target) | social-engineering targets |
+| Rogue Agents | ASI10 | ✅ Full (rogue stego target) | rogue-agent detection |
 
 Aligning terminology to this table in the Devpost description signals fluency to judges.
 
@@ -101,7 +101,7 @@ Aligning terminology to this table in the Devpost description signals fluency to
 
 ## 5. Enterprise Readiness Scorecard (post Phase 5 — Aug 2026)
 
-Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,376 tests**, Aug 24, post-wave-9).
+Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflects code on `hackathon-v2` (**1,868 tests**, Aug 25, post-wave-11).
 
 | # | Enterprise dimension | **Archon v3** | Promptfoo | Garak | PyRIT | NeMo Guard | Model Armor | Snyk Agent Scan |
 |---|---|---|---|---|---|---|---|---|
@@ -112,7 +112,7 @@ Scale: **0 = absent · 1 = partial · 2 = best-in-class**. Archon column reflect
 | 5 | Agent identity/registry/policy governance | **2** ✅ HMAC identity, versioned policies, audit trail | 0 | 0 | 0 | 0 | **2** (GCP IAM) | 0 |
 | 6 | Observability & audit evidence | **2** ✅ OTel→Cloud Trace, scrubbed, immutable audit | 1 | 1 | 0 | 1 | **2** | 1 |
 | 7 | CI/CD developer experience (CLI, exit codes) | **2** ✅ scan/battle/fleet/report/compare all `--ci` | **2** | 1 | 1 (`pyrit_scan`) | 1 | n/a | **2** |
-| 8 | Threat/probe corpus breadth | **2** ✅ (202 probes post-wave-7 — now the largest open agentic-security corpus, ahead of Garak's 195; benchmark-backed via published AgentDojo numbers, per-target ground-truth series ASR 81.8%, FPR 0%; live-execution attack classes nobody else has) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
+| 8 | Threat/probe corpus breadth | **2** ✅ (222 probes post-wave-11 — now the largest open agentic-security corpus, ahead of Garak's 195; benchmark-backed via published AgentDojo numbers, per-target ground-truth series ASR 81.8%, FPR 0%; live-execution attack classes nobody else has) | **2** (~150 plugins) | **2** (195 probes) | **2** (94 templates + 59 datasets) | 0 | internal | 1 (static MCP) |
 | 9 | MCP/tool-surface testing | **2** ✅ static scan + live behavioral probing | 1 (real MCP target) | 0 | 0 | 1 (schema rails) | 1 (integration) | **2** (static, closed analysis) |
 | 10 | Production hardening (authN/Z, HA, multi-tenant) | **2** ✅ HMAC+rate-limit, Postgres, Helm non-root | 1 | 0 | 0 | 1 | **2** | 1 |
 | 11 | Open source + self-hostable | **2** | **2** | **2** | **2** | **2** | 0 | 2 (no contribs) |
@@ -199,6 +199,8 @@ Each is small, tested, and compounds: every one either adds users, adds proof, o
 10. ➕ (Aug 23) Added Augustus (Praetorian), Obot, Guardrails AI, NeuralTrust to the landscape based on web research.
 11. ➕ (Aug 23) Added market size data ($769M→$2.1B by 2035) and M&A activity (Palo Alto/Protect AI, Snyk/Invariant Labs).
 12. ✅ (Aug 24, post-waves 7–9) Refresh at 1,376 tests: corpus row now 202 probes (largest open agentic corpus); published-benchmark ladder added (AgentDojo deterministic + Tier-3 full-pipeline 27.2%, InjecAgent, strict-ASR 18.5%, per-target ground-truth 81.8%, pass^k, R-Judge judge-agreement 89.2% at human ceiling — no competitor publishes attempt-budget-disclosed numbers); ASI coverage now 10/10 full (ASI05 closed Aug 24 by targets/code_exec.py).
+
+13. ✅ (Aug 25, post-wave-11) Competitor-mined completion wave: all 24 improvements shipped — SARIF 2.1.0 output (**category-first: no competitor emits SARIF**, unlocks GitHub Code Scanning), judge-calibration harness w/ Krippendorff α (productizes R-Judge one-off), fail-closed tool-call schema rail (NeMo IORails port), Policy Puppetry + token-smuggling converters (PyRIT ports), coding-agent target suite core-5 (promptfoo parity), SKILL.md scanning + `archon discover` (agent-scan parity), toxic-flow graph + E002 shadowing, buff layer (garak pattern), BEAST suffixes, streaming rolling-buffer rails, /v1/checks sidecar. Corpus 202→222; suite →1,868.
 
 ---
 

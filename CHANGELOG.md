@@ -34,7 +34,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added (waves 10–11, Aug 25)
+
+- **MCP transport attacks**: DNS-rebinding (TOCTOU), session-hijack, off-path credential-exfil targets with paired defenses.
+- **Armor observability**: Prometheus `/metrics` endpoint (per-agent counters + latency histogram).
+- **YAML probe packs**: community-contributable packs via `contrib/yaml/` with validation.
+- **CI hardening**: AI code-review workflow, secrets-scan, dependency verify-pins.
+- **Defense**: fail-closed tool-call schema validation rail (NeMo IORails port); `/v1/checks` standalone sidecar endpoint; streaming output-rail rolling buffers.
+- **Attackers**: Policy Puppetry converter, token smuggling (Unicode variation selectors), BEAST beam-search suffixes, buff layer (multiplicative probe fan-out), behavior-shift early-stop (SHIFT_DETECTED) wired into multi-turn attackers.
+- **Probes**: corpus 202 → 222 (ANSI escape exfiltration ×10, package hallucination ×10).
+- **Targets**: coding-agent suite ×5 (verifier sabotage, automation poisoning, procfs credential read, network egress bypass, terminal-output injection).
+- **Reporting**: SARIF 2.1.0 export (GitHub Code Scanning integration — category-first), self-contained HTML battle report, compliance cards (OWASP pass-rate bars + EU-AIA/NIST), judge-calibration harness (Krippendorff α vs R-Judge anchors), run-history store with policy-diff regression views, harm-taxonomy YAML layer (12 defs × 5-level rubrics), metric output contracts, ensemble score aggregation, deterministic agent-loop metric.
+- **Discovery & scanning**: `archon discover` local agent-config discovery; SKILL.md supply-chain scanning (injection/downloads/secrets/remote-fetch); toxic-flow capability graph + cross-server tool shadowing (E002); hidden-Unicode scanner with U+E0000 tag decoding.
 
 ## [1.0.0] - 2026-08-23
 
