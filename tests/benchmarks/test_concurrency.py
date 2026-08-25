@@ -10,10 +10,11 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-
-from archon_benchmarks.agentharm import AgentHarmBehavior, _run_live as ah_run_live
+from archon_benchmarks.agentharm import AgentHarmBehavior
+from archon_benchmarks.agentharm import _run_live as ah_run_live
 from archon_benchmarks.rjudge import _score_records
-from archon_benchmarks.strongreject import StrongRejectRecord, _run_live as sr_run_live
+from archon_benchmarks.strongreject import StrongRejectRecord
+from archon_benchmarks.strongreject import _run_live as sr_run_live
 
 
 class _FakeTarget:
