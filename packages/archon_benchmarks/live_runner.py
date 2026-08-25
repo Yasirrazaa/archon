@@ -289,7 +289,6 @@ def run_phase_piminer(out_dir: Path, cfg: dict[str, str], concurrency: int = 5) 
     )
 
     from archon_benchmarks.agentdojo_corpus import load_agentdojo_v1_tasks
-    from archon_benchmarks.runner import build_attack_prompts
     from archon_benchmarks.strict_asr import LiveAttackTarget
 
     tasks = load_agentdojo_v1_tasks()
@@ -306,14 +305,13 @@ def run_phase_piminer(out_dir: Path, cfg: dict[str, str], concurrency: int = 5) 
 
         async def worker(task) -> None:
             async with sem:
-                seed = build_attack_prompts(task)[0].payload
                 attacker = PiminerBrainAttacker(
                     _make_provider(cfg),
                     max_turns=25,
                     run_memory=run_memory,
                 )
                 target = LiveAttackTarget(upstream=_make_target(cfg))
-                result = await attacker.run(target, task.goal, [seed])
+                result = await attacker.run(target, task.goal)
                 success = bool(
                     getattr(result, "success", getattr(result, "succeeded", False))
                 )
