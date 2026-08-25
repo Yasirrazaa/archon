@@ -34,6 +34,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (research frontier wave 12, Aug 25)
+
+- **Attackers**: PiminerBrainAttacker — hierarchical memory upgrade to the LLM brain
+  (persistent Strategy Library markdown files, intra-dataset RunMemory w/ Curate distillation
+  20K cap, LLM strategy router Top-K=3, Experience Digester 3-way classify) per arXiv:2608.05108.
+- **Defense**: ActionReminderLayer — action-time policy reminder (REDAgentBench −74.19pp
+  evidence) with `replay_with_placebo` 3-arm protocol (policy/self/placebo).
+- **Reporting**: property tags SA/TA/AA/DI (Source Authorization / Task Alignment / Action
+  Alignment / Data Isolation) — findings now decompose by violated security property.
+- **Targets**: StepJackTarget — deterministic CUA page-chain attacks w/ env-state checkers,
+  DSP defense, GPL dataset loader (cache→network→fixture).
+- **Security**: caveats.py composition closure (prohibit_pair/prohibit_tuple caveats +
+  SessionActionRegistry + Blast Radius Monotonicity property test); skill_scan lifecycle stages
+  (manifest consistency, Sybil clustering @0.85 Jaccard, version-diff escalation);
+  prompt_as_rule.py LLM audit tier (10 OWASP-MCP-aligned rules w/ mandatory exclusions +
+  untrusted-artifact delimitation).
+- **Benchmarks**: wave-12 ground-truth series over 6 new targets — mean ASR 66.7% zero-LLM.
+
 ### Added (enterprise wave, Aug 25)
 
 - **Multi-tenancy v2**: TenantStore (tenant entities + agent enrollment, strict isolation), `X-Tenant-ID` enforcement middleware on armor (403 cross-tenant), tenant-scoped results (v1) now joined by registry-level tenancy primitives.

@@ -26,7 +26,7 @@
 
 ## 1. Strategy in One Paragraph
 
-Archon's core is already differentiated and proven (**1,868 passing tests**, CI-enforced, ranked 6th Defense in the Berkeley AgentBeats arena): an adaptive multi-turn attack engine (GOAT-style) and a budgeted multi-layer defense pipeline that no open-source competitor combines. The path to world-class is **not** more attack research — it is **productization**: extract the attack engine and defense pipeline into a provider-agnostic core library, ship the defense pipeline as a deployable runtime proxy (the one thing Garak/Promptfoo/PyRIT categorically don't do), wrap everything in extensible ABCs so new providers/targets/plugins bolt on without touching core, and treat hackathon integrations (Google ADK, Gemini, GCP, Cloud Run) as **optional adapters**, not architectural dependencies. Win the hackathon *because* the product is good, not by warping the product around the hackathon.
+Archon's core is already differentiated and proven (**2,093 passing tests**, CI-enforced, ranked 6th Defense in the Berkeley AgentBeats arena): an adaptive multi-turn attack engine (GOAT-style) and a budgeted multi-layer defense pipeline that no open-source competitor combines. The path to world-class is **not** more attack research — it is **productization**: extract the attack engine and defense pipeline into a provider-agnostic core library, ship the defense pipeline as a deployable runtime proxy (the one thing Garak/Promptfoo/PyRIT categorically don't do), wrap everything in extensible ABCs so new providers/targets/plugins bolt on without touching core, and treat hackathon integrations (Google ADK, Gemini, GCP, Cloud Run) as **optional adapters**, not architectural dependencies. Win the hackathon *because* the product is good, not by warping the product around the hackathon.
 
 ## 2. Verified Market Intelligence (as of Aug 22, 2026)
 
@@ -334,7 +334,7 @@ Supporting claims are deliberately conservative because judges and HN readers ch
 
 **Remaining for hackathon submission (§5.3):** Cloud Run deployment + GCP proof artifacts (user-side, needs GCP credentials), demo video, Devpost package. ADK target adapter / live Gemini demo path optional — Gemini already wired as the default attack provider via OpenAI-compat.
 
-**Suite state:** 1,421 passed / 3 skipped (skips: live-Postgres integration behind `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
+**Suite state:** 2,093 passed / 3 skipped (skips: live-Postgres integration behind `ARCHON_TEST_DATABASE_URL`; `helm lint`/`template` behind helm binary).
 
 
 

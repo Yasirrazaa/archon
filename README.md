@@ -246,7 +246,7 @@ This implementation draws on published research in AI security:
 
 - **GOAT** (Meta Research): Generative Offensive Agent Tester for multi-turn jailbreaking
 - **PyRIT** (Microsoft — [microsoft/PyRIT](https://github.com/microsoft/PyRIT)): Python Risk Identification Toolkit; endpoint-agnostic multi-turn attack orchestration
-- **Garak** (NVIDIA): LLM vulnerability scanner with 80+ probes
+- **Garak** (NVIDIA): LLM vulnerability scanner with 195+ probes
 - **Promptfoo** (now part of OpenAI, still MIT OSS): red-teaming plugins and strategies (plugin counts and ASR figures are vendor-reported)
 - **AgentDojo** (ETH Zurich Spy Lab): benchmark for prompt-injection attacks *and defenses* on LLM agents
 - **OWASP Agentic Security Initiative**: Top 10 for Agentic Applications (2026) — Archon's threat taxonomy aligns to it
