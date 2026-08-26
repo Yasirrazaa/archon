@@ -20,6 +20,7 @@ Env:
     OPENROUTER_API_KEY or ARCHON_ATTACK_PROVIDER_API_KEY  (required)
     ARCHON_LLM_BENCH_BASE_URL   (default https://openrouter.ai/api/v1)
     ARCHON_LLM_BENCH_MODEL      (default stealth/ox-alpha)
+    ARCHON_LLM_BENCH_TIMEOUT    (default 300s; live-call timeout seconds)
 
 Results are written incrementally as JSON into ``--out`` so partial progress
 survives crashes and quota exhaustion.
@@ -42,6 +43,20 @@ _REPO = Path(__file__).resolve().parents[2]
 
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "stealth/ox-alpha"
+DEFAULT_TIMEOUT_SECONDS = 300
+TIMEOUT_ENV_VAR = "ARCHON_LLM_BENCH_TIMEOUT"
+
+
+def _resolve_timeout() -> float:
+    """Live-call timeout: ``ARCHON_LLM_BENCH_TIMEOUT`` or the default.
+
+    Regression guard against 120s read timeouts on slow live models —
+    all target/provider/shim construction funnels through here.
+    """
+    raw = os.environ.get(TIMEOUT_ENV_VAR)
+    if not raw:
+        return float(DEFAULT_TIMEOUT_SECONDS)
+    return float(raw)
 
 
 # ---------------------------------------------------------------------------
@@ -61,7 +76,7 @@ class CompleteShim:
         base_url: str,
         api_key: str | None,
         model: str,
-        timeout_seconds: float = 120.0,
+        timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
         transport: httpx.BaseTransport | None = None,
         max_retries: int = 5,
         backoff_seconds: float = 4.0,
@@ -217,7 +232,7 @@ def _make_target(cfg: dict[str, str]):
         base_url=cfg["base_url"],
         api_key=cfg["api_key"],
         model=cfg["model"],
-        timeout_seconds=300.0,
+        timeout_seconds=_resolve_timeout(),
         transport=_RetryTransport(),
     )
 
@@ -229,7 +244,7 @@ def _make_provider(cfg: dict[str, str]):
         base_url=cfg["base_url"],
         api_key=cfg["api_key"],
         model=cfg["model"],
-        timeout_seconds=300.0,
+        timeout_seconds=_resolve_timeout(),
         transport=_RetryTransport(),
         max_retries=6,
         backoff_seconds=5.0,

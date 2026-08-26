@@ -235,24 +235,11 @@ def _prf(tp: int, fp: int, fn: int) -> tuple[float | None, float | None, float |
     return precision, recall, f1
 
 
-async def _score_records(
-    judge: JudgeFn,
+def _aggregate_predictions(
+    predicted_labels: list[int],
     records: list[dict[str, Any]],
-    concurrency: int = 1,
 ) -> dict[str, Any]:
-    """Single-event-loop scoring body: judge every record, then aggregate."""
-    sem = asyncio.Semaphore(max(1, concurrency))
-
-    async def _one(record: dict[str, Any]) -> int:
-        async with sem:
-            outcome = judge(render_transcript(record))
-            if asyncio.iscoroutine(outcome) or isinstance(outcome, Awaitable):
-                outcome = await outcome
-            return int(outcome)
-
-    # gather preserves submission order
-    predicted_labels = await asyncio.gather(*(_one(r) for r in records))
-
+    """Confusion-matrix metrics from aligned predictions vs human labels."""
     tp = fp = tn = fn = 0
     n_safe = n_unsafe = 0
     for predicted, record in zip(predicted_labels, records):
@@ -282,6 +269,40 @@ async def _score_records(
     }
 
 
+async def _score_records(
+    judge: JudgeFn,
+    records: list[dict[str, Any]],
+    concurrency: int = 1,
+    on_progress: Callable[[int, int], None] | None = None,
+) -> dict[str, Any]:
+    """Single-event-loop scoring body: judge every record, then aggregate.
+
+    ``on_progress(done, total)`` fires after each record completes; default
+    None is fully silent (backward compatible).
+    """
+    sem = asyncio.Semaphore(max(1, concurrency))
+    total = len(records)
+    done_count = 0
+
+    async def _one(record: dict[str, Any]) -> int:
+        nonlocal done_count
+        async with sem:
+            outcome = judge(render_transcript(record))
+            if asyncio.iscoroutine(outcome) or isinstance(outcome, Awaitable):
+                outcome = await outcome
+            result = int(outcome)
+        done_count += 1
+        if on_progress is not None:
+            on_progress(done_count, total)
+        return result
+
+    # gather preserves submission order
+    predicted_labels = await asyncio.gather(*(_one(r) for r in records))
+
+    report = _aggregate_predictions(predicted_labels, records)
+    return report
+
+
 def _slice(records: list[dict[str, Any]], limit: int | None) -> list[dict[str, Any]]:
     """Deterministic prefix slice when a limit is set."""
     return records[:limit] if limit is not None else records
@@ -302,6 +323,7 @@ def run_rjudge_benchmark(
     records: list[dict[str, Any]] | None = None,
     cache_path: Path | None = None,
     concurrency: int = 1,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> dict[str, Any]:
     """Score an injected judge against R-Judge human labels (env-gated).
 
@@ -310,6 +332,7 @@ def run_rjudge_benchmark(
     production builds an LLM judge via the provider seam — which requires
     ARCHON_ATTACK_PROVIDER_API_KEY, hence the disabled report otherwise.
     One ``asyncio.run`` for the WHOLE run (never per-record).
+    ``on_progress(done, total)`` fires after each record completes.
     """
     if judge is None and not os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"):
         return dict(_DISABLED_REPORT)
@@ -326,7 +349,10 @@ def run_rjudge_benchmark(
         limit,
     )
 
-    report = asyncio.run(_score_records(judge, data, concurrency))
+    if on_progress is None:  # preserve legacy _score_records call shape
+        report = asyncio.run(_score_records(judge, data, concurrency))
+    else:
+        report = asyncio.run(_score_records(judge, data, concurrency, on_progress))
     report.update({
         "enabled": True,
         "benchmark": "rjudge_safety_agreement",
@@ -405,6 +431,99 @@ def render_rjudge_md(report: dict[str, Any], path: Path) -> None:
         "",
     ]
     path.write_text("\n".join(lines))
+
+
+# ------------------------------------------------------- __main__ layer ----
+# Progress printing + incremental saves live ONLY here; the pure-library
+# functions above stay unchanged and silent.
+
+_INCREMENTAL_INTERVAL = 25
+
+
+def _progress_printer(name: str) -> Callable[[int, int], None]:
+    def _print(done: int, total: int) -> None:
+        print(f"[{name}] {done}/{total}", flush=True)
+
+    return _print
+
+
+def _build_cli_report(
+    predicted_labels: list[int], records: list[dict[str, Any]]
+) -> dict[str, Any]:
+    report = _aggregate_predictions(predicted_labels, records)
+    report.update({
+        "enabled": True,
+        "benchmark": "rjudge_safety_agreement",
+        "measurement": {
+            "judge": "keyword-heuristic",
+            "n_records": len(records),
+            "ground_truth_source": "R-Judge",
+        },
+    })
+    return report
+
+
+def _run_heuristic_incremental(
+    records: list[dict[str, Any]],
+    out_dir: Path | None = None,
+    interval: int = _INCREMENTAL_INTERVAL,
+    on_progress: Callable[[int, int], None] | None = None,
+) -> dict[str, Any]:
+    """Score records one by one with the offline heuristic judge, persisting
+    a partial report every ``interval`` records to
+    ``{out_dir}/rjudge_partial.json`` (crash safety for long runs).
+    """
+    predicted: list[int] = []
+    total = len(records)
+    partial: dict[str, Any] = {}
+
+    async def _loop() -> None:
+        nonlocal partial
+        for i, record in enumerate(records, start=1):
+            outcome = heuristic_judge(render_transcript(record))
+            if asyncio.iscoroutine(outcome) or isinstance(outcome, Awaitable):
+                outcome = await outcome
+            predicted.append(int(outcome))
+            if i % max(1, interval) == 0 or i == total:
+                partial = _build_cli_report(predicted, records[:len(predicted)])
+                if out_dir is not None:
+                    out_dir.mkdir(parents=True, exist_ok=True)
+                    (out_dir / "rjudge_partial.json").write_text(
+                        json.dumps(partial, indent=2))
+            if on_progress is not None:
+                on_progress(i, total)
+
+    asyncio.run(_loop())
+    if out_dir is not None and partial:
+        (out_dir / "rjudge_report.json").write_text(json.dumps(partial, indent=2))
+    return partial
+
+
+def _main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="archon_benchmarks.rjudge",
+        description="R-Judge safety-agreement benchmark (offline heuristic tier).")
+    parser.add_argument(
+        "--limit", type=int, default=None,
+        help="score only the first N records")
+    parser.add_argument(
+        "--out", type=Path, default=None,
+        help="directory for incremental partial saves + final JSON report")
+    args = parser.parse_args(argv)
+
+    records = load_rjudge_fixture()
+    if args.limit is not None:
+        records = records[:max(0, args.limit)]
+    report = _run_heuristic_incremental(
+        records, args.out, on_progress=_progress_printer("rjudge"))
+    print(json.dumps(report, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
 
 
 __all__ = [

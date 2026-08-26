@@ -139,3 +139,56 @@ class TestWriteBattleHtml:
 def test_missing_optional_fields_render(report):
     out = render_battle_html(report)
     assert "<!DOCTYPE html>" in out.lower() or "<!doctype html>" in out.lower()
+
+
+CARDS_COVERAGE = {
+    "owasp_llm_01": {"probes": 4, "blocked": 4},
+    "owasp_llm_07": {"probes": 2, "blocked": 1},
+}
+
+CARDS_REPORT = {
+    **SAMPLE_REPORT,
+    "coverage": CARDS_COVERAGE,
+    "severity": SEVERITY,
+}
+
+
+class TestComplianceCardsSection:
+    def test_cards_section_present_with_findings(self):
+        out = render_battle_html(CARDS_REPORT)
+        assert "<section id='compliance-cards'>" in out
+        assert "</section>" in out
+        assert "OWASP LLM Top 10" in out
+
+    def test_owasp_bar_markup_present(self):
+        out = render_battle_html(CARDS_REPORT)
+        assert "width:100%;height:10px" in out
+        assert ">50%</div>" in out  # owasp_llm_07 = 1/2 blocked
+
+    def test_regulation_cards_when_findings(self):
+        out = render_battle_html(CARDS_REPORT)
+        assert "EU AI Act" in out
+        assert "NIST AI RMF" in out
+
+    def test_cards_section_absent_without_findings(self):
+        empty_findings = {
+            **SAMPLE_REPORT,
+            "severity": {"findings": [], "max_score": 0.0, "bands": {}},
+        }
+        assert "<section id='compliance-cards'>" not in render_battle_html(empty_findings)
+
+    def test_cards_section_absent_without_severity(self):
+        assert "<section id='compliance-cards'>" not in render_battle_html(SAMPLE_REPORT)
+
+    def test_cards_section_after_severity_table(self):
+        out = render_battle_html(CARDS_REPORT)
+        severity_pos = out.index("<h2>Severity</h2>")
+        verdicts_pos = out.index("<h2>Probe verdicts</h2>")
+        cards_pos = out.index("<section id='compliance-cards'>")
+        assert severity_pos < cards_pos < verdicts_pos
+
+    def test_agent_id_still_escaped_with_cards(self):
+        hostile = {**CARDS_REPORT, "agent_id": "<script>alert('a')</script>"}
+        out = render_battle_html(hostile)
+        assert "&lt;script&gt;" in out
+        assert "<script>alert('a')</script>" not in out

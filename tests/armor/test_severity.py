@@ -7,9 +7,13 @@ Severity must be DERIVED from battle evidence:
 """
 
 
+import math
+
+from archon_core.reporting.harm_taxonomy import get_definition
 from archon_core.reporting.severity import (
     Finding,
     band_for,
+    harm_weighted_summary,
     score_finding,
     summarize_severity,
 )
@@ -125,3 +129,64 @@ class TestBattleIntegration:
         battle.finalize()
         assert battle.summary["severity"]["findings"] == []
         assert battle.summary["severity"]["max_score"] == 0.0
+
+
+class TestHarmTaxonomyIntegration:
+    """Sprint 89: harm taxonomy threads through scoring as /HARM vectors."""
+
+    def test_known_category_resolves_harm(self):
+        s = score_finding(_f(category="data_exfiltration"))
+        assert s.harm == "privacy_exfiltration"
+
+    def test_jailbreak_prefix_resolves_harmful_content(self):
+        s = score_finding(_f(category="jailbreak_roleplay"))
+        assert s.harm == "harmful_content"
+
+    def test_unknown_category_resolves_no_harm(self):
+        s = score_finding(_f(category="some_new_category"))
+        assert s.harm is None
+
+    def test_explicit_harm_param_overrides_lookup(self):
+        s = score_finding(_f(category="owasp_llm_02"), harm="privacy_exfiltration")
+        assert s.harm == "privacy_exfiltration"
+
+    def test_vector_contains_harm_segment_when_resolved(self):
+        s = score_finding(_f(category="data_exfiltration"))
+        assert s.vector.endswith("/HARM:privacy_exfiltration")
+        assert "/CAT:data_exfiltration/" in s.vector
+
+    def test_none_case_vector_format_unchanged(self):
+        s = score_finding(_f(category="some_new_category"))
+        assert s.vector == "ARCHON:1/CAT:some_new_category/EXP:standard/EV:none"
+
+    def test_weighted_summary_groups_counts_and_max(self):
+        findings = [
+            _f(category="data_exfiltration", execution_mode="minimal"),
+            _f(category="data_exfiltration"),
+            _f(category="exploit"),
+        ]
+        summary = harm_weighted_summary(findings)
+        assert set(summary) == {"privacy_exfiltration", "exploits_rce"}
+        assert summary["privacy_exfiltration"]["count"] == 2
+        assert summary["exploits_rce"]["count"] == 1
+        expected_max = max(
+            score_finding(f).score for f in findings if f.category == "data_exfiltration"
+        )
+        assert summary["privacy_exfiltration"]["max_score"] == expected_max
+
+    def test_weighted_summary_band_from_definition_rubric(self):
+        findings = [_f(category="data_exfiltration")]
+        summary = harm_weighted_summary(findings)
+        definition = get_definition("privacy_exfiltration")
+        assert definition is not None
+        max_score = summary["privacy_exfiltration"]["max_score"]
+        level = min(5, max(1, math.ceil(max_score / 2)))
+        assert summary["privacy_exfiltration"]["band"] == definition.scale[level]
+        assert isinstance(summary["privacy_exfiltration"]["band"], str)
+
+    def test_weighted_summary_skips_unmapped_findings(self):
+        summary = harm_weighted_summary([_f(category="some_new_category")])
+        assert summary == {}
+
+    def test_weighted_summary_empty_input(self):
+        assert harm_weighted_summary([]) == {}

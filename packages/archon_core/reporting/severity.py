@@ -19,7 +19,16 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-__all__ = ["Finding", "SeverityScore", "band_for", "score_finding", "summarize_severity"]
+from archon_core.reporting.harm_taxonomy import classify_category, load_harm_definitions
+
+__all__ = [
+    "Finding",
+    "SeverityScore",
+    "band_for",
+    "harm_weighted_summary",
+    "score_finding",
+    "summarize_severity",
+]
 
 
 @dataclass(frozen=True)
@@ -36,6 +45,7 @@ class SeverityScore:
     score: float
     band: str
     vector: str
+    harm: str | None = None
 
 
 # --- Evidence tables ---------------------------------------------------------
@@ -96,7 +106,7 @@ def _evasion_kind(probe_name: str) -> str:
     return "none"
 
 
-def score_finding(finding: Finding) -> SeverityScore:
+def score_finding(finding: Finding, harm: str | None = None) -> SeverityScore:
     base = _CATEGORY_BASE.get(finding.category, _DEFAULT_BASE)
     exposure = _MODE_EXPOSURE.get(finding.execution_mode or "", _DEFAULT_EXPOSURE)
     evasion = next(
@@ -105,12 +115,40 @@ def score_finding(finding: Finding) -> SeverityScore:
     )
     raw = base * exposure * evasion
     score = round(min(raw, 10.0), 1)
+    # Harm resolution: explicit param wins; otherwise thread from the probe
+    # category via the harm-taxonomy mapping table.
+    resolved = harm or classify_category(finding.category)
+    harm_id = getattr(resolved, "id", resolved) if resolved is not None else None
     vector = (
         f"ARCHON:1/CAT:{finding.category}"
         f"/EXP:{finding.execution_mode or 'unknown'}"
         f"/EV:{_evasion_kind(finding.probe_name)}"
     )
-    return SeverityScore(score=score, band=band_for(score), vector=vector)
+    if harm_id:
+        vector += f"/HARM:{harm_id}"
+    return SeverityScore(score=score, band=band_for(score), vector=vector, harm=harm_id)
+
+
+def harm_weighted_summary(findings: list[Finding]) -> dict[str, dict]:
+    """Aggregate findings per resolved harm id: count, max score, rubric band.
+
+    The band is taken from the harm definition's 1-5 rubric scale, with the
+    level derived from the worst observed score (``ceil(max_score / 2)``,
+    clamped to 1..5). Findings without a resolved harm are skipped.
+    """
+    defs = {d.id: d for d in load_harm_definitions()}
+    summary: dict[str, dict] = {}
+    for finding in findings:
+        sev = score_finding(finding)
+        if sev.harm is None or sev.harm not in defs:
+            continue
+        entry = summary.setdefault(sev.harm, {"count": 0, "max_score": 0.0, "band": ""})
+        entry["count"] += 1
+        entry["max_score"] = max(entry["max_score"], sev.score)
+    for harm_id, entry in summary.items():
+        level = min(5, max(1, math.ceil(entry["max_score"] / 2)))
+        entry["band"] = defs[harm_id].scale[level]
+    return dict(sorted(summary.items()))
 
 
 def summarize_severity(findings: list[Finding]) -> dict:
@@ -136,6 +174,3 @@ def summarize_severity(findings: list[Finding]) -> dict:
         "max_score": entries[0]["score"] if entries else 0.0,
         "bands": bands,
     }
-
-
-_ = math  # reserved for future percentile metrics

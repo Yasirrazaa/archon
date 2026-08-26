@@ -13,6 +13,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from archon_armor.report_cards import render_compliance_cards
+
 _BLOCKED_MARK = "&#10003;"
 _NOT_BLOCKED_MARK = "&mdash;"
 
@@ -63,6 +65,17 @@ def _severity_table_html(severity: dict[str, Any] | None) -> str:
         "<table><tr><th>Probe</th><th>Category</th><th>Score</th><th>Band</th><th>Vector</th></tr>"
         f"{''.join(rows)}</table>"
     )
+
+
+def _compliance_section_html(report: dict) -> str:
+    """Compliance cards fragment, gated on the same severity findings as the table."""
+    severity = report.get("severity")
+    if not severity or not severity.get("findings"):
+        return ""
+    cards_view = {
+        "summary": {"coverage": report.get("coverage", {}), "severity": severity},
+    }
+    return f"<section id='compliance-cards'>{render_compliance_cards(cards_view)}</section>"
 
 
 def _category_rows_html(coverage: dict[str, Any]) -> str:
@@ -133,6 +146,7 @@ def render_battle_html(report: dict, *, agent_id: str | None = None) -> str:
     )
 
     severity_html = _severity_table_html(report.get("severity"))
+    compliance_html = _compliance_section_html(report)
     coverage_html = _category_rows_html(report.get("coverage", {}))
     results_html = _verdict_rows_html(report.get("results", []))
 
@@ -151,6 +165,7 @@ def render_battle_html(report: dict, *, agent_id: str | None = None) -> str:
 <table><tr><th>Category</th><th>Probes</th><th>Blocked</th><th>Verdict</th></tr>
 {coverage_html}</table>
 {severity_html}
+{compliance_html}
 <h2>Probe verdicts</h2>
 <table><tr><th>Probe</th><th>Category</th><th>Status</th><th>Blocked</th><th>Reason</th></tr>
 {results_html}</table>

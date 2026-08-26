@@ -7,6 +7,7 @@ with an API key — documented in RESULTS.md.
 
 from __future__ import annotations
 
+import inspect
 import json
 
 import httpx
@@ -151,3 +152,68 @@ class TestResumeAndSave:
             (tmp_path / "piminer_vs_shield_partial.json").read_text()
         )
         assert loaded["completed"] == ["t1"]
+
+
+class TestTimeoutRegression:
+    """Regression: live-run timeouts were scattered literals (120/300);
+    they must come from DEFAULT_TIMEOUT_SECONDS with an env override."""
+
+    CFG = {"base_url": "https://x.test/v1", "api_key": "k", "model": "m"}
+
+    def _capture(self, monkeypatch, module, name):
+        captured = {}
+
+        def fake_ctor(**kwargs):
+            captured.update(kwargs)
+            return object()
+
+        monkeypatch.setattr(module, name, fake_ctor)
+        return captured
+
+    def test_default_timeout_constant_is_300(self):
+        assert lr.DEFAULT_TIMEOUT_SECONDS == 300
+
+    def test_make_target_receives_default_timeout(self, monkeypatch):
+        from archon_core.targets import openai_compat
+
+        monkeypatch.delenv("ARCHON_LLM_BENCH_TIMEOUT", raising=False)
+        captured = self._capture(
+            monkeypatch, openai_compat, "OpenAICompatTarget"
+        )
+        lr._make_target(dict(self.CFG))
+        assert captured["timeout_seconds"] == lr.DEFAULT_TIMEOUT_SECONDS
+
+    def test_make_provider_receives_default_timeout(self, monkeypatch):
+        from archon_core.providers import openai_compat as provider_mod
+
+        monkeypatch.delenv("ARCHON_LLM_BENCH_TIMEOUT", raising=False)
+        captured = self._capture(
+            monkeypatch, provider_mod, "OpenAICompatProvider"
+        )
+        lr._make_provider(dict(self.CFG))
+        assert captured["timeout_seconds"] == lr.DEFAULT_TIMEOUT_SECONDS
+
+    def test_env_overrides_timeout_for_target_and_provider(
+        self, monkeypatch
+    ):
+        from archon_core.providers import openai_compat as provider_mod
+        from archon_core.targets import openai_compat as target_mod
+
+        monkeypatch.setenv("ARCHON_LLM_BENCH_TIMEOUT", "42.5")
+        target_kwargs = self._capture(
+            monkeypatch, target_mod, "OpenAICompatTarget"
+        )
+        provider_kwargs = self._capture(
+            monkeypatch, provider_mod, "OpenAICompatProvider"
+        )
+        lr._make_target(dict(self.CFG))
+        lr._make_provider(dict(self.CFG))
+        assert target_kwargs["timeout_seconds"] == 42.5
+        assert provider_kwargs["timeout_seconds"] == 42.5
+
+    def test_complete_shim_defaults_to_module_constant(self):
+        sig = inspect.signature(lr.CompleteShim.__init__)
+        assert (
+            sig.parameters["timeout_seconds"].default
+            is lr.DEFAULT_TIMEOUT_SECONDS
+        )

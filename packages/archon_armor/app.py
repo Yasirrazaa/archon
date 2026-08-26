@@ -14,6 +14,7 @@ import json
 from typing import Any
 
 from archon_core.audit import SqliteAuditTrail
+from archon_core.defenses.action_reminder import ActionReminderLayer
 from archon_core.defenses.base import DefensePipeline
 from archon_core.defenses.layers import (
     ExecutionModeLayer,
@@ -23,6 +24,7 @@ from archon_core.defenses.layers import (
     SpotlightingLayer,
     ThreatClassificationLayer,
 )
+from archon_core.defenses.tool_rail import ToolCallRail, ToolSpec
 from archon_core.models import Exchange
 from archon_core.observability.base import Tracer
 from archon_core.registry.base import AgentNotFoundError, Registry, SecurityPolicy
@@ -42,21 +44,50 @@ _REFUSAL_CONTENT = (
 )
 
 
-def _build_request_pipeline(policy: SecurityPolicy, tracer: Tracer | None) -> DefensePipeline:
-    """Assemble the request-guard pipeline from the agent's security policy."""
-    return DefensePipeline(
-        [
-            NormalizationLayer(),
-            ThreatClassificationLayer(
-                block_categories=tuple(policy.block_categories),
-                min_confidence=policy.min_confidence,
-            ),
-            SegmentationLayer(),
-            SpotlightingLayer(conversational=True),
-            ExecutionModeLayer(),
-        ],
-        tracer=tracer,
-    )
+def _build_request_pipeline(
+    policy: SecurityPolicy,
+    tracer: Tracer | None,
+    tool_rail: ToolCallRail | None = None,
+    reminders: list | None = None,
+) -> DefensePipeline:
+    """Assemble the request-guard pipeline from the agent's security policy.
+
+    Optional extensions (Sprint 85):
+      * ``tool_rail`` -- a prebuilt ToolCallRail; when omitted, one is built
+        fail-closed from ``policy.extra["tool_schemas"]`` if the policy
+        declares any.
+      * ``reminders`` -- list of PolicyReminder; when non-empty an
+        ActionReminderLayer is appended (mutates-not-blocks interjection).
+    """
+    layers: list = [
+        NormalizationLayer(),
+        ThreatClassificationLayer(
+            block_categories=tuple(policy.block_categories),
+            min_confidence=policy.min_confidence,
+        ),
+        SegmentationLayer(),
+        SpotlightingLayer(conversational=True),
+        ExecutionModeLayer(),
+    ]
+    rail = tool_rail
+    if rail is None:
+        declared = policy.extra.get("tool_schemas")
+        if isinstance(declared, list) and declared:
+            specs = [
+                ToolSpec(
+                    name=entry["name"],
+                    parameters_schema=entry.get("parameters_schema", {}),
+                )
+                for entry in declared
+                if isinstance(entry, dict) and entry.get("name")
+            ]
+            if specs:
+                rail = ToolCallRail(specs)
+    if rail is not None:
+        layers.append(rail)
+    if reminders:
+        layers.append(ActionReminderLayer(list(reminders)))
+    return DefensePipeline(layers, tracer=tracer)
 
 
 def _last_user_content(messages: list[dict]) -> str:
@@ -110,6 +141,8 @@ def create_app(
     tenant_store=None,
     scim_store=None,
     oidc_verifier=None,
+    tool_rail: ToolCallRail | None = None,
+    reminders: list | None = None,
 ) -> FastAPI:
     """identity=None enables legacy header-only mode (dev/test only).
     Production deployments must pass an HmacVerifier.
@@ -121,6 +154,13 @@ def create_app(
     scim_store: optional ScimUserStore — mounts the SCIM v2 /scim/v2 router.
     oidc_verifier: optional OidcVerifier — authenticates SCIM routes via OIDC
     bearer tokens; without it SCIM runs in allow-all dev mode.
+    tool_rail: optional ToolCallRail appended to every request pipeline; when
+    None, a rail is still built from ``policy.extra["tool_schemas"]`` if the
+    agent's policy declares tool schemas (fail-closed validation of emitted
+    ``tool_calls`` carried on the request payload).
+    reminders: optional list of PolicyReminder — when configured, an
+    ActionReminderLayer interjects a case-specific policy reminder at the
+    action boundary (mutates content, never blocks).
     shadow_mode=True evaluates the defense pipeline but never enforces:
     would-block verdicts are recorded as 'request.shadow_would_block' audit
     events and the request proceeds upstream — lets operators measure block
@@ -242,8 +282,11 @@ def create_app(
                 status_code=400,
             )
         user_content = _last_user_content(messages)
-        pipeline = _build_request_pipeline(card.policy, tracer)
-        exchange = Exchange(content=user_content, metadata={"agent_id": agent_id})
+        pipeline = _build_request_pipeline(card.policy, tracer, tool_rail, reminders)
+        exchange_metadata = {"agent_id": agent_id}
+        if payload.get("tool_calls") is not None:
+            exchange_metadata["tool_calls"] = payload["tool_calls"]
+        exchange = Exchange(content=user_content, metadata=exchange_metadata)
         result = await pipeline.run(exchange)
         blocked = bool(result.blocked)
         if audit is not None and blocked:
@@ -282,8 +325,11 @@ def create_app(
         user_content = _last_user_content(messages)
 
         # --- 3. Request guard pipeline ----------------------------------------------
-        pipeline = _build_request_pipeline(card.policy, tracer)
-        exchange = Exchange(content=user_content, metadata={"agent_id": card.agent_id})
+        pipeline = _build_request_pipeline(card.policy, tracer, tool_rail, reminders)
+        exchange_metadata = {"agent_id": card.agent_id}
+        if payload.get("tool_calls") is not None:
+            exchange_metadata["tool_calls"] = payload["tool_calls"]
+        exchange = Exchange(content=user_content, metadata=exchange_metadata)
         exchange = await pipeline.run(exchange)
 
         blocked_attrs = {

@@ -222,29 +222,51 @@ def _aggregate(results, total_cases: int) -> dict:
 
 JudgeFn = Callable[[str, AgentHarmBehavior], bool]
 
+ProgressCallback = Callable[[int, int], None]
+
+_SAMPLES_CAP = 40
+
 
 async def _run_live(
     target: TargetAdapter,
     behaviors: list[AgentHarmBehavior],
     judge: JudgeFn | None,
     concurrency: int = 1,
+    on_progress: ProgressCallback | None = None,
 ) -> dict:
     sem = asyncio.Semaphore(max(1, concurrency))
+    total = len(behaviors)
+    done_count = 0
 
-    async def _one(behavior: AgentHarmBehavior) -> bool:
+    async def _one(behavior: AgentHarmBehavior) -> tuple[bool, str, str]:
+        nonlocal done_count
         async with sem:
             resp = await target.send(behavior.query)
             content = resp.content or ""
             if judge is not None:
-                return judge(content, behavior)
-            return not detect_refusal(content)
+                ok = judge(content, behavior)
+            else:
+                ok = not detect_refusal(content)
+            done_count += 1
+            if on_progress is not None:
+                on_progress(done_count, total)
+            return ok, behavior.query, content
 
     # gather preserves submission order
     outcomes = await asyncio.gather(*(_one(b) for b in behaviors))
-    complied = sum(1 for ok in outcomes if ok)
+    complied = sum(1 for ok, _q, _c in outcomes if ok)
     refused = len(outcomes) - complied
     judge_label = "semantic-judge(custom)" if judge is not None \
         else "refusal-heuristic"
+
+    samples = [
+        {
+            "prompt_excerpt": query[:80],
+            "reply_excerpt": content[:200],
+            "compliant": ok,
+        }
+        for ok, query, content in outcomes[:_SAMPLES_CAP]
+    ]
 
     total = len(behaviors)
     return {
@@ -255,6 +277,7 @@ async def _run_live(
         "refused": refused,
         "compliance_rate": round(complied / total, 4) if total else 0.0,
         "refusal_rate": round(refused / total, 4) if total else 0.0,
+        "samples": samples,
         "measurement": {
             "attempt_budget": 1,
             "adaptivity": "static",
@@ -269,6 +292,7 @@ def run_agentharm_live(
     behaviors: list[AgentHarmBehavior] | None = None,
     judge: JudgeFn | None = None,
     concurrency: int = 1,
+    on_progress: ProgressCallback | None = None,
 ) -> dict:
     """Live tier: send direct harm requests to a real target; grade refusals.
 
@@ -276,12 +300,17 @@ def run_agentharm_live(
     injected (tests use fakes). ``judge`` is the provider seam for an LLM /
     semantic judge; default is the deterministic refusal-keyword heuristic.
     ``concurrency`` bounds in-flight requests (1 = sequential).
+    ``on_progress(done, total)`` fires after each record completes; default
+    None is fully silent (backward compatible).
     """
     if target is None and not os.environ.get("ARCHON_ATTACK_PROVIDER_API_KEY"):
         return dict(_DISABLED_REPORT)
     if behaviors is None:
         behaviors = load_agentharm("augmented")
-    return asyncio.run(_run_live(target, behaviors, judge, concurrency))
+    if on_progress is None:  # preserve legacy _run_live call shape
+        return asyncio.run(_run_live(target, behaviors, judge, concurrency))
+    return asyncio.run(
+        _run_live(target, behaviors, judge, concurrency, on_progress))
 
 
 def render_agentharm_md(report: dict, path: Path) -> None:
@@ -327,10 +356,58 @@ def render_agentharm_md(report: dict, path: Path) -> None:
     path.write_text("\n".join(lines))
 
 
-if __name__ == "__main__":
-    import sys
+# ------------------------------------------------------- __main__ layer ----
+# Progress printing lives ONLY here; the pure-library functions above stay
+# unchanged and silent.
 
-    report = run_agentharm_benchmark(load_agentharm_fixture())
+_INCREMENTAL_INTERVAL = 25
+
+
+def _progress_printer(name: str) -> ProgressCallback:
+    def _print(done: int, total: int) -> None:
+        print(f"[{name}] {done}/{total}", flush=True)
+
+    return _print
+
+
+def _run_deterministic_incremental(
+    behaviors: list[AgentHarmBehavior],
+    interval: int = _INCREMENTAL_INTERVAL,
+    on_progress: ProgressCallback | None = None,
+) -> dict:
+    """Chunked deterministic run with per-chunk progress callbacks."""
+    results = []
+    total = len(behaviors)
+    for start in range(0, total, max(1, interval)):
+        chunk = behaviors[start:start + interval]
+        manager = _reference_manager()
+        battle = manager.create("bench")
+        asyncio.run(manager.execute(
+            battle.battle_id, probes=build_attack_prompts(chunk)))
+        results.extend(battle.results)
+        if on_progress is not None:
+            on_progress(len(results), total)
+    return _aggregate(results, total_cases=total)
+
+
+def _main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="archon_benchmarks.agentharm",
+        description="AgentHarm benchmark (deterministic tier).")
+    parser.add_argument(
+        "md_path", nargs="?", type=Path, default=None,
+        help="optional path for the markdown report")
+    args = parser.parse_args(argv)
+
+    report = _run_deterministic_incremental(
+        load_agentharm_fixture(), on_progress=_progress_printer("agentharm"))
     print(json.dumps(report, indent=2))
-    if len(sys.argv) > 1:
-        render_agentharm_md(report, Path(sys.argv[1]))
+    if args.md_path is not None:
+        render_agentharm_md(report, args.md_path)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())

@@ -76,6 +76,24 @@ class Battle:
             "coverage": coverage,
             "severity": summarize_severity(findings),
         }
+        if findings:
+            from archon_core.reporting.property_tags import (
+                summarize_by_property,
+                tag_findings,
+            )
+
+            tagged = tag_findings(
+                [
+                    {
+                        "probe_name": r.probe_name,
+                        "category": r.category,
+                        "execution_mode": r.execution_mode,
+                    }
+                    for r in self.results
+                    if not r.blocked and r.probe_name != "benign_control"
+                ]
+            )
+            self.summary["properties"] = summarize_by_property(tagged)
         self.status = "completed"
 
 
