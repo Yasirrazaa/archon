@@ -59,3 +59,36 @@ class TestNpmWrapper:
         assert os.path.isfile(readme)
         text = open(readme, encoding="utf-8").read().lower()
         assert "uv" in text or "pipx" in text
+
+
+class TestUvxPackaging:
+    """Sprint 98: the repo must stay installable/runnable via `uvx`."""
+
+    PYPROJECT = os.path.join(REPO_ROOT, "pyproject.toml")
+    UVX_DOC = os.path.join(REPO_ROOT, "packaging", "uvx.md")
+    UVX_ONE_LINER = "uvx --from git+https://github.com/Yasirrazaa/archon archon"
+
+    def test_pyproject_declares_archon_script(self):
+        text = open(self.PYPROJECT, encoding="utf-8").read()
+        scripts = re.search(r"\[project\.scripts\]([^\[]*)", text)
+        assert scripts, "[project.scripts] section missing"
+        assert re.search(r'^archon\s*=\s*"archon_cli\.main:main"', scripts.group(1), re.M), (
+            "uvx needs a console script named 'archon'"
+        )
+
+    def test_build_backend_supports_wheel_install(self):
+        text = open(self.PYPROJECT, encoding="utf-8").read()
+        assert re.search(r"build-backend\s*=\s*\"hatchling\.build\"", text)
+        wheel = re.search(r"\[tool\.hatch\.build\.targets\.wheel\]\n(.*?)(?=\n\[)", text, re.S)
+        assert wheel, "wheel build target missing"
+        assert "packages/archon_cli" in wheel.group(1)
+
+    def test_uvx_doc_exists_with_one_liner(self):
+        assert os.path.isfile(self.UVX_DOC), "packaging/uvx.md missing"
+        text = open(self.UVX_DOC, encoding="utf-8").read()
+        assert self.UVX_ONE_LINER in text
+
+    def test_readme_mentions_uvx(self):
+        readme = os.path.join(REPO_ROOT, "README.md")
+        text = open(readme, encoding="utf-8").read().lower()
+        assert "uvx" in text

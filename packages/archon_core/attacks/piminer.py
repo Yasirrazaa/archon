@@ -185,11 +185,22 @@ class StrategyLibrary:
         if not root.is_dir():
             return
         for path in sorted(root.glob("*.md")):
+            if path.stem.lower() == "readme":
+                continue  # documentation, not a strategy card
             text = path.read_text(encoding="utf-8", errors="replace")
             card = StrategyCard(
                 name=path.stem, text=text, sections=_parse_sections(text)
             )
             self._cards[card.name] = card
+
+    @classmethod
+    def load_dir(cls, directory: Path | str) -> StrategyLibrary:
+        """Convenience constructor: load a library from a directory path.
+
+        Missing directories yield an empty library, same as the default
+        constructor.
+        """
+        return cls(directory)
 
     @property
     def names(self) -> list[str]:

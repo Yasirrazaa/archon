@@ -259,6 +259,161 @@ def run_taubench_policy_probe(records: list[TaubenchTask] | None = None,
     }
 
 
+# ------------------------------------------------- user-simulation tier ----
+
+_RESOLUTION_KEYWORDS = ("resolved", "complete", "done")
+_CLOSING_QUESTION_MARKERS = (
+    "anything else", "any other way", "else i can help",
+)
+
+
+def _build_user_persona(task: TaubenchTask) -> str:
+    """System prompt turning the LLM into the task's user persona."""
+    policy_block = "\n".join(f"- {p}" for p in task.policies) or "- (none)"
+    return (
+        "You are role-playing a real customer contacting a support agent. "
+        "Stay in character at all times and pursue your goal until the agent "
+        "resolves it. Respond only as the customer would — short, natural "
+        "messages.\n\n"
+        f"--- Your goal (tau-bench task {task.task_id}) ---\n"
+        f"{task.user_instruction}\n\n"
+        "--- Domain policies you may rely on ---\n"
+        f"{policy_block}"
+    )
+
+
+def _agent_completed(agent_text: str) -> bool:
+    """Refusal-free completion heuristic: explicit resolution keyword AND
+    the agent is not asking anything further. Standard closing offers
+    ("Is there anything else?") do not count as asking further."""
+    low = agent_text.lower()
+    if not any(k in low for k in _RESOLUTION_KEYWORDS):
+        return False
+    sentences = [s.strip() for s in low.replace("!", ".").split(".")]
+    return not any(
+        "?" in s and not any(m in s for m in _CLOSING_QUESTION_MARKERS)
+        for s in sentences
+    )
+
+
+async def _usersim_conversation(
+    target, provider, task: TaubenchTask, max_turns: int
+) -> dict:
+    persona = {"role": "system", "content": _build_user_persona(task)}
+    history: list[dict] = []
+    error: str | None = None
+    resolved = False
+    turns_used = 0
+
+    for _ in range(max_turns):
+        try:
+            user_turn = await provider.generate([persona, *history])
+        except Exception as exc:  # recorded, never raised
+            error = f"{type(exc).__name__}: {exc}"
+            break
+        user_msg = user_turn.content
+        history.append({"role": "user", "content": user_msg})
+
+        resp = await target.send(user_msg)
+        history.append({"role": "assistant", "content": resp.content})
+        turns_used += 1
+
+        if _agent_completed(resp.content):
+            resolved = True
+            break
+
+    return {
+        "task_id": task.task_id,
+        "turns_used": turns_used,
+        "resolved": resolved,
+        "error": error,
+    }
+
+
+def run_taubench_usersim(
+    target, provider, *, tasks: list[TaubenchTask] | None = None,
+    max_turns: int = 6,
+) -> dict:
+    """LLM-tier: for each task an LLM plays the user persona while ``target``
+    plays the tool-agent. Multi-turn conversations; resolution judged by the
+    refusal-free heuristic in :func:`_agent_completed`.
+
+    Requires a live ``provider`` (an ``LLMProvider``-shaped object with an
+    async ``generate``); without one this tier cannot produce meaningful
+    numbers, so it raises :class:`RuntimeError`. The deterministic policy-probe
+    entry (:func:`run_taubench_policy_probe`) remains untouched.
+    """
+    import asyncio
+
+    if provider is None:
+        raise RuntimeError(
+            "taubench user-simulation tier requires a live LLM provider "
+            "(the simulated user); pass one explicitly or configure "
+            "ARCHON_ATTACK_PROVIDER_* and use archon_core.providers."
+            "provider_from_env()"
+        )
+
+    if tasks is None:
+        tasks = load_taubench_fixture()
+
+    async def _run_all() -> list[dict]:
+        return [
+            await _usersim_conversation(target, provider, t, max_turns)
+            for t in tasks
+        ]
+
+    # One event loop for the WHOLE run: per-task asyncio.run() calls close
+    # the loop out from under live httpx AsyncClients (see llm_tier note).
+    per_task = asyncio.run(_run_all())
+    resolved = sum(1 for r in per_task if r["resolved"])
+    n = len(per_task)
+
+    return {
+        "benchmark": "taubench_user_sim",
+        "domain": tasks[0].domain if tasks else "retail",
+        "tasks": n,
+        "resolved": resolved,
+        "resolution_rate": round(resolved / n, 4) if n else 0.0,
+        "per_task": per_task,
+        "measurement": {
+            "attempt_budget": max_turns,
+            "adaptivity": "multi-turn-user-sim",
+            "judge": "resolution-heuristic",
+            "upstream_model": getattr(provider, "model", None),
+        },
+    }
+
+
+def render_taubench_usersim_md(report: dict, path: str | Path) -> str:
+    """Render the user-simulation report as markdown and write to ``path``."""
+    m = report["measurement"]
+    lines = [
+        "# tau-bench User-Simulation Report",
+        "",
+        f"Benchmark: `{report['benchmark']}` · {report['tasks']} tasks · "
+        "an LLM plays each task's genuine user persona while the evaluated "
+        "agent handles the multi-turn conversation.",
+        "",
+        "| Metric | Value |",
+        "|---|---|",
+        f"| Tasks | {report['tasks']} |",
+        f"| Resolved | **{report['resolved']}** |",
+        f"| Resolution rate | **{report['resolution_rate']:.1%}** |",
+        "",
+        "## Methodology",
+        "",
+        f"- Attempt budget: {m['attempt_budget']} turns per task",
+        f"- Adaptivity: {m['adaptivity']}",
+        f"- Judge: {m['judge']} (explicit resolution keyword + no follow-up "
+        "question from the agent)",
+        f"- Upstream model (simulated user): {m['upstream_model']}",
+        "",
+    ]
+    text = "\n".join(lines)
+    Path(path).write_text(text, encoding="utf-8")
+    return text
+
+
 def render_taubench_md(report: dict, path: str | Path) -> str:
     """Render the policy-probe report as markdown and write it to ``path``."""
     m = report["measurement"]
@@ -321,5 +476,7 @@ __all__ = [
     "load_taubench_fixture",
     "parse_tasks_source",
     "render_taubench_md",
+    "render_taubench_usersim_md",
     "run_taubench_policy_probe",
+    "run_taubench_usersim",
 ]

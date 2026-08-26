@@ -191,7 +191,7 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 
 ## Integration & frontier completion (Phase E5 — wave 14)
 
-- [ ] Items 85–98: pipeline wiring, harness ergonomics, property/harm reporting fusion, APC completion, AgentFlow subset, AGRI module, PIMiner seeding, matrix runner, tau-bench user-sim, uvx
+- [x] Items 85–98 ALL SHIPPED (wave 14): ActionReminderLayer+ToolRail enforced in pipeline; harness progress/incremental/sampling; timeout regression fix; property-tagged summaries; harm-weighted severity; HTML compliance cards; APC C3/C4 approval tokens; buffed series; AgentFlow path-rules subset; AGRI opt-in module; PIMiner strategy seeding (7 cards); matrix runner; tau-bench user-sim; discover --scan-skills + uvx
 
 ## Document map
 

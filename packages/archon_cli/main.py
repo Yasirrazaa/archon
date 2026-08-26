@@ -500,6 +500,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_disc = sub.add_parser("discover", help="discover local agent configs (Claude/Cursor/VSCode/Gemini CLI...)")
     p_disc.add_argument("--root", default=None, help="override home dir for discovery")
     p_disc.add_argument("--json", action="store_true")
+    p_disc.add_argument(
+        "--scan-skills",
+        action="store_true",
+        help="run SKILL.md supply-chain checks on each found client's skills dirs",
+    )
     p_disc.set_defaults(func=_cmd_discover)
 
     p_fleet = sub.add_parser("fleet", help="fleet overview from baselines (dashboard primitive)")
@@ -705,12 +710,67 @@ def _cmd_results(args) -> int:
     return 0
 
 
+def _skill_roots_for(base: str) -> list:
+    """Skills dirs to probe for one discovered client path.
+
+    File-style config paths (e.g. ~/.claude/settings.json) map to a sibling
+    ``skills/`` directory; directory-style paths are searched directly.
+    """
+    from pathlib import Path
+
+    p = Path(base)
+    if p.is_file():
+        return [p.parent / "skills"]
+    return [p]
+
+
+def _scan_client_skills(client_name: str, paths: list[str]) -> list[dict]:
+    """Run skill_scan checks on every SKILL.md under a client's paths.
+
+    Never raises: missing dirs and unreadable files degrade gracefully.
+    """
+    from archon_core.security.skill_scan import Finding, SkillDefinition, scan_skill
+
+    seen: set[str] = set()
+    records: list[dict] = []
+    for base in paths:
+        for root in _skill_roots_for(base):
+            try:
+                candidates = sorted(root.rglob("SKILL.md"))
+            except OSError:
+                continue
+            for md in candidates:
+                if not md.is_file() or str(md) in seen:
+                    continue
+                seen.add(str(md))
+                try:
+                    body = md.read_text(encoding="utf-8")
+                    findings = scan_skill(
+                        SkillDefinition(name=md.stem, body=body, source_path=str(md))
+                    )
+                except (OSError, UnicodeDecodeError, ValueError):
+                    findings = [Finding("W000", "low", f"unreadable skill file: {md.name}")]
+                records.append({
+                    "client": client_name,
+                    "skill_path": str(md),
+                    "findings": [
+                        {"code": f.code, "severity": f.severity, "message": f.message}
+                        for f in findings
+                    ],
+                })
+    return records
+
+
 def _cmd_discover(args) -> int:
     from archon_core.discovery.clients import discover_clients, summarize_discovery
 
     found = discover_clients(root=getattr(args, "root", None))
     summary = summarize_discovery(found)
     print(json.dumps(summary, indent=None if getattr(args, "json", False) else 2))
+    if getattr(args, "scan_skills", False):
+        for client in found:
+            for record in _scan_client_skills(client.name, client.found_paths):
+                print(json.dumps(record))
     return 0
 
 
