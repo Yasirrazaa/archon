@@ -188,6 +188,11 @@ Derived from the enterprise A+ ladder analysis (Aug 24) against LANDSCAPE_2026 R
 
 - [ ] SkillTrustBench · XSTest · Agent-SafetyBench · BIPIA · AgentHarm · HarmBench-full · WASP dual-ASR · StrongREJECT · IPIArena · ASB · MCPTox wrapper · tau-bench loader — all reproducible (cache→network→fixture), deterministic-first
 
+
+## Integration & frontier completion (Phase E5 — wave 14)
+
+- [ ] Items 85–98: pipeline wiring, harness ergonomics, property/harm reporting fusion, APC completion, AgentFlow subset, AGRI module, PIMiner seeding, matrix runner, tau-bench user-sim, uvx
+
 ## Document map
 
 See [`BLUEPRINT_HACKATHON.md`](./BLUEPRINT_HACKATHON.md) §0.

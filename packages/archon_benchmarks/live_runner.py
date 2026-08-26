@@ -217,7 +217,7 @@ def _make_target(cfg: dict[str, str]):
         base_url=cfg["base_url"],
         api_key=cfg["api_key"],
         model=cfg["model"],
-        timeout_seconds=120.0,
+        timeout_seconds=300.0,
         transport=_RetryTransport(),
     )
 
@@ -229,7 +229,7 @@ def _make_provider(cfg: dict[str, str]):
         base_url=cfg["base_url"],
         api_key=cfg["api_key"],
         model=cfg["model"],
-        timeout_seconds=120.0,
+        timeout_seconds=300.0,
         transport=_RetryTransport(),
         max_retries=6,
         backoff_seconds=5.0,

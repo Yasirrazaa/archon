@@ -305,6 +305,26 @@ Source: three-way improvement mining across promptfoo/augustus/agent-scan (DX + 
 71. ~~**Skill-scan lifecycle stages**~~ ✅ **SHIPPED (wave 12)** — Storage (manifest consistency declared-vs-body), Retrieval (cross-file similarity clustering for Sybil/stuffing), Evolution (version-diff escalation) per SkillSec-Eval.
 72. ~~**Prompt-as-Rule LLM audit tier**~~ ✅ **SHIPPED (wave 12)** — opt-in NL-criteria tier over mcp_scan regexes w/ mandatory exclusion conditions + network-reachability filtering (AI-Infra-Guard discipline).
 
+### Phase E5 — Integration & Frontier Completion (wave 14, Aug 26)
+
+Tier 1 (pre-deadline credibility):
+85. **Wire ActionReminderLayer + ToolRail into the armor request pipeline** (docs claim enforcement; make it enforced on every request)
+86. **Benchmark harness ergonomics** — per-record progress prints, incremental saves, response sampling (~200 chars/reply) in strongreject/rjudge/agentharm
+87. **live_runner timeout regression fix** (120→300s w/ test)
+88. **Property tags (SA/TA/AA/DI) into battle summaries + compliance output**
+89. **Harm taxonomy → severity vectors** (harm-weighted scoring)
+90. **Compliance cards merged into HTML report** (`--html` w/ OWASP pass-rate bars)
+91. **APC C3 context-binding + C4 one-shot approval tokens** (ed25519 hash-bound)
+92. **Buff layer in benchmark series** (multiplicative probe coverage)
+
+Tier 2 (frontier completion):
+93. **AgentFlow path-rules YAML subset** (labels + flow rules + 3 path operators over session traces; no SMT)
+94. **AGRI opt-in vLLM module** (latent-signal injection defense trained on attacker-generated labels)
+95. **PIMiner strategy-library seeding** (7 curated strategies + cold/seeded/digested ablation support)
+96. **Multi-provider benchmark matrix runner** (N providers × M models comparative table)
+97. **tau-bench user-simulation tier** (env-gated LLM user loop)
+98. **discover → skill-scan integration + uvx packaging polish**
+
 ### Phase E4 — Universal Benchmark Coverage (wave 13, Aug 25) — ✅ ALL SHIPPED
 
 Goal: run every benchmark competitors and frontier papers use, fully reproducible
