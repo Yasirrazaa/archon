@@ -15,12 +15,30 @@ in tests/armor/.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
-_DEFENDER_DIR = (
-    Path(__file__).resolve().parents[2] / "scenarios" / "security_arena" / "agents" / "defender"
-)
+_FALLBACK_DIRNAME = Path("scenarios") / "security_arena" / "agents" / "defender"
+
+
+def _candidate_dirs() -> list[Path]:
+    """Locations searched for the AgentBeats defender modules, in order.
+
+    1. ``$ARCHON_DEFENDER_DIR``            explicit override (containers/CI)
+    2. ``<repo root>/scenarios/...``       development checkout layout
+    3. ``<sys.prefix>/scenarios/...``      installed under a venv root
+    4. ``<cwd>/scenarios/...``             container WORKDIR layout
+    """
+    cands: list[Path] = []
+    env_dir = os.environ.get("ARCHON_DEFENDER_DIR")
+    if env_dir:
+        cands.append(Path(env_dir))
+    cands.append(Path(__file__).resolve().parents[2] / _FALLBACK_DIRNAME)
+    cands.append(Path(sys.prefix) / _FALLBACK_DIRNAME)
+    cands.append(Path.cwd() / _FALLBACK_DIRNAME)
+    return cands
+
 
 _loaded: dict[str, object] = {}
 
@@ -29,9 +47,17 @@ def load_defender_module(name: str):
     """Load (and cache) a defender module by file path."""
     if name in _loaded:
         return _loaded[name]
-    path = _DEFENDER_DIR / f"{name}.py"
-    if not path.exists():
-        raise ImportError(f"Defender module not found: {path}")
+    path = next(
+        (cand / f"{name}.py" for cand in _candidate_dirs() if (cand / f"{name}.py").exists()),
+        None,
+    )
+    if path is None:
+        searched = ", ".join(str(c) for c in _candidate_dirs())
+        raise ImportError(
+            f"Defender module '{name}.py' not found. Searched: {searched}. "
+            "Set ARCHON_DEFENDER_DIR to the directory containing the "
+            "scenarios/security_arena/agents/defender modules."
+        )
     qualname = f"archon_core._vendor.{name}"
     spec = importlib.util.spec_from_file_location(qualname, path)
     module = importlib.util.module_from_spec(spec)

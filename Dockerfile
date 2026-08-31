@@ -8,6 +8,9 @@ WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 COPY packages ./packages
+# AgentBeats defender modules loaded by archon_core.compat at runtime
+# (repo-relative in dev; resolved via cwd/sys.prefix in the container).
+COPY scenarios ./scenarios
 RUN pip install --no-cache-dir ".[otel,postgres]"
 
 # Non-root runtime user
