@@ -28,11 +28,13 @@ echo "==> 2. Build the image (docker is preinstalled in Cloud Shell)"
 docker build -t archon-armor:demo .
 
 echo "==> 3. Run it (pass GEMINI_API_KEY for live LLM layers; optional)"
+# NOTE: do NOT set ARCHON_OTEL_EXPORTER here — unset means the server wraps
+# JsonlTracer(/data/spans.jsonl) by default (per-layer spans on disk).
+# Valid modes if you want them: none|off, memory, otlp.
 docker run -d --name archon-armor -p ${PORT}:8080 \
   -e ARCHON_UPSTREAM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai \
   -e ARCHON_UPSTREAM_API_KEY="${GEMINI_API_KEY:-}" \
   -e ARCHON_UPSTREAM_MODEL=gemini-2.0-flash-lite-001 \
-  -e ARCHON_OTEL_EXPORTER=jsonl \
   archon-armor:demo
 sleep 3
 
@@ -43,6 +45,6 @@ echo -n "metrics: "; curl -s "http://localhost:${PORT}/metrics" | head -c 120; e
 echo "==> 5. Demo shots (film these)"
 echo "  a) Web Preview: Cloud Shell top-right 'Web Preview' -> 'Preview on port 8080' -> /ui dashboard"
 echo "  b) curl -s -X POST http://localhost:${PORT}/v1/battles -H 'Content-Type: application/json' -H 'X-Agent-ID: demo-agent' -d '{\"agent_id\":\"demo-agent\",\"pack\":\"owasp_llm_10\"}'"
-echo "  c) docker logs archon-armor | tail -5   (per-layer verdicts / span JSONL)"
+echo "  c) docker exec archon-armor tail -2 /data/spans.jsonl   (per-layer span evidence)"
 echo
 echo "==> Cloud Run (when billing is available) is ONE command: bash deploy/gcp/deploy.sh"

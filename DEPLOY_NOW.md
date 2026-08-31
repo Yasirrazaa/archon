@@ -113,7 +113,7 @@ demo does not need it: use `archon battle` (handles signing), `/v1/battles`, and
 
 - Cloud Run deploy fails → `docker compose up` locally + `export URL=http://localhost:8080`
   and record the same shots against localhost (judges accept a working local demo over none).
-- No traces in Cloud Trace → `--update-env-vars ARCHON_OTEL_EXPORTER=jsonl` and show
+- No traces in Cloud Trace → `--update-env-vars ARCHON_SPANS_JSONL=/data/spans.jsonl` (leave ARCHON_OTEL_EXPORTER unset) and show
   `/data/spans.jsonl` content via `gcloud run services proxy` or the logs.
 - Gemini key invalid → deploy anyway; battles still score deterministically for
   LLM01 probes (layer-0/1 are rule-based, zero LLM calls).
