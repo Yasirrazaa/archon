@@ -117,7 +117,9 @@ class TestVerifyApproval:
 
     def test_expired_rejected(self, keys):
         priv, pub = keys
-        token_dict, sig_hex = issue_approval(priv, "agent-1", ACTION, ttl_seconds=10)
+        token_dict, sig_hex = issue_approval(
+            priv, "agent-1", ACTION, ttl_seconds=10, now=NOW
+        )
         later = NOW + timedelta(seconds=11)
         verdict = verify_approval(sig_hex, token_dict, pub, action=ACTION, now=later)
         assert verdict.ok is False

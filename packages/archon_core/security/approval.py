@@ -73,17 +73,22 @@ def _action_hash(action: dict) -> str:
 
 
 def issue_approval(
-    signing_key_pem: str, agent_id: str, action: dict, ttl_seconds: int = 300
+    signing_key_pem: str,
+    agent_id: str,
+    action: dict,
+    ttl_seconds: int = 300,
+    now: datetime | None = None,
 ) -> tuple[dict, str]:
     """Mint an approval token signed over its own canonical json.
 
     Returns (token_dict, signature_hex). Mirrors identity.py's ed25519
     usage; reuses generate_keypair from there on the caller side.
+    ``now`` is injectable so tests and callers can control the clock.
     """
     key = serialization.load_pem_private_key(signing_key_pem.encode(), password=None)
     if not isinstance(key, Ed25519PrivateKey):
         raise ValueError("private key is not ed25519")
-    now = datetime.now(timezone.utc)
+    now = now if now is not None else datetime.now(timezone.utc)
     token = ApprovalToken(
         agent_id=agent_id,
         action_hash=_action_hash(action),
