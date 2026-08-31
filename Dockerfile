@@ -15,6 +15,10 @@ RUN pip install --no-cache-dir ".[otel,postgres]"
 
 # Non-root runtime user
 RUN useradd -m -u 10001 archon
+# /data must exist and be writable by the runtime user BEFORE VOLUME is
+# declared, otherwise Docker auto-creates the volume root-owned and the
+# non-root process cannot create audit.db / registry.db inside it.
+RUN mkdir -p /data && chown -R archon:archon /data
 USER archon
 
 ENV ARCHON_REGISTRY_PATH=/data/registry.db \

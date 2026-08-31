@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from pathlib import Path
 from datetime import datetime, timezone
 
 _SCHEMA = """
@@ -29,6 +30,9 @@ class SqliteAuditTrail:
         # check_same_thread=False + lock: the trail may be written from the
         # server's request threads while owned by the creating thread.
         self._lock = threading.Lock()
+        parent = Path(path).parent
+        if str(parent) not in ("", "."):
+            parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(path), check_same_thread=False)
         self._conn.execute(_SCHEMA)
         self._conn.commit()
