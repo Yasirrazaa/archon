@@ -2,7 +2,10 @@
 
 Category: **Fortified Enterprise Fleet**
 Repo: **https://github.com/Yasirrazaa/arcon** (branch `hackathon-v2`)
-Live: `https://archon-armor-<suffix>-uc.a.run.app/ui` (fill after deploy)
+Deployment: **deployed on Google Cloud Run — full build/deploy/trace sequence
+shown in the demo video** (per Devpost rules the service need not stay live;
+redeploy any time with `bash deploy/gcp/deploy.sh`). Dashboard preview and the
+Cloud Run/Cloud Trace proof are at the timestamps below.
 
 ---
 

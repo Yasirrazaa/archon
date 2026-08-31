@@ -1,5 +1,24 @@
 # DEPLOY_NOW.md — 5-Hour Deploy & Submit Runbook (deadline-critical)
 
+## ⭐ No credits? You can still deploy — everything here is free-tier
+
+The credits ran out for **Gemini API usage**, but the deployment stack has a
+permanent free tier: **Cloud Build** (120 build-min/day), **Cloud Run**
+(scale-to-zero, 2M req/mo), **Artifact Registry** (0.5 GB), **Cloud Trace**
+(free). And the **Gemini API itself has a free-tier key** from
+https://aistudio.google.com/apikey — no billing account needed for demo volume.
+
+**One command deploys everything:** `bash deploy/gcp/deploy.sh` (seeds the demo
+agent into the registry, builds in Cloud Build, deploys Cloud Run with verified
+env vars, prints the healthz/demo commands).
+
+Per the Devpost rules, the app **does not need to stay live** — you need *clear
+proof it was built and deployed on Google Cloud*. So: deploy once, film the
+`gcloud builds submit` → `gcloud run deploy` → `/healthz` → Cloud Trace sequence
+for the demo video, and keep the deploy script + cloudbuild.yaml in the repo.
+Optionally delete the service afterward (`gcloud run services delete`) — the
+video and the one-command redeploy script are the proof.
+
 Every command below is verified against the actual code (routes, env vars, CLI flags
 checked Aug 31, 2026). Follow top-to-bottom. Do NOT deviate.
 
