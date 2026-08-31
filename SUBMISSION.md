@@ -77,6 +77,11 @@ defense; and nobody emits adversarially-validated compliance evidence.
 
 ## What Makes Archon Unique
 
+- **Proven defender core**: the defense pipeline is descended from our
+  AgentBeats competition defender — **85.1% defense rate, 6th-place finish**
+  ([leaderboard/results: ADD LINK OR SCREENSHOT REFERENCE]). Archon's
+  contribution is everything around it: the closed attack loop, CI gates,
+  evidence export, and enterprise hardening.
 - **Closed loop**: attack → shield → re-attack (`archon purple`) → evidence
   export (JSON/SARIF/HTML). Attack tools and defense tools exist separately
   everywhere else; the loop is the moat.
